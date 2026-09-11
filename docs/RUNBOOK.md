@@ -59,7 +59,8 @@ AGENT_VLLM_VERSION=v0.20.0
 AGENT_GPU_MEMORY_UTILIZATION=0.30
 EOF
 spark$ export PATH="$HOME/dev/audio/envs/tools/bin:$PATH"     # hf CLI (v PATH SSH relace není)
-spark$ env $(grep -v '^#' .env | xargs) bash scripts/download_qwen36_agent.sh     # ~23,4 GB
+spark$ env $(grep -v '^#' .env | xargs) HF_HUB_DISABLE_XET=1 bash scripts/download_qwen36_agent.sh   # ~23,4 GB, ~80 min
+# Bez HF_HUB_DISABLE_XET=1 se velké shardy na Sparku zasekly na 0 B/s (2026-09-11); přes HTTP ~4 MB/s.
 ```
 
 Paměť: model potřebuje ~36 GB unified paměti a musí běžet trvale (heartbeat).
