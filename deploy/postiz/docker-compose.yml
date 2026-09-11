@@ -1,0 +1,217 @@
+# Postiz, self-hosted, for PromoClown.
+#
+# Based on gitroomhq/postiz-docker-compose @ dd4969e (2026-07-30). Changes:
+# secrets and URLs come from .env; the only published port binds to one
+# address; Temporal UI and admin tools sit behind the "debug" profile; a
+# cloudflared connector serves postiz.ol1n.com; logs rotate.
+#
+# Postiz >= 2.12 needs Temporal, which brings Elasticsearch and a second
+# Postgres. Budget about 3 GB of RAM for this file: JODA (3.8 GB, swap already
+# full) cannot carry it, the Spark can. The images are amd64 + arm64.
+#
+#   cp .env.example .env && chmod 600 .env
+#   cp cloudflared/config.yml.example cloudflared/config.yml   # plus credentials.json
+#   docker compose up -d
+name: postiz
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: 10m
+    max-file: "3"
+
+services:
+  postiz:
+    image: ghcr.io/gitroomhq/postiz-app:${POSTIZ_VERSION:-latest}
+    container_name: postiz
+    restart: unless-stopped
+    environment:
+      MAIN_URL: ${POSTIZ_URL:?set POSTIZ_URL}
+      FRONTEND_URL: ${POSTIZ_URL}
+      NEXT_PUBLIC_BACKEND_URL: ${POSTIZ_URL}/api
+      BACKEND_INTERNAL_URL: http://localhost:3000
+      JWT_SECRET: ${POSTIZ_JWT_SECRET:?set POSTIZ_JWT_SECRET}
+      DATABASE_URL: postgresql://postiz:${POSTIZ_DB_PASSWORD:?set POSTIZ_DB_PASSWORD}@postiz-postgres:5432/postiz
+      REDIS_URL: redis://postiz-redis:6379
+      TEMPORAL_ADDRESS: temporal:7233
+      IS_GENERAL: "true"
+      DISABLE_REGISTRATION: ${POSTIZ_DISABLE_REGISTRATION:-false}
+      RUN_CRON: "true"
+      STORAGE_PROVIDER: local
+      UPLOAD_DIRECTORY: /uploads
+      NEXT_PUBLIC_UPLOAD_DIRECTORY: /uploads
+      # The name the code actually reads; the upstream compose only sets the one above.
+      NEXT_PUBLIC_UPLOAD_STATIC_DIRECTORY: /uploads
+      # POST /public/v1/posts per hour per organisation.
+      API_LIMIT: ${POSTIZ_API_LIMIT:-90}
+      X_API_KEY: ${X_API_KEY:-}
+      X_API_SECRET: ${X_API_SECRET:-}
+      YOUTUBE_CLIENT_ID: ${YOUTUBE_CLIENT_ID:-}
+      YOUTUBE_CLIENT_SECRET: ${YOUTUBE_CLIENT_SECRET:-}
+      NX_ADD_PLUGINS: "false"
+    volumes:
+      - postiz-config:/config/
+      - postiz-uploads:/uploads/
+    ports:
+      # promo-api's publisher calls the Public API here. LAN address when
+      # promo-api runs on another host, 127.0.0.1 otherwise.
+      - "${POSTIZ_BIND:-127.0.0.1}:4007:5000"
+    networks: [postiz, temporal]
+    healthcheck:
+      test: ["CMD", "node", "-e", "const r=require('http').get('http://localhost:5000/',res=>process.exit(res.statusCode<500?0:1));r.on('error',()=>process.exit(1));r.setTimeout(4000,()=>{r.destroy();process.exit(1)})"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+    depends_on:
+      postiz-postgres:
+        condition: service_healthy
+      postiz-redis:
+        condition: service_healthy
+      temporal:
+        condition: service_healthy
+    logging: *logging
+
+  postiz-postgres:
+    image: postgres:17-alpine
+    container_name: postiz-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postiz
+      POSTGRES_PASSWORD: ${POSTIZ_DB_PASSWORD}
+      POSTGRES_DB: postiz
+    volumes:
+      - postiz-postgres:/var/lib/postgresql/data
+    networks: [postiz]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postiz -d postiz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    logging: *logging
+
+  postiz-redis:
+    image: redis:7.2
+    container_name: postiz-redis
+    restart: unless-stopped
+    volumes:
+      - postiz-redis:/data
+    networks: [postiz]
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep -q PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    logging: *logging
+
+  temporal-elasticsearch:
+    image: elasticsearch:7.17.27
+    container_name: postiz-temporal-elasticsearch
+    restart: unless-stopped
+    environment:
+      - cluster.routing.allocation.disk.threshold_enabled=true
+      - cluster.routing.allocation.disk.watermark.low=512mb
+      - cluster.routing.allocation.disk.watermark.high=256mb
+      - cluster.routing.allocation.disk.watermark.flood_stage=128mb
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms256m -Xmx256m
+      - xpack.security.enabled=false
+    volumes:
+      - temporal-elasticsearch:/usr/share/elasticsearch/data
+    networks: [temporal]
+    mem_limit: 1g
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS \"http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=5s\" || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+    logging: *logging
+
+  temporal-postgresql:
+    image: postgres:16
+    container_name: postiz-temporal-postgresql
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: temporal
+      POSTGRES_PASSWORD: ${TEMPORAL_DB_PASSWORD:?set TEMPORAL_DB_PASSWORD}
+    volumes:
+      - temporal-postgres:/var/lib/postgresql/data
+    networks: [temporal]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U temporal"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    logging: *logging
+
+  temporal:
+    image: temporalio/auto-setup:1.28.1
+    container_name: postiz-temporal
+    restart: unless-stopped
+    environment:
+      - DB=postgres12
+      - DB_PORT=5432
+      - POSTGRES_USER=temporal
+      - POSTGRES_PWD=${TEMPORAL_DB_PASSWORD}
+      - POSTGRES_SEEDS=temporal-postgresql
+      - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development-sql.yaml
+      - ENABLE_ES=true
+      - ES_SEEDS=temporal-elasticsearch
+      - ES_VERSION=v7
+      - TEMPORAL_NAMESPACE=default
+    volumes:
+      - ./temporal:/etc/temporal/config/dynamicconfig:ro
+    networks: [temporal]
+    healthcheck:
+      test: ["CMD", "temporal", "operator", "cluster", "health", "--address", "temporal:7233"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    depends_on:
+      temporal-postgresql:
+        condition: service_healthy
+      temporal-elasticsearch:
+        condition: service_healthy
+    logging: *logging
+
+  # Tunnel connector for postiz.ol1n.com. See cloudflared/config.yml.example.
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: postiz-cloudflared
+    restart: unless-stopped
+    command: tunnel --no-autoupdate --config /etc/cloudflared/config.yml run
+    volumes:
+      - ./cloudflared:/etc/cloudflared:ro
+    networks: [postiz]
+    depends_on: [postiz]
+    logging: *logging
+
+  # docker compose --profile debug up -d temporal-ui  →  ssh -L 8233:127.0.0.1:8233
+  temporal-ui:
+    profiles: [debug]
+    image: temporalio/ui:2.34.0
+    container_name: postiz-temporal-ui
+    environment:
+      - TEMPORAL_ADDRESS=temporal:7233
+    ports:
+      # Not 8080: the AiStack gateway owns it on the Spark.
+      - "127.0.0.1:8233:8080"
+    networks: [temporal]
+    depends_on: [temporal]
+
+volumes:
+  postiz-config:
+  postiz-uploads:
+  postiz-postgres:
+  postiz-redis:
+  temporal-postgres:
+  temporal-elasticsearch:
+
+networks:
+  postiz:
+  temporal:

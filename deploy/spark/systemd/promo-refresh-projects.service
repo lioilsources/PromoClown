@@ -1,0 +1,11 @@
+[Unit]
+Description=PromoClown: regenerate PROJECTS.md in the OpenClaw workspace
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+EnvironmentFile=%h/.config/promoclown/promo.env
+# Write to a temp file first so the agent never reads a half-written file.
+# $$ is a literal $ for the shell (systemd expands $VAR itself).
+ExecStart=/bin/sh -c 'set -e; out=%h/.openclaw/workspace/PROJECTS.md; %h/.local/bin/promo projects list --md > "$$out.tmp"; mv "$$out.tmp" "$$out"'

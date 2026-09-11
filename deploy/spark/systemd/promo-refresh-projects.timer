@@ -1,0 +1,10 @@
+[Unit]
+Description=PromoClown: refresh PROJECTS.md nightly
+
+[Timer]
+OnCalendar=*-*-* 03:00:00
+RandomizedDelaySec=5min
+Persistent=true
+
+[Install]
+WantedBy=timers.target

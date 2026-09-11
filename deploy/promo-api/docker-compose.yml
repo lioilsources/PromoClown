@@ -1,0 +1,36 @@
+# promo-api on JODA: SQLite store, HTTP API for the agent, Telegram approval
+# bot and the Postiz publisher — one small Go container (~20 MB RAM).
+#
+#   make deploy-promo-api        # cross-compiles, syncs this directory, starts it
+#   docker compose exec promo-api promo-api check
+#
+# Deliberately NOT on the Spark: the admin token and the approval bot token
+# live only here, on a machine the agent has no shell on.
+name: promoclown
+
+services:
+  promo-api:
+    # bin/promo-api is put here by deploy.sh; see Dockerfile.
+    build:
+      context: .
+    image: promoclown/promo-api:latest
+    container_name: promo-api
+    restart: unless-stopped
+    # oli; the data directory must be owned by the same uid.
+    user: "1000:1000"
+    env_file: .env
+    environment:
+      PROMO_DATA_DIR: /data
+    volumes:
+      # Snap Docker only sees $HOME and /media on JODA; ./data is under $HOME.
+      - ${PROMO_DATA_DIR:-./data}:/data
+    ports:
+      # LAN only. Snap Docker publishes around ufw, so the bind address is the
+      # actual restriction. The Spark agent calls http://192.168.88.88:8094.
+      - "${PROMO_BIND:-192.168.88.88}:8094:8094"
+    mem_limit: 256m
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"

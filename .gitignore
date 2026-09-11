@@ -1,0 +1,11 @@
+/bin/
+/data/
+*.db
+*.db-shm
+*.db-wal
+.env
+deploy/promo-api/bin/
+deploy/promo-api/data/
+deploy/postiz/cloudflared/config.yml
+deploy/postiz/cloudflared/*.json
+.DS_Store

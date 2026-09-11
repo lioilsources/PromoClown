@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# Fetch reviews, comments and mentions from every configured monitor and import
+# them into promo-api. Idempotent: promo-api ignores items it already has, so
+# the overlapping --since window only costs a few API calls.
+#
+# Monitors without credentials print [] and exit 0. A monitor that fails part
+# way still prints what it fetched, so that is imported before the failure is
+# counted.
+set -uo pipefail
+
+since=${PROMO_INGEST_SINCE:-48h}
+failures=0
+
+ingest() { # ingest <reviews|mentions> <monitor command...>
+    local kind=$1
+    shift
+    local out rc
+    out=$("$@")
+    rc=$?
+    if [ -n "$out" ] && ! printf '%s' "$out" | promo "$kind" import >/dev/null; then
+        echo "promo-ingest: importing output of '$*' failed" >&2
+        failures=$((failures + 1))
+    fi
+    if [ $rc -ne 0 ]; then
+        echo "promo-ingest: '$*' exited $rc" >&2
+        failures=$((failures + 1))
+    fi
+}
+
+ingest reviews store-reviews fetch --since "$since"
+ingest mentions youtube-comments fetch --since "$since"
+ingest mentions bluesky-mentions fetch --since "$since"
+ingest mentions reddit-monitor inbox --since "$since"
+
+if [ "$failures" -gt 0 ]; then
+    echo "promo-ingest: $failures problem(s)" >&2
+    exit 1
+fi

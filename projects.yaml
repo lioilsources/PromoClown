@@ -1,0 +1,94 @@
+# Seed for promo-api: promo projects import projects.yaml (admin token).
+#
+# Only facts found in the app repositories (2026-09-11). Apps that are not
+# publicly available are "paused": the agent does not promote them. Flip one to
+# "active" and add its store link when it goes live, then import again.
+
+projects:
+  - slug: kirian
+    name: "Kirian: Space Shooter"
+    status: active
+    tagline: Roguelike arcade shmup — a 2D vertical-scrolling space shooter with a roguelike loop.
+    audience: Shoot 'em up and retro arcade fans on iPhone and iPad.
+    tags: [shmup, roguelike, arcade, indie game, flutter]
+    store_ios_url: https://apps.apple.com/us/app/kirian/id6774868017
+    ios_app_id: "6774868017"
+    # Android is in closed testing: a public Play link would not open yet.
+    android_package: com.ol1n.kiran
+    website_url: https://lioilsources.github.io/Kiran/
+    assets_dir: kirian
+    hooks:
+      - 18 sectors, 12 enemy types and 8 weapons, with a roguelike loop between runs.
+      - Local Wi-Fi co-op for two players on the couch.
+      - Free with no ads; 14 ship skins, some of them $0.99 each.
+      - Game Center leaderboards and game controller support.
+    forbidden_claims:
+      - on Google Play
+      - available on Android
+      - on Steam
+      - online multiplayer
+      - pay to win
+
+  - slug: doggiowars
+    name: DoggioWars
+    status: active
+    tagline: You are the fighter plane — an aerial dogfight arena among floating voxel islands, a standalone Luanti game.
+    audience: Luanti (Minetest) players and fans of arcade flight combat and voxel games.
+    tags: [luanti, minetest, voxel, dogfight, open source]
+    website_url: https://content.luanti.org/packages/lioilsources/doggiowars_game/
+    assets_dir: doggiowars
+    hooks:
+      - 12 floating-island biomes, and the islands are destructible.
+      - Dragons and sky whales share the sky with you.
+      - Plays with a gamepad.
+      - Twitch chat can join the fight.
+    forbidden_claims:
+      - on Roblox
+      - on Steam
+      - mobile app
+
+  - slug: lexify
+    name: Lexify
+    status: paused # submitted to App Review; Play upload staged
+    tagline: Picture flashcards in 17 languages. Swipe to learn, works offline.
+    tags: [education, language learning, flashcards]
+    android_package: com.ol1n.duolingoCards
+    website_url: https://lioilsources.github.io/DuolingoCards/
+    assets_dir: lexify
+    forbidden_claims:
+      - Duolingo
+      - official
+
+  - slug: puff
+    name: "Puff: Pressure Blast"
+    status: paused # TestFlight
+    tagline: "Minimalist neon physics toy: hold to charge a pressure cloud, drag it, release to shatter the geometry."
+    tags: [arcade, physics, casual game]
+    android_package: com.ol1n.puff
+    website_url: https://lioilsources.github.io/puff/
+    assets_dir: puff
+
+  - slug: poetrystream
+    name: Poesie Simona Clinae
+    status: paused # Google Play internal track / TestFlight
+    tagline: A meditative app that streams Czech poetry with animated verse display.
+    audience: Czech readers of poetry.
+    tags: [poetry, czech, reading]
+    android_package: com.ol1n.PoetryStreamSC
+    assets_dir: poetrystream
+
+  - slug: swypekids
+    name: Swype Kids
+    status: paused # TestFlight
+    tagline: Learning game for children aged 5–9 — letters and syllables by swiping across an emoji keyboard.
+    tags: [kids, education, czech]
+    android_package: com.ol1n.SwypeKids
+    assets_dir: swypekids
+
+  - slug: orbitron-tactics
+    name: Orbitron Tactics
+    status: paused # 0.4.0-alpha
+    tagline: A two-player strategic chess variant with power fields and real-time multiplayer.
+    tags: [strategy, board game, multiplayer]
+    android_package: com.ol1n.orbitronTactics
+    assets_dir: orbitron-tactics
