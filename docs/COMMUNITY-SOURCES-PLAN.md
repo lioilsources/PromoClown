@@ -101,9 +101,105 @@ Komunity: `lemmy.world/c/games`, `/c/indiegaming`, `feddit.org` (DE),
 **Threads** (Meta) — Postiz provider existuje; API pro publikování a čtení
 odpovědí vyžaduje Meta app review (neověřeno, jak dlouho). Odložit.
 
-**Telegram kanál** (vlastní, veřejný) — Postiz provider `telegram`;
-oznámení vydání. Zdarma, 0,5 h. Smysl hlavně pro CZ/SK a rusky mluvící
-publikum, kde je Telegram silný.
+**Telegram** — vlastní kanál + diskusní skupina, viz §3b.
+
+## 3b. Messaging platformy: Telegram, WeChat, LINE / KakaoTalk / WhatsApp
+
+Messaging aplikace mají společný rys: **žádné veřejné vyhledávání obsahu**
+a skupiny jsou za pozvánkou. Fungují jako vlastní prostor (kanál, který si
+lidé odebírají), ne jako místo, kde se hledají noví hráči.
+
+### Telegram (ověřeno: Bot API, Postiz `telegram.provider.ts`)
+
+Jak funguje:
+- Soukromé chaty, **skupiny** (do 200 000 členů), **kanály** (jednosměrné
+  vysílání, neomezený počet odběratelů), **boti**. Veřejné skupiny a kanály
+  mají `@username` a jdou najít v globálním hledání klienta — podle názvu,
+  ne podle obsahu zpráv. Oficiální discovery API neexistuje; katalogy
+  (tgstat apod.) jsou třetí strany.
+- **Bot** se do skupiny/kanálu nepřidá sám — přidá ho admin. V kanálu musí
+  být admin s právem *Post messages*. Ve skupině čte všechny zprávy jen
+  s vypnutým privacy mode (`/setprivacy` → Disable) nebo jako admin. Cizí
+  skupiny = stejný problém jako u Discordu.
+- **Userbot** (vlastní účet přes MTProto, `api_id`/`api_hash`): na rozdíl
+  od Discordu Telegram klienty třetích stran povoluje, ale API podmínky
+  zakazují spam a hromadné zprávy; čtení veřejných skupin pod vlastním
+  účtem je šedá zóna. Kdyby vůbec, tak jen čtení, nikdy psaní. Neověřeno
+  do detailu → §9. Ve v1 ne.
+- **Postiz provider**: používá vlastní bot token `TELEGRAM_TOKEN`
+  (Postiz sám volá `getUpdates` → musí to být **samostatný bot**, token
+  smí pollovat jen jeden proces). Bota přidáš jako admina do kanálu,
+  Postiz ověří `getChatMember`, posílá text / foto / video / album
+  (`sendMessage`, `sendPhoto`, `sendVideo`, `sendMediaGroup`) a umí
+  komentář jako reply.
+
+Bot inventář po rozšíření (každý má svého jediného pollera):
+`@ol1n_promo_bot` (agent, OpenClaw) · `@ol1n_promo_approve_bot` (promo-api)
+· `ol1n_postiz_bot` (Postiz, publikace) · `ol1n_community_bot`
+(monitor diskusní skupiny).
+
+Plán (≈ 0,5 dne + založení):
+1. ✋ Založit veřejný kanál (např. `@ol1n_games`) a k němu navázanou
+   diskusní skupinu (Telegram ji k kanálu připojí — každý post kanálu má
+   pod sebou komentáře). Odkaz do App Store popisku, README, YouTube.
+2. ✋ BotFather: `ol1n_postiz_bot` (admin kanálu, Post messages) a
+   `ol1n_community_bot` (člen diskusní skupiny, privacy mode Disable,
+   skupiny povolené — na rozdíl od ostatních dvou).
+3. Postiz: `TELEGRAM_TOKEN` do `deploy/postiz/.env`, připojit kanál v UI.
+   promo-api: platforma `telegram` (limit 4 096 znaků, u zprávy s médiem
+   1 024 znaků caption), settings `__type: telegram`. Pravidlo: jen
+   release notes a nová videa, max 1/den; text může být CZ i EN naráz.
+4. `telegram-monitor fetch --since 48h`: Bot API `getUpdates` pod
+   `ol1n_community_bot` s vlastním offset souborem (stejně jako approval
+   bot), přeskočit vlastní boty; `Mention{platform:"telegram",
+   kind:"message", external_id: "<chat>/<message_id>", url:
+   https://t.me/c/<chat bez -100>/<message_id>, context: název skupiny}`.
+   Telegram drží nedoručené updaty 24 h — heartbeat běží po 15 min,
+   stačí. Do `promo-ingest` a HEARTBEAT checklistu.
+5. Cizí kanály a skupiny: objevování nových hráčů = placené posty
+   u adminů nebo Telegram Ads — mimo v1. Ručně jen tam, kde skupina
+   promo dovoluje.
+
+Dosah: Telegram je silný v Brazílii, Rusku/CIS, Íránu, Indii, Indonésii,
+na Ukrajině; v CZ/SK spíš tech publikum. Tsumiki už na Telegramu jako
+Mini App žije — kanál je pro ni logické místo, Kirian/DoggioWars tam
+dostanou release notes.
+
+### WeChat — verdikt: **skip** (neověřené jen přesné aktuální podmínky)
+
+Jak funguje: uzavřený ekosystém. **Skupiny** (max 500 členů) jen přes
+pozvánku/QR, žádné veřejné hledání, žádní boti — automatizace skupin přes
+neoficiální klienty končí banem účtu. Veřejný obsah = **Official
+Accounts** (公众号: subscription/service), **Channels** (视频号, video)
+a **Mini Programs**.
+
+Proč to pro nás nedává smysl:
+1. **Registrace**: Official Account si fyzická osoba založí jen s čínským
+   občanským průkazem; zahraniční subjekt jen jako **firma** s obchodní
+   registrací a ověřovacím poplatkem (řádově 99 USD, týdny). Jako
+   jednotlivec z ČR to nejde. API existuje jen pro publikaci na vlastním
+   OA, žádné čtení cizího obsahu.
+2. **Trh**: Kirian má IAP → v čínském App Store by potřeboval herní
+   licenci (版号), pro zahraničního sólo vývojáře nedosažitelnou; čínští
+   hráči by museli mít zahraniční Apple ID. WeChat by vedl lidi tam, kde
+   nemůžou koupit.
+3. **Monitoring** není možný vůbec.
+
+Kdyby někdy Čína: **TapTap Global** (mimo pevninskou Čínu, indie
+friendly) je jediná realistická cesta; Bilibili/Douyin vyžadují čínský
+telefon/ID nebo firmu. Do §9 jen pro případ, že by vznikla firma.
+
+### LINE, KakaoTalk, WhatsApp (krátce, neověřeno)
+
+| Platforma | Kde | Vlastní prostor | Komunity | Verdikt |
+|---|---|---|---|---|
+| LINE | JP, TW, TH | Official Account + Messaging API (push odběratelům, opt-in) | OpenChat bez bot API | až budou japonští hráči; OA prý jde založit i jako jednotlivec — ověřit |
+| KakaoTalk | KR | Kakao Channel (ověřený vyžaduje korejskou firmu) | Open Chat bez API | ručně |
+| WhatsApp | BR, Afrika, IN | Channels (broadcast; API pro postování neověřené), Business Cloud API jen opt-in konverzace | skupiny bez automatizace | ručně přes lidi v komunitě |
+
+Společné: všechny jsou opt-in vysílání stávajícím hráčům, ne akvizice.
+Pořadí: Telegram hned (infrastruktura botů už stojí), LINE až s japonskou
+verzí postů na X, ostatní ne.
 
 ## 4. Regionální komunity — verdikty (**neověřeno**, viz §9)
 
@@ -162,14 +258,17 @@ dřív, než poběží týden základní provoz.
    a seznam subredditů pro weekly-plan) — hned.
 2. **Japonské posty na X** (0 kódu; pravidlo „u shmupu vždy JP varianta")
    — hned, po připojení X.
-3. **Mastodon** post + `mastodon-mentions` + hashtag monitor (~0,5 dne).
-4. **Vlastní Discord** + `discord-monitor` (~1 den + tvoje založení serveru).
-5. **Lemmy** post + `lemmy-monitor` (~0,5 dne, sdílí kód s Redditem).
-6. **ContentDB monitor** pro DoggioWars (~0,5 dne, ověřit API).
-7. **Naver Search monitor** (~0,5 dne, registrace na developers.naver.com).
-8. Telegram kanál přes Postiz (0,5 h) — pokud chceš CZ/SK oznámení.
+3. **Telegram kanál + diskusní skupina** + `telegram-monitor` (~0,5 dne;
+   Bot API kód už v repu je).
+4. **Mastodon** post + `mastodon-mentions` + hashtag monitor (~0,5 dne).
+5. **Vlastní Discord** + `discord-monitor` (~1 den + tvoje založení serveru).
+6. **Lemmy** post + `lemmy-monitor` (~0,5 dne, sdílí kód s Redditem).
+7. **ContentDB monitor** pro DoggioWars (~0,5 dne, ověřit API).
+8. **Naver Search monitor** (~0,5 dne, registrace na developers.naver.com).
+9. LINE Official Account — až s japonskou lokalizací.
 
-Vše ostatní = ruční s podporou agenta (připraví a přeloží text).
+Vše ostatní (WeChat, KakaoTalk, WhatsApp, fóra bez API) = ruční
+s podporou agenta (připraví a přeloží text), nebo skip.
 
 ## 7. Co se změní v kódu (společné pro 3–7)
 
@@ -187,6 +286,9 @@ Vše ostatní = ruční s podporou agenta (připraví a přeloží text).
 
 ## 8. Co musí udělat Ol1n (nejde automatizovat)
 
+- Telegram: veřejný kanál + diskusní skupina, dva další boti u BotFathera
+  (`ol1n_postiz_bot` admin kanálu, `ol1n_community_bot` ve skupině
+  s vypnutým privacy mode).
 - Discord: server, aplikace + bot, intent, pozvat bota.
 - Mastodon: založit účet na zvolené instanci (doporučení: `mastodon.social`
   nebo `mastodon.gamedev.place` pro indie dev — ověřit, že existuje).
@@ -209,3 +311,11 @@ Vše ostatní = ruční s podporou agenta (připraví a přeloží text).
   jejich pravidla pro propagaci.
 - Lemmy: pravidla `/c/indiegaming` a `/c/games` k self-promo.
 - Threads API: stav app review pro malé vývojáře.
+- Telegram: aktuální API ToS k userbotům (čtení veřejných skupin pod
+  vlastním účtem); podmínky Telegram Ads; limity kanálu (`t.me/c/…` URL
+  formát pro supergroup s navázaným kanálem).
+- WeChat: aktuální podmínky registrace Official Account pro zahraniční
+  firmu (jen kdyby vznikla s.r.o.); TapTap Global podmínky pro indie.
+- LINE Official Account: může ho založit jednotlivec mimo Japonsko?
+  Messaging API limity free plánu.
+- WhatsApp Channels: existuje API pro publikaci do kanálu?
