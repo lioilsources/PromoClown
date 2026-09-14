@@ -38,7 +38,17 @@ Pořadí odpovídá plánu (§9) s úpravami z README („Odchylky od plánu").
     joda$ cloudflared tunnel create postiz              # vypíše UUID, zapíše ~/.cloudflared/<UUID>.json
     joda$ cloudflared tunnel route dns postiz postiz.ol1n.com
     ```
-    Zero Trust → Access → Applications → Self-hosted `postiz.ol1n.com`, policy *Allow* = tvůj e-mail. Přidej *Bypass* pro cestu `/uploads/*` — Postiz si při publikaci stahuje vlastní média přes veřejnou URL a za Access by dostal login stránku.
+    Hotovo 2026-09-14: tunel `postiz` = `a26613b2-38d2-4fe6-b6b9-268b54babf9b`.
+    **Past:** pro `postiz.ol1n.com` už existoval starý CNAME na tunel `media_network`;
+    `route dns` (i s `-f`) ho nepřepíše, jen hlásí „already configured … tunnelID=46b3669e".
+    Řešení: v dashboardu (DNS → záznam `postiz`) smazat nebo přepsat cíl na
+    `a26613b2-38d2-4fe6-b6b9-268b54babf9b.cfargotunnel.com`; token v `~/.cloudflare/api.env`
+    na Macu má jen Access práva, DNS ne.
+
+    Access aplikace jsou založené přes API (2026-09-14): `postiz.ol1n.com` s policy
+    *owner-sso* (allow, e-maily zkopírované z aplikace `finetune`) a `postiz.ol1n.com/uploads`
+    s policy *bypass everyone* — Postiz si při publikaci stahuje vlastní média přes veřejnou
+    URL a za Access by dostal login stránku. Ručně: Zero Trust → Access → Applications.
 
 ## Fáze A — Spark: model, OpenClaw, Telegram
 
@@ -71,11 +81,25 @@ spark$ docker stats --no-stream --format '{{.MemUsage}}\t{{.Name}}' | sort -h | 
 spark$ ps -eo rss,comm --sort=-rss | head -5                      # host procesy (ComfyUI apod.)
 ```
 
+**Stav 2026-09-14:** `vllm/vllm-openai:v0.20.0` model nenačte
+(`KeyError: 'layers.0.mlp.experts.w2_input_scale'` — starý loader nezná NVFP4 MoE
+škály), proto je v `.env` `AGENT_VLLM_VERSION=latest` (image 22 GB; pull na Sparku jede
+~1 MB/s, počítej s hodinami). Do té doby je LiteLLM route `openclaw-default` **dočasně**
+přesměrovaná na `swarm-nano` (Nemotron-3-Nano-30B-A3B, tool calling ověřený) — původní
+blok je v `deploy/litellm_config.yaml.bak-openclaw-default`. Přepnutí zpět:
+
 ```bash
-spark$ docker compose --env-file .env -f deploy/docker-compose.agent.yaml up -d
+spark$ cd ~/deploy/AiStack && export ENV="env $(grep -v '^#' .env | xargs)"   # compose bez env vars selže na prázdném CACHE_AGENT
+spark$ $ENV docker compose --env-file .env -f deploy/docker-compose.swarm.yaml stop swarm-nano   # uvolní ~38 GB
+spark$ $ENV docker compose --env-file .env -f deploy/docker-compose.agent.yaml up -d
 spark$ docker logs -f qwen36-agent          # čekej na "Application startup complete" (až ~15 min)
 spark$ curl -s localhost:8040/v1/models
+spark$ python3 - <<'PY'   # openclaw-default zpět na qwen36-agent
+import re,p; p="/home/ol1n/deploy/AiStack/deploy/litellm_config.yaml"; s=open(p).read()
+s=s.replace("model: openai/swarm-nano","model: openai/qwen36-agent").replace("http://swarm-nano:8000/v1","http://qwen36-agent:8000/v1"); open(p,"w").write(s)
+PY
 spark$ docker restart litellm               # načte route openclaw-default (pár vteřin výpadek LLM API)
+spark$ openclaw config set models.providers.litellm.models[0].contextWindow 65536 --strict-json   # swarm-nano měl 32768
 spark$ curl -s localhost:8080/v1/chat/completions -H 'Content-Type: application/json' -d '{
   "model": "openclaw-default",
   "messages": [{"role": "user", "content": "Jaké je počasí v Praze?"}],
@@ -95,20 +119,34 @@ Instalátor si nejdřív přečti (invariant: nic neinstalovat bez přečtení k
 spark$ curl -fsSL --proto '=https' --tlsv1.2 https://openclaw.ai/install-cli.sh -o /tmp/openclaw-install.sh && less /tmp/openclaw-install.sh
 spark$ bash /tmp/openclaw-install.sh
 spark$ echo 'export PATH="$HOME/.local/bin:$HOME/.openclaw/bin:$PATH"' >> ~/.bashrc && . ~/.bashrc
-spark$ openclaw --version
-spark$ openclaw setup --baseline            # základní config a workspace bez wizardu
+spark$ openclaw --version                   # 2026-09-14: 2026.9.4, Node 24.19.0 v ~/.openclaw/tools
 
 mac$   make deploy-spark                    # CLI, skills, workspace, units, šablony (bez tajemství)
+spark$ nano ~/.config/promoclown/openclaw.env          # TELEGRAM_AGENT_BOT_TOKEN, TELEGRAM_OWNER_ID (OPENCLAW_GATEWAY_TOKEN vygeneruje deploy)
 
-spark$ nano ~/.config/promoclown/openclaw.env          # OPENCLAW_GATEWAY_TOKEN, TELEGRAM_AGENT_BOT_TOKEN, TELEGRAM_OWNER_ID
-spark$ cp ~/.config/promoclown/openclaw.json5.example ~/.openclaw/openclaw.json
+# Config se NEKOPÍRUJE ze šablony: `openclaw setup --baseline` založí soubor a pak se
+# doplňuje přes `config patch` (JSON5, rekurzivní merge, validace proti schématu).
+# `${VAR}` v patchi je SecretRef — ověřuje se při zápisu, proto musí být env načtené.
+spark$ openclaw setup --baseline --workspace ~/.openclaw/workspace   # nekombinovat s --skip-bootstrap; naše workspace soubory nechá
 spark$ set -a; . ~/.config/promoclown/openclaw.env; . ~/.config/promoclown/promo.env; set +a
-spark$ openclaw doctor                                  # config proti nainstalované verzi; klíče se mezi verzemi mění
+spark$ for p in ~/.config/promoclown/openclaw-patches/*.json5; do openclaw config patch --file "$p" --dry-run && openclaw config patch --file "$p"; done
+spark$ openclaw config validate
+
+# gateway install: env musí být načtené (SecretRef) a adresář
+# ~/.config/systemd/user/openclaw-gateway.service.d NESMÍ existovat dřív než jednotka
+# („Managed service artifacts changed during publication"). deploy-spark ho vytváří,
+# proto ho na chvíli odsuň.
+spark$ mv ~/.config/systemd/user/openclaw-gateway.service.d /tmp/ocg.d
 spark$ openclaw gateway install --port 18789 --runtime node
+spark$ mv /tmp/ocg.d ~/.config/systemd/user/openclaw-gateway.service.d
 spark$ systemctl --user daemon-reload && systemctl --user restart openclaw-gateway
-spark$ systemctl --user cat openclaw-gateway | grep -E 'EnvironmentFile|PATH'   # drop-in promoclown.conf platí
+spark$ systemctl --user cat openclaw-gateway | grep -E 'EnvironmentFile|PATH'   # drop-in jen EnvironmentFile; PATH z jednotky obsahuje ~/.local/bin
 spark$ ss -ltnp | grep 18789                            # jen 127.0.0.1:18789
+spark$ openclaw doctor                                  # bez „PATH missing required dirs"
 ```
+
+Rychlý test bez Telegramu (embedded běh, volá nástroje):
+`spark$ openclaw agent --local -m "Vypiš soubory ve svém workspace a stručně řekni, co dělá HEARTBEAT.md."`
 
 Linger je na Sparku zapnutý (`loginctl show-user ol1n -p Linger` → `yes`), služba přežije odhlášení.
 
@@ -178,7 +216,13 @@ spark$ nano ~/deploy/PromoClown/deploy/postiz/.env                    # secrets 
 spark$ nano ~/deploy/PromoClown/deploy/postiz/cloudflared/config.yml  # UUID tunelu
 mac$   make deploy-postiz POSTIZ_HOST=spark
 spark$ docker compose -f ~/deploy/PromoClown/deploy/postiz/docker-compose.yml ps   # za 2–3 min vše healthy
+spark$ docker logs postiz-cloudflared 2>&1 | grep -c "Registered tunnel connection"   # 4
 ```
+
+Hotovo 2026-09-14 (všechny kontejnery healthy, LAN `http://192.168.88.66:4007`).
+`credentials.json` musí být 0644 — cloudflared image běží jako uid 65532 a s 0600
+souborem se konektor točí v restartu (`permission denied`); `deploy.sh` to už nastavuje.
+Veřejná URL závisí na opravě DNS záznamu (fáze E bod 10).
 
 Pak:
 
@@ -205,8 +249,16 @@ spark$ promo projects list
 spark$ promo posts approve 1; echo "exit $? (má být 2: not allowed)"
 spark$ promo-ingest && promo reviews pending && promo mentions pending
 spark$ ~/.config/promoclown/setup-openclaw.sh    # exec allowlist, heartbeat checklist, weekly-plan + daily-digest
+spark$ set -a; . ~/.config/promoclown/openclaw.env; set +a   # cron/approvals příkazy potřebují OPENCLAW_GATEWAY_TOKEN v env
 spark$ openclaw skills list
+spark$ openclaw cron list --all                  # Heartbeat (main) every 15m, promo weekly-plan, promo daily-digest
 ```
+
+Hotovo 2026-09-14: allowlist 6 binárek, heartbeat 15 min (07:30–22:30, → Telegram),
+checklist z HEARTBEAT.md ve scratch heartbeat jobu (`openclaw cron scratch <id>`),
+cron `promo weekly-plan` (Po 08:00) a `promo daily-digest` (19:00).
+`openclaw doctor --fix` zastaví gateway a ne vždy ho nastartuje; skript ho proto před
+`cron add` restartuje.
 
 První reálný post (plán §9 bod 5), ručně nebo přes agenta („navrhni jeden Bluesky post pro Kirian"):
 

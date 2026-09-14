@@ -29,8 +29,9 @@ rsync -a --delete "$repo/skills/" "$host:.openclaw/skills/promoclown/"
 echo "==> workspace files → ~/.openclaw/workspace"
 rsync -a "$repo/workspace/" "$host:.openclaw/workspace/"
 
-echo "==> cron prompts, setup script, env templates → ~/.config/promoclown"
+echo "==> cron prompts, config patches, setup script, env templates → ~/.config/promoclown"
 rsync -a --delete "$spark/cron/" "$host:.config/promoclown/cron/"
+rsync -a --delete "$spark/openclaw-patches/" "$host:.config/promoclown/openclaw-patches/"
 rsync -a "$spark/setup-openclaw.sh" "$spark/promo.env.example" "$spark/openclaw.env.example" \
     "$spark/openclaw.json5.example" "$host:.config/promoclown/"
 
@@ -49,6 +50,11 @@ for f in promo.env openclaw.env; do
     fi
     chmod 600 "$cfg/$f"
 done
+# The gateway token never needs to be typed by anyone; generate it on first deploy.
+if grep -q '^OPENCLAW_GATEWAY_TOKEN=$' "$cfg/openclaw.env"; then
+    sed -i "s/^OPENCLAW_GATEWAY_TOKEN=$/OPENCLAW_GATEWAY_TOKEN=$(openssl rand -hex 32)/" "$cfg/openclaw.env"
+    echo "generated OPENCLAW_GATEWAY_TOKEN in $cfg/openclaw.env"
+fi
 chmod +x "$cfg/setup-openclaw.sh"
 
 # First-run ritual of a fresh workspace; ours arrives configured.

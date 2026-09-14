@@ -1,0 +1,18 @@
+// Heartbeat: HEARTBEAT.md is not read at runtime; setup-openclaw.sh loads it
+// into the heartbeat job's scratch via `openclaw doctor --fix`. A run that
+// finds nothing replies NO_REPLY and nothing is delivered.
+{
+  agents: {
+    defaults: {
+      heartbeat: {
+        every: "15m",
+        target: "telegram",
+        to: "${TELEGRAM_OWNER_ID}",
+        activeHours: { start: "07:30", end: "22:30", timezone: "Europe/Prague" },
+        lightContext: true,
+        isolatedSession: true,
+        timeoutSeconds: 300,
+      },
+    },
+  },
+}

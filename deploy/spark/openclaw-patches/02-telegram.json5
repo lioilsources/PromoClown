@@ -1,0 +1,16 @@
+// Telegram channel for the AGENT bot (@ol1n_promo_bot). The approval bot is a
+// different bot polled by promo-api on JODA; one token cannot have two pollers.
+{
+  channels: {
+    telegram: {
+      enabled: true,
+      botToken: "${TELEGRAM_AGENT_BOT_TOKEN}",
+      dmPolicy: "allowlist",
+      allowFrom: ["${TELEGRAM_OWNER_ID}"],
+      groupPolicy: "disabled",
+    },
+  },
+  commands: {
+    ownerAllowFrom: ["telegram:${TELEGRAM_OWNER_ID}"],
+  },
+}

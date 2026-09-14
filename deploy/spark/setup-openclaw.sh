@@ -26,8 +26,14 @@ done
 
 echo "==> heartbeat checklist"
 # HEARTBEAT.md is no longer read at runtime; doctor --fix moves it into the
-# heartbeat job's scratch.
-openclaw doctor --fix
+# heartbeat job's scratch. Doctor stops the managed gateway while it repairs
+# and does not always start it again, and `cron add` needs the gateway up.
+openclaw doctor --fix || echo "    doctor reported problems; check its output above"
+systemctl --user restart openclaw-gateway.service
+for _ in $(seq 1 30); do
+    openclaw gateway status >/dev/null 2>&1 && break
+    sleep 2
+done
 
 echo "==> cron jobs"
 existing=$(openclaw cron list --all 2>/dev/null || true)

@@ -1,0 +1,52 @@
+// Applied with: openclaw config patch --file <this file>   (env from
+// ~/.config/promoclown/openclaw.env must be exported: ${VAR} is validated on write).
+// Order matters only for readability; each patch is a recursive merge.
+{
+  models: {
+    mode: "merge",
+    providers: {
+      litellm: {
+        // AiStack gateway on the host → LiteLLM → vLLM. LiteLLM's own :4000 is
+        // not published to the host.
+        baseUrl: "http://127.0.0.1:8080/v1",
+        apiKey: "dummy",
+        api: "openai-completions",
+        timeoutSeconds: 300,
+        models: [
+          {
+            id: "openclaw-default",
+            name: "PromoClown agent (via LiteLLM)",
+            reasoning: true,
+            input: ["text"],
+            // 32768 while openclaw-default is routed to swarm-nano; 65536 once
+            // it points at qwen36-agent (vLLM --max-model-len).
+            contextWindow: 32768,
+            maxTokens: 4096,
+          },
+        ],
+      },
+    },
+  },
+  agents: {
+    defaults: {
+      model: { primary: "litellm/openclaw-default" },
+      // Thinking is switched off in the LiteLLM route (chat_template_kwargs).
+      thinkingDefault: "off",
+      userTimezone: "Europe/Prague",
+    },
+  },
+  // Loopback only. Web UI from the Mac: ssh -L 18789:127.0.0.1:18789 spark
+  gateway: {
+    port: 18789,
+    bind: "loopback",
+    auth: { mode: "token", token: "${OPENCLAW_GATEWAY_TOKEN}" },
+  },
+  tools: {
+    profile: "coding",
+    // No web, browser, screen or remote nodes: the agent works from promo data only.
+    deny: ["group:web", "group:ui", "group:nodes"],
+    // Shell runs only binaries on the approvals allowlist (setup-openclaw.sh
+    // adds the PromoClown CLIs); everything else is silently denied.
+    exec: { host: "gateway", mode: "allowlist" },
+  },
+}
