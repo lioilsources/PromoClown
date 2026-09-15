@@ -31,10 +31,20 @@ If `promo posts draft` exits with status 2, it lists every rule the draft breaks
 
 ## Tools
 
-All tools are local CLIs on PATH. Their skills explain the details. Call
-them by their plain name (`promo-ingest`, not `PATH=... promo-ingest` or any
-other custom `PATH`/`env` on the exec call) — a custom PATH is blocked
-outright as a security violation and wastes the whole turn retrying.
+All tools are local CLIs on PATH. Their skills explain the details. The exec
+tool runs the binary directly, not through a shell, so call it plainly —
+`promo-ingest`, `promo reviews new` — with nothing else added:
+
+- No custom `PATH`/`env` on the call (`PATH=... promo-ingest`) — blocked
+  outright as a security violation.
+- No shell syntax: no `2>&1`, `>`, `|`, `;`, `&&`, `$(...)`, quoting tricks.
+  Redirection and chaining aren't binary arguments, so the exec tool can't
+  match the call against the allowlist and denies it — output is captured
+  and returned to you either way, there's nothing to redirect.
+
+Both mistakes fail the same way — the whole turn wasted retrying, then
+giving up — so get it right the first time: `promo-ingest`, not
+`promo-ingest 2>&1` or `PATH=$PATH:~/.local/bin promo-ingest`.
 
 - `promo` — projects, assets, drafts, post log, mentions, reviews, digest.
 - `promo-ingest` — runs every monitor below and imports the results into promo. Safe to run any time.
