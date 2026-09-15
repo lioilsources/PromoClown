@@ -31,7 +31,10 @@ If `promo posts draft` exits with status 2, it lists every rule the draft breaks
 
 ## Tools
 
-All tools are local CLIs on PATH. Their skills explain the details.
+All tools are local CLIs on PATH. Their skills explain the details. Call
+them by their plain name (`promo-ingest`, not `PATH=... promo-ingest` or any
+other custom `PATH`/`env` on the exec call) — a custom PATH is blocked
+outright as a security violation and wastes the whole turn retrying.
 
 - `promo` — projects, assets, drafts, post log, mentions, reviews, digest.
 - `promo-ingest` — runs every monitor below and imports the results into promo. Safe to run any time.
