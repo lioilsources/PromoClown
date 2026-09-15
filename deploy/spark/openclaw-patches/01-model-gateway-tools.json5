@@ -18,9 +18,7 @@
             name: "PromoClown agent (via LiteLLM)",
             reasoning: true,
             input: ["text"],
-            // 32768 while openclaw-default is routed to swarm-nano; 65536 once
-            // it points at qwen36-agent (vLLM --max-model-len).
-            contextWindow: 32768,
+            contextWindow: 65536, // vLLM --max-model-len on qwen36-agent
             maxTokens: 4096,
           },
         ],
