@@ -83,6 +83,7 @@ type Project struct {
 	PostizAccounts  string
 	DailyCap        int64
 	MinDaysBetween  int64
+	LinkInProfile   bool
 }
 
 type Review struct {

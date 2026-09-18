@@ -45,6 +45,9 @@ projects:
       x: wakeupm_sfw
     daily_cap: 3
     min_days_between: 0
+    # The bot link lives in the X profile, not in every post: X charges $0.20
+    # for a post carrying a link against $0.015 for one without.
+    link_in_profile: true
     hooks:
       - Send a photo, get it back as a painting — the pose and the face stay yours.
       - 90 painter and era styles, from Botticelli to ukiyo-e.

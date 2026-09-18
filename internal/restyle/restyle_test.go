@@ -94,8 +94,14 @@ func TestPickDistinct(t *testing.T) {
 	if got := Pick(0, NewRand(1)); got != nil {
 		t.Errorf("Pick(0) = %v, want nil", got)
 	}
-	if got := Pick(len(catalog)+5, NewRand(1)); len(got) != len(catalog) {
-		t.Errorf("Pick(more than the catalog) = %d styles, want %d", len(got), len(catalog))
+	// One style per painter caps a draw below the catalog size: asking for
+	// everything returns one style per artist, not every variant of each.
+	artists := map[string]bool{}
+	for _, s := range catalog {
+		artists[artistOf(s.ID)] = true
+	}
+	if got := Pick(len(catalog)+5, NewRand(1)); len(got) != len(artists) {
+		t.Errorf("Pick(more than the catalog) = %d styles, want one per artist (%d)", len(got), len(artists))
 	}
 }
 
@@ -258,5 +264,39 @@ func TestExecutionError(t *testing.T) {
 	}
 	if got := executionError(nil); got == "" {
 		t.Error("executionError(nil) returned an empty reason")
+	}
+}
+
+// Four images by "four painters" must not spend two slots on one painter's two
+// periods — picasso-blue next to picasso-rose is the case that prompted this.
+func TestPickOneStylePerArtist(t *testing.T) {
+	for seed := uint64(1); seed <= 500; seed++ {
+		got := Pick(4, NewRand(seed))
+		if len(got) != 4 {
+			t.Fatalf("seed %d: %d styles", seed, len(got))
+		}
+		seen := map[string]string{}
+		for _, s := range got {
+			a := artistOf(s.ID)
+			if prev, dup := seen[a]; dup {
+				t.Fatalf("seed %d: %s and %s are both %s", seed, prev, s.ID, a)
+			}
+			seen[a] = s.ID
+		}
+	}
+}
+
+func TestArtistOf(t *testing.T) {
+	for id, want := range map[string]string{
+		"picasso-blue":    "picasso",
+		"picasso-rose":    "picasso",
+		"vangogh-arles":   "vangogh",
+		"chineseink":      "chineseink",
+		"josef-capek":     "josef",
+		"mucha-slav-epic": "mucha",
+	} {
+		if got := artistOf(id); got != want {
+			t.Errorf("artistOf(%q) = %q, want %q", id, got, want)
+		}
 	}
 }

@@ -49,8 +49,11 @@ type Project struct {
 	// platform. It is a pointer because zero is a real answer — tributes credit
 	// a different artist every time and need no gap — and has to be told apart
 	// from a config file that does not mention it at all, which means seven.
-	MinDaysBetween *int   `json:"min_days_between,omitempty" yaml:"min_days_between"`
-	Status         string `json:"status,omitempty" yaml:"status"`
+	MinDaysBetween *int `json:"min_days_between,omitempty" yaml:"min_days_between"`
+	// LinkInProfile says the account's profile carries the call to action, so a
+	// post without a link is not a mistake worth warning about.
+	LinkInProfile bool   `json:"link_in_profile,omitempty" yaml:"link_in_profile"`
+	Status        string `json:"status,omitempty" yaml:"status"`
 	UpdatedAt      string `json:"updated_at,omitempty" yaml:"-"`
 }
 

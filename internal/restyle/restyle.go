@@ -137,7 +137,7 @@ func Pick(n int, rnd *rand.Rand) []Style {
 		n = len(pool)
 	}
 	out := make([]Style, 0, n)
-	for len(out) < n {
+	for len(out) < n && len(pool) > 0 {
 		total := 0
 		for _, s := range pool {
 			total += tierWeight(s.Tier)
@@ -146,9 +146,31 @@ func Pick(n int, rnd *rand.Rand) []Style {
 		for i, s := range pool {
 			if r -= tierWeight(s.Tier); r < 0 {
 				out = append(out, s)
-				pool = append(pool[:i], pool[i+1:]...)
+				pool = dropArtist(append(pool[:i:i], pool[i+1:]...), artistOf(s.ID))
 				break
 			}
+		}
+	}
+	return out
+}
+
+// artistOf is the painter behind a style id: the catalog spells variants of one
+// painter as "picasso-blue", "picasso-rose", "picasso-cubist". Ids without a
+// dash are their own group.
+func artistOf(id string) string {
+	if i := strings.IndexByte(id, '-'); i > 0 {
+		return id[:i]
+	}
+	return id
+}
+
+// dropArtist removes every remaining style by the same painter, so a set of
+// four never spends two of its slots on one artist's two periods.
+func dropArtist(pool []Style, artist string) []Style {
+	out := pool[:0]
+	for _, s := range pool {
+		if artistOf(s.ID) != artist {
+			out = append(out, s)
 		}
 	}
 	return out

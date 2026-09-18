@@ -190,6 +190,7 @@ func (s *Service) UpsertProject(ctx context.Context, p model.Project) (model.Pro
 		PostizAccounts:  formatAccounts(p.PostizAccounts),
 		DailyCap:        int64(p.DailyCap),
 		MinDaysBetween:  int64(*p.MinDaysBetween),
+		LinkInProfile:   p.LinkInProfile,
 		Status:          p.Status,
 		Now:             db.FormatTime(s.now()),
 	})
@@ -1130,7 +1131,8 @@ func projectModel(r db.Project) model.Project {
 		WebsiteURL: r.WebsiteUrl, StoreIOSURL: r.StoreIosUrl, StoreAndroidURL: r.StoreAndroidUrl,
 		IOSAppID: r.IosAppID, AndroidPackage: r.AndroidPackage, AssetsDir: r.AssetsDir,
 		PostizAccounts: parseAccounts(r.PostizAccounts), DailyCap: int(r.DailyCap),
-		MinDaysBetween: intPtr(int(r.MinDaysBetween)), Status: r.Status, UpdatedAt: r.UpdatedAt,
+		MinDaysBetween: intPtr(int(r.MinDaysBetween)), LinkInProfile: r.LinkInProfile,
+		Status: r.Status, UpdatedAt: r.UpdatedAt,
 	}
 }
 

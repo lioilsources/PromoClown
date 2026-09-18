@@ -11,7 +11,7 @@ import (
 )
 
 const findProjectByAppID = `-- name: FindProjectByAppID :one
-SELECT id, slug, name, tagline, audience, tags, hooks, forbidden_claims, website_url, store_ios_url, store_android_url, ios_app_id, android_package, assets_dir, status, created_at, updated_at, postiz_accounts, daily_cap, min_days_between FROM projects
+SELECT id, slug, name, tagline, audience, tags, hooks, forbidden_claims, website_url, store_ios_url, store_android_url, ios_app_id, android_package, assets_dir, status, created_at, updated_at, postiz_accounts, daily_cap, min_days_between, link_in_profile FROM projects
 WHERE (ios_app_id != '' AND ios_app_id = ?1)
    OR (android_package != '' AND android_package = ?1)
 LIMIT 1
@@ -41,12 +41,13 @@ func (q *Queries) FindProjectByAppID(ctx context.Context, appID string) (Project
 		&i.PostizAccounts,
 		&i.DailyCap,
 		&i.MinDaysBetween,
+		&i.LinkInProfile,
 	)
 	return i, err
 }
 
 const getProjectByID = `-- name: GetProjectByID :one
-SELECT id, slug, name, tagline, audience, tags, hooks, forbidden_claims, website_url, store_ios_url, store_android_url, ios_app_id, android_package, assets_dir, status, created_at, updated_at, postiz_accounts, daily_cap, min_days_between FROM projects WHERE id = ?
+SELECT id, slug, name, tagline, audience, tags, hooks, forbidden_claims, website_url, store_ios_url, store_android_url, ios_app_id, android_package, assets_dir, status, created_at, updated_at, postiz_accounts, daily_cap, min_days_between, link_in_profile FROM projects WHERE id = ?
 `
 
 func (q *Queries) GetProjectByID(ctx context.Context, id int64) (Project, error) {
@@ -73,12 +74,13 @@ func (q *Queries) GetProjectByID(ctx context.Context, id int64) (Project, error)
 		&i.PostizAccounts,
 		&i.DailyCap,
 		&i.MinDaysBetween,
+		&i.LinkInProfile,
 	)
 	return i, err
 }
 
 const getProjectBySlug = `-- name: GetProjectBySlug :one
-SELECT id, slug, name, tagline, audience, tags, hooks, forbidden_claims, website_url, store_ios_url, store_android_url, ios_app_id, android_package, assets_dir, status, created_at, updated_at, postiz_accounts, daily_cap, min_days_between FROM projects WHERE slug = ?
+SELECT id, slug, name, tagline, audience, tags, hooks, forbidden_claims, website_url, store_ios_url, store_android_url, ios_app_id, android_package, assets_dir, status, created_at, updated_at, postiz_accounts, daily_cap, min_days_between, link_in_profile FROM projects WHERE slug = ?
 `
 
 func (q *Queries) GetProjectBySlug(ctx context.Context, slug string) (Project, error) {
@@ -105,12 +107,13 @@ func (q *Queries) GetProjectBySlug(ctx context.Context, slug string) (Project, e
 		&i.PostizAccounts,
 		&i.DailyCap,
 		&i.MinDaysBetween,
+		&i.LinkInProfile,
 	)
 	return i, err
 }
 
 const listProjects = `-- name: ListProjects :many
-SELECT id, slug, name, tagline, audience, tags, hooks, forbidden_claims, website_url, store_ios_url, store_android_url, ios_app_id, android_package, assets_dir, status, created_at, updated_at, postiz_accounts, daily_cap, min_days_between FROM projects
+SELECT id, slug, name, tagline, audience, tags, hooks, forbidden_claims, website_url, store_ios_url, store_android_url, ios_app_id, android_package, assets_dir, status, created_at, updated_at, postiz_accounts, daily_cap, min_days_between, link_in_profile FROM projects
 WHERE CAST(?1 AS TEXT) IS NULL OR status = CAST(?1 AS TEXT)
 ORDER BY name
 `
@@ -145,6 +148,7 @@ func (q *Queries) ListProjects(ctx context.Context, status sql.NullString) ([]Pr
 			&i.PostizAccounts,
 			&i.DailyCap,
 			&i.MinDaysBetween,
+			&i.LinkInProfile,
 		); err != nil {
 			return nil, err
 		}
@@ -163,14 +167,14 @@ const upsertProject = `-- name: UpsertProject :one
 INSERT INTO projects (
     slug, name, tagline, audience, tags, hooks, forbidden_claims, website_url,
     store_ios_url, store_android_url, ios_app_id, android_package, assets_dir,
-    postiz_accounts, daily_cap, min_days_between, status, created_at, updated_at
+    postiz_accounts, daily_cap, min_days_between, link_in_profile, status, created_at, updated_at
 ) VALUES (
     ?1, ?2, ?3, ?4,
     ?5, ?6, ?7, ?8,
     ?9, ?10, ?11,
     ?12, ?13, ?14,
-    ?15, ?16, ?17,
-    ?18, ?18
+    ?15, ?16, ?17, ?18,
+    ?19, ?19
 )
 ON CONFLICT (slug) DO UPDATE SET
     name              = excluded.name,
@@ -188,9 +192,10 @@ ON CONFLICT (slug) DO UPDATE SET
     postiz_accounts   = excluded.postiz_accounts,
     daily_cap         = excluded.daily_cap,
     min_days_between  = excluded.min_days_between,
+    link_in_profile   = excluded.link_in_profile,
     status            = excluded.status,
     updated_at        = excluded.updated_at
-RETURNING id, slug, name, tagline, audience, tags, hooks, forbidden_claims, website_url, store_ios_url, store_android_url, ios_app_id, android_package, assets_dir, status, created_at, updated_at, postiz_accounts, daily_cap, min_days_between
+RETURNING id, slug, name, tagline, audience, tags, hooks, forbidden_claims, website_url, store_ios_url, store_android_url, ios_app_id, android_package, assets_dir, status, created_at, updated_at, postiz_accounts, daily_cap, min_days_between, link_in_profile
 `
 
 type UpsertProjectParams struct {
@@ -210,6 +215,7 @@ type UpsertProjectParams struct {
 	PostizAccounts  string
 	DailyCap        int64
 	MinDaysBetween  int64
+	LinkInProfile   bool
 	Status          string
 	Now             string
 }
@@ -232,6 +238,7 @@ func (q *Queries) UpsertProject(ctx context.Context, arg UpsertProjectParams) (P
 		arg.PostizAccounts,
 		arg.DailyCap,
 		arg.MinDaysBetween,
+		arg.LinkInProfile,
 		arg.Status,
 		arg.Now,
 	)
@@ -257,6 +264,7 @@ func (q *Queries) UpsertProject(ctx context.Context, arg UpsertProjectParams) (P
 		&i.PostizAccounts,
 		&i.DailyCap,
 		&i.MinDaysBetween,
+		&i.LinkInProfile,
 	)
 	return i, err
 }

@@ -161,7 +161,7 @@ func ValidateDraft(p model.Project, req model.DraftRequest) (errs, warns []strin
 	}
 
 	if req.Platform != model.PlatformReddit {
-		if links := p.Links(); len(links) > 0 && !containsAny(text, links) {
+		if links := p.Links(); len(links) > 0 && !p.LinkInProfile && !containsAny(text, links) {
 			warns = append(warns, "no store or website link of the project in the text")
 		}
 		if len(req.MediaPaths) == 0 {

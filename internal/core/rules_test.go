@@ -237,3 +237,29 @@ func TestPerAccountLimits(t *testing.T) {
 		t.Errorf("violations = %v, want the day to be full", v)
 	}
 }
+
+// A project whose call to action lives in the account profile must not be
+// nagged about every post that carries no link.
+func TestLinkInProfileSilencesTheLinkWarning(t *testing.T) {
+	p := model.Project{Slug: "tsumiki", Name: "Tsumiki", WebsiteURL: "https://t.me/bot"}
+	req := model.DraftRequest{Platform: "x", Text: "Tribute to @artist", MediaPaths: []string{"a.png"}}
+
+	_, warns := ValidateDraft(p, req)
+	if !hasWarning(warns, "no store or website link") {
+		t.Fatalf("warnings = %v, want the link warning by default", warns)
+	}
+
+	p.LinkInProfile = true
+	if _, warns := ValidateDraft(p, req); hasWarning(warns, "no store or website link") {
+		t.Fatalf("warnings = %v, want no link warning", warns)
+	}
+}
+
+func hasWarning(warns []string, needle string) bool {
+	for _, w := range warns {
+		if strings.Contains(w, needle) {
+			return true
+		}
+	}
+	return false
+}
