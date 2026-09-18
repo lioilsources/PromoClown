@@ -2,7 +2,10 @@ VERSION ?= $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
 LDFLAGS  = -s -w -X main.version=$(VERSION)
 
 # CLIs that run as OpenClaw skills on the DGX Spark (linux/arm64).
-SKILL_CMDS = promo store-reviews youtube-comments reddit-monitor bluesky-mentions
+# promo-tribute and promo-restyle run on the Spark because ComfyUI does; the
+# rest are the agent's skill CLIs.
+SKILL_CMDS = promo store-reviews youtube-comments reddit-monitor bluesky-mentions \
+             promo-tribute promo-restyle
 
 JODA        ?= joda
 SPARK       ?= spark

@@ -1,0 +1,12 @@
+[Unit]
+Description=PromoClown: drain the tribute queue before midnight
+
+[Timer]
+# 23:00 is inside the comfy window (07:00-00:00 in rag-schedule.sh). At
+# midnight ComfyUI is stopped to make room for the agent, so a run started
+# later would find no GPU.
+OnCalendar=*-*-* 23:00:00
+Persistent=true
+
+[Install]
+WantedBy=timers.target

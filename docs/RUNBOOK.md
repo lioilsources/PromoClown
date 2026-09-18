@@ -274,6 +274,40 @@ V approval botovi přijde náhled → `ok <id>` → 📅 naplánováno → v ča
 
 Cron joby a heartbeat nastavil `setup-openclaw.sh`, PROJECTS.md obnovuje timer ve 03:00. Nech týden zkušebního provozu a sleduj, co agent navrhuje.
 
+### D1. Tribute posty (Tsumiki, X)
+
+Pošleš approval botovi **obrázek** a do popisku **autora**: `@artist`. Jiný projekt
+vybereš `#slug` (default je `TRIBUTE_PROJECT`, tedy `tsumiki`). Bot obrázek uloží
+mezi assety a zařadí do fronty — žádný model u toho není, funguje to celý den,
+i když agent neběží.
+
+Ve **23:00** timer `promo-tribute.timer` na Sparku frontu vyprázdní: pro každý
+záznam vybere 4 styly, nechá ComfyUI vyrobit 4 varianty a založí draft na X.
+Ráno ho schvaluješ v Telegramu jako cokoli jiného; publikuje ho publisher na JODĚ.
+
+```bash
+spark$ systemctl --user list-timers promo-tribute.timer
+spark$ promo-tribute run --dry-run          # jen ukáže, jaké styly by padly
+spark$ systemctl --user start promo-tribute # spustit frontu hned
+spark$ journalctl --user -u promo-tribute -f
+mac$   go run ./cmd/promo tributes list
+```
+
+Proč 23:00: `rag-schedule.sh` (WorldLibraryProject) v půlnoci ComfyUI shodí, aby se
+do paměti vešel agent. Jeden obrázek trvá 66–120 s, čtyři tedy 5–8 minut; fronta
+musí doběhnout před půlnocí, jinak zbytek zůstane `queued` na další noc.
+
+**Nastavení, která jsou naměřená, ne odhadnutá** (MangaPrompts
+`docs/restyle-rollout-results.md`): checkpoint `sd_xl_base_1.0`, InstantID
+`ip_weight` 0.6, depth ControlNet drží pózu, InstantID podobu. Juggernaut styl
+ignoruje, Animagine ztrácí identitu, `ip_weight` 0.8 přebije styl na postavě —
+proto k nim odsud nevede cesta. `flux-schnell` je txt2img bez řízení pózy,
+na tohle se nehodí vůbec.
+
+Frekvence: `tsumiki` má v `projects.yaml` `daily_cap: 3` a `min_days_between: 0`,
+takže tributů může být víc denně. Pravidla se počítají **per účet**, takže
+Kirianovi na jeho vlastním X účtu nic neblokují.
+
 ## Ověření (Definition of done, plán §7)
 
 | # | Test | Očekávání |
@@ -298,6 +332,9 @@ Cron joby a heartbeat nastavil `setup-openclaw.sh`, PROJECTS.md obnovuje timer v
 | Approval bot loguje „another process is polling" | Stejný token používá i jiný proces (např. OpenClaw) — musí to být dva různí boti |
 | Skill chybí v `openclaw skills list` | Binárka není na PATH gateway (drop-in) nebo chybí env z `requires.env` |
 | Agent píše, že příkaz nesmí spustit | Binárka není v `openclaw approvals get` → `setup-openclaw.sh` |
+| `promo-tribute` hlásí `No face detected` | InstantID nenašel v předloze obličej — pošli jiný obrázek, nebo tribute zruš (`promo tributes cancel <id>`) |
+| Fronta zůstala `queued` | Timer neběžel, nebo doběhl čas okna; `systemctl --user start promo-tribute` ručně, ale jen dokud ComfyUI běží (do půlnoci) |
+| Tribute visí ve `running` | Proces spadl mezi claimem a zápisem; `promo tributes retry <id>` |
 | Post `failed` s chybou uploadu médií | Access bypass pro `/uploads/*` chybí; `retry <id>` |
 | `no enabled bluesky channel in Postiz` | Kanál v Postizu odpojený nebo vypnutý |
 | `reddit-monitor`: 401/403 | Přístup k Reddit API ještě není schválený |

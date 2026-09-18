@@ -1,0 +1,13 @@
+[Unit]
+Description=PromoClown: restyle queued tributes and draft the posts
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+EnvironmentFile=%h/.config/promoclown/promo.env
+Environment=COMFY_URL=http://127.0.0.1:8188
+ExecStart=%h/.local/bin/promo-tribute run
+# Four images take six to eight minutes; a full queue must still finish before
+# rag-schedule.sh stops ComfyUI at midnight.
+TimeoutStartSec=45min

@@ -37,6 +37,7 @@ rsync -a "$spark/setup-openclaw.sh" "$spark/promo.env.example" "$spark/openclaw.
 
 echo "==> systemd user units"
 rsync -a "$spark/systemd/promo-refresh-projects.service" "$spark/systemd/promo-refresh-projects.timer" \
+    "$spark/systemd/promo-tribute.service" "$spark/systemd/promo-tribute.timer" \
     "$host:.config/systemd/user/"
 rsync -a "$spark/systemd/openclaw-gateway.service.d/" "$host:.config/systemd/user/openclaw-gateway.service.d/"
 
@@ -63,13 +64,14 @@ rm -f ~/.openclaw/workspace/BOOTSTRAP.md
 systemctl --user daemon-reload
 if grep -q '^PROMO_TOKEN=..*' "$cfg/promo.env"; then
     systemctl --user enable --now promo-refresh-projects.timer >/dev/null
+    systemctl --user enable --now promo-tribute.timer >/dev/null
     if systemctl --user start promo-refresh-projects.service; then
         echo "PROJECTS.md refreshed"
     else
         echo "PROJECTS.md refresh failed: journalctl --user -u promo-refresh-projects" >&2
     fi
 else
-    echo "PROMO_TOKEN is empty: PROJECTS.md timer not enabled yet"
+    echo "PROMO_TOKEN is empty: the PROJECTS.md and tribute timers are not enabled yet"
 fi
 
 if systemctl --user cat openclaw-gateway.service >/dev/null 2>&1; then
