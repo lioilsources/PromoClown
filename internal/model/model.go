@@ -40,7 +40,7 @@ type Project struct {
 	AndroidPackage  string   `json:"android_package,omitempty" yaml:"android_package"`
 	AssetsDir       string   `json:"assets_dir,omitempty" yaml:"assets_dir"`
 	// PostizAccounts maps a platform to the Postiz channel that publishes it
-	// ("x": "wakeupm_sfx"); a platform left out uses POSTIZ_INTEGRATIONS.
+	// ("x": "wakeupm_sfw"); a platform left out uses POSTIZ_INTEGRATIONS.
 	PostizAccounts map[string]string `json:"postiz_accounts,omitempty" yaml:"postiz_accounts"`
 	// DailyCap is how many posts this project may put on one account in a day;
 	// zero means the default of one.

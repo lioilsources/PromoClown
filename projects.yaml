@@ -42,7 +42,7 @@ projects:
     website_url: https://t.me/tsumikimanga_bot
     assets_dir: tsumiki
     postiz_accounts:
-      x: wakeupm_sfx
+      x: wakeupm_sfw
     daily_cap: 3
     min_days_between: 0
     hooks:
