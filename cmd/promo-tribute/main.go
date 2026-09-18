@@ -31,20 +31,28 @@ Renders every queued tribute and drafts the post. Nothing is published.
   --variants N   images per post (default 4, the most X and Bluesky take)
   --max N        stop after N tributes (default 0, the whole queue)
   --template T   post text; {credit} is the author's handle, {styles} the
-                 style labels, {link} the project's website (left out by
-                 default: the link belongs in the account profile)
+                 style labels, {by} the bot's name (default TsumikiBot),
+                 {link} the project's website (left out by default: the link
+                 belongs in the account profile)
+  --by NAME      signature under the post (default TsumikiBot)
   --seed N       repeat a run's style choice and generation seeds
   --dry-run      pick styles and print what would be rendered
 
 Env: PROMO_API_URL, PROMO_TOKEN, COMFY_URL (default http://127.0.0.1:8188)
 `
 
-// The credit is the whole post: it exists to point at the artist. The link to
-// the bot lives in the account's profile, not in every post — X charges
-// $0.20 for a post carrying a link against $0.015 for one without, and three
-// tributes a day is the difference between $18 and $1.40 a month. {link} is
-// still available for a project that wants it.
-const defaultTemplate = "Tribute to {credit} 🎨\n\n{styles}"
+// The credit stays first — the post exists to point at the artist — with the
+// bot's name as a signature underneath, so a viewer who likes the picture
+// knows what made it before they check the account's profile. The link
+// itself lives in the profile, not in every post — X charges $0.20 for a
+// post carrying a link against $0.015 for one without, and three tributes a
+// day is the difference between $18 and $1.40 a month. {link} is still
+// available for a project that wants it in the text instead of {by}.
+const defaultTemplate = "Tribute to {credit} 🎨\n\n{styles}\n\nby {by}"
+
+// defaultBy is the signature {by} expands to when the project does not name
+// one of its own.
+const defaultBy = "TsumikiBot"
 
 func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
@@ -63,6 +71,7 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 	variants := fs.Int("variants", 4, "")
 	max := fs.Int("max", 0, "")
 	template := fs.String("template", defaultTemplate, "")
+	by := fs.String("by", defaultBy, "")
 	seed := fs.Uint64("seed", 0, "")
 	comfyURL := fs.String("comfy", envOr("COMFY_URL", "http://127.0.0.1:8188"), "")
 	dryRun := fs.Bool("dry-run", false, "")
@@ -86,6 +95,7 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 		comfy:    restyle.New(*comfyURL),
 		variants: *variants,
 		template: *template,
+		by:       *by,
 		dryRun:   *dryRun,
 		out:      stdout,
 		errOut:   stderr,
@@ -115,6 +125,7 @@ type worker struct {
 	comfy    *restyle.Client
 	variants int
 	template string
+	by       string
 	dryRun   bool
 	rand     *rand.Rand
 	out      io.Writer
@@ -196,7 +207,7 @@ func (w *worker) process(ctx context.Context, t model.Tribute) error {
 	draft, err := w.api.Draft(ctx, model.DraftRequest{
 		Project:    t.Project,
 		Platform:   model.PlatformX,
-		Text:       postText(w.template, t, project, labels),
+		Text:       postText(w.template, t, project, labels, w.by),
 		MediaPaths: media,
 	})
 	if err != nil {
@@ -216,7 +227,7 @@ func (w *worker) process(ctx context.Context, t model.Tribute) error {
 
 // postText fills the template and, if the result does not fit X, drops the
 // style list — the credit and the link are the parts that have to survive.
-func postText(template string, t model.Tribute, p model.Project, labels []string) string {
+func postText(template string, t model.Tribute, p model.Project, labels []string, by string) string {
 	link := p.WebsiteURL
 	if link == "" && len(p.Links()) > 0 {
 		link = p.Links()[0]
@@ -225,6 +236,7 @@ func postText(template string, t model.Tribute, p model.Project, labels []string
 		out := strings.NewReplacer(
 			"{credit}", t.Credit,
 			"{link}", link,
+			"{by}", by,
 			"{styles}", styles,
 			"{note}", t.Note,
 		).Replace(template)
