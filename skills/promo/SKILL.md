@@ -56,6 +56,7 @@ promo posts draft --project kiran --platform reddit --kind reply \
 ```
 
 - `--media` takes a path from `promo projects assets`, or a local file, which is uploaded first.
+  Repeat it for up to four images on X and Bluesky; a video travels alone.
 - The command checks the rules before saving. Exit status 2 lists every problem
   (too long, forbidden claim, repeats a post from the last 30 days, YouTube
   without title or mp4, Reddit without `--reply-to`). Fix all of them in one retry.
