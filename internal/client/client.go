@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"mime/multipart"
@@ -158,6 +159,45 @@ func (c *Client) UploadAsset(ctx context.Context, slug, path string) (model.Asse
 	return out, c.send(req, &out)
 }
 
+// DownloadAsset saves a stored asset to a local file. The night job needs the
+// source picture on the machine that talks to ComfyUI.
+func (c *Client) DownloadAsset(ctx context.Context, assetPath, dest string) error {
+	parts := strings.Split(assetPath, "/")
+	for i, p := range parts {
+		parts[i] = url.PathEscape(p)
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.BaseURL+"/assets/"+strings.Join(parts, "/"), nil)
+	if err != nil {
+		return err
+	}
+	req.Header.Set("X-Promo-Token", c.Token)
+	resp, err := c.HTTP.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode >= 300 {
+		data, _ := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
+		var e model.Error
+		if json.Unmarshal(data, &e) != nil || e.Error == "" {
+			e.Error = strings.TrimSpace(string(data))
+		}
+		return &APIError{Status: resp.StatusCode, Message: e.Error}
+	}
+	f, err := os.Create(dest)
+	if err != nil {
+		return err
+	}
+	_, err = io.Copy(f, resp.Body)
+	if cerr := f.Close(); err == nil {
+		err = cerr
+	}
+	if err != nil {
+		os.Remove(dest)
+	}
+	return err
+}
+
 // Posts ----------------------------------------------------------------------------
 
 type PostQuery struct {
@@ -238,6 +278,53 @@ func inboxQuery(handled *bool, platform string, limit int) url.Values {
 		q.Set("limit", strconv.Itoa(limit))
 	}
 	return q
+}
+
+// Tributes -----------------------------------------------------------------------
+
+func (c *Client) Tributes(ctx context.Context, status string, limit int) ([]model.Tribute, error) {
+	q := url.Values{}
+	if status != "" {
+		q.Set("status", status)
+	}
+	if limit > 0 {
+		q.Set("limit", strconv.Itoa(limit))
+	}
+	var out []model.Tribute
+	return out, c.do(ctx, http.MethodGet, "/tributes", q, nil, &out)
+}
+
+func (c *Client) EnqueueTribute(ctx context.Context, req model.TributeRequest) (model.Tribute, error) {
+	var out model.Tribute
+	return out, c.do(ctx, http.MethodPost, "/tributes", nil, req, &out)
+}
+
+// ClaimTribute takes the next queued tribute. An empty queue answers 404, so
+// callers check IsNotFound rather than treating it as a failure.
+func (c *Client) ClaimTribute(ctx context.Context) (model.Tribute, error) {
+	var out model.Tribute
+	return out, c.do(ctx, http.MethodPost, "/tributes/claim", nil, nil, &out)
+}
+
+func (c *Client) FinishTribute(ctx context.Context, id int64, req model.TributeDoneRequest) (model.Tribute, error) {
+	var out model.Tribute
+	return out, c.do(ctx, http.MethodPost, fmt.Sprintf("/tributes/%d/done", id), nil, req, &out)
+}
+
+func (c *Client) RetryTribute(ctx context.Context, id int64) (model.Tribute, error) {
+	var out model.Tribute
+	return out, c.do(ctx, http.MethodPost, fmt.Sprintf("/tributes/%d/retry", id), nil, nil, &out)
+}
+
+func (c *Client) CancelTribute(ctx context.Context, id int64) (model.Tribute, error) {
+	var out model.Tribute
+	return out, c.do(ctx, http.MethodPost, fmt.Sprintf("/tributes/%d/cancel", id), nil, nil, &out)
+}
+
+// IsNotFound reports whether an error is the API saying there is nothing there.
+func IsNotFound(err error) bool {
+	var e *APIError
+	return errors.As(err, &e) && e.Status == http.StatusNotFound
 }
 
 func (c *Client) ImportMentions(ctx context.Context, items []model.Mention) (model.ImportResult, error) {

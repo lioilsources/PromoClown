@@ -19,12 +19,13 @@ LIMIT 1;
 INSERT INTO projects (
     slug, name, tagline, audience, tags, hooks, forbidden_claims, website_url,
     store_ios_url, store_android_url, ios_app_id, android_package, assets_dir,
-    status, created_at, updated_at
+    postiz_accounts, daily_cap, min_days_between, status, created_at, updated_at
 ) VALUES (
     sqlc.arg('slug'), sqlc.arg('name'), sqlc.arg('tagline'), sqlc.arg('audience'),
     sqlc.arg('tags'), sqlc.arg('hooks'), sqlc.arg('forbidden_claims'), sqlc.arg('website_url'),
     sqlc.arg('store_ios_url'), sqlc.arg('store_android_url'), sqlc.arg('ios_app_id'),
-    sqlc.arg('android_package'), sqlc.arg('assets_dir'), sqlc.arg('status'),
+    sqlc.arg('android_package'), sqlc.arg('assets_dir'), sqlc.arg('postiz_accounts'),
+    sqlc.arg('daily_cap'), sqlc.arg('min_days_between'), sqlc.arg('status'),
     sqlc.arg('now'), sqlc.arg('now')
 )
 ON CONFLICT (slug) DO UPDATE SET
@@ -40,6 +41,9 @@ ON CONFLICT (slug) DO UPDATE SET
     ios_app_id        = excluded.ios_app_id,
     android_package   = excluded.android_package,
     assets_dir        = excluded.assets_dir,
+    postiz_accounts   = excluded.postiz_accounts,
+    daily_cap         = excluded.daily_cap,
+    min_days_between  = excluded.min_days_between,
     status            = excluded.status,
     updated_at        = excluded.updated_at
 RETURNING *;

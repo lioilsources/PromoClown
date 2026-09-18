@@ -1,11 +1,11 @@
 -- name: CreatePost :one
 INSERT INTO posts (
-    project_id, platform, kind, title, text, media_path, reply_to_url, warnings,
+    project_id, platform, account, kind, title, text, media_paths, reply_to_url, warnings,
     created_by, status, created_at, updated_at
 ) VALUES (
-    sqlc.arg('project_id'), sqlc.arg('platform'), sqlc.arg('kind'), sqlc.arg('title'),
-    sqlc.arg('text'), sqlc.arg('media_path'), sqlc.arg('reply_to_url'), sqlc.arg('warnings'),
-    sqlc.arg('created_by'), 'draft', sqlc.arg('now'), sqlc.arg('now')
+    sqlc.arg('project_id'), sqlc.arg('platform'), sqlc.arg('account'), sqlc.arg('kind'),
+    sqlc.arg('title'), sqlc.arg('text'), sqlc.arg('media_paths'), sqlc.arg('reply_to_url'),
+    sqlc.arg('warnings'), sqlc.arg('created_by'), 'draft', sqlc.arg('now'), sqlc.arg('now')
 )
 RETURNING *;
 
@@ -35,10 +35,13 @@ SELECT * FROM posts
 WHERE created_at >= sqlc.arg('since')
 ORDER BY id;
 
+-- Only the same account: two projects posting from two X accounts never
+-- compete for the same day.
 -- name: CommittedPostsBetween :many
 SELECT * FROM posts
 WHERE status IN ('approved', 'scheduled', 'published')
   AND platform = sqlc.arg('platform')
+  AND account = sqlc.arg('account')
   AND COALESCE(published_at, scheduled_at) >= sqlc.arg('from')
   AND COALESCE(published_at, scheduled_at) < sqlc.arg('to')
 ORDER BY COALESCE(published_at, scheduled_at);
@@ -47,7 +50,7 @@ ORDER BY COALESCE(published_at, scheduled_at);
 UPDATE posts
 SET text = sqlc.arg('text'),
     title = sqlc.arg('title'),
-    media_path = sqlc.arg('media_path'),
+    media_paths = sqlc.arg('media_paths'),
     warnings = sqlc.arg('warnings'),
     revision = revision + 1,
     updated_at = sqlc.arg('now')

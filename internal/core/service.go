@@ -13,6 +13,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strings"
 	"time"
 
@@ -152,6 +153,23 @@ func (s *Service) UpsertProject(ctx context.Context, p model.Project) (model.Pro
 	if p.AssetsDir == "" {
 		p.AssetsDir = p.Slug
 	}
+	if p.DailyCap == 0 {
+		p.DailyCap = DefaultLimits.PerDay
+	}
+	if p.MinDaysBetween == 0 {
+		p.MinDaysBetween = int(DefaultLimits.Gap.Hours() / 24)
+	}
+	if p.DailyCap < 1 {
+		problems = append(problems, "daily_cap must be at least 1")
+	}
+	if p.MinDaysBetween < 0 {
+		problems = append(problems, "min_days_between cannot be negative")
+	}
+	for platform := range p.PostizAccounts {
+		if !contains(model.Platforms, platform) {
+			problems = append(problems, fmt.Sprintf("postiz_accounts has unknown platform %q", platform))
+		}
+	}
 	if len(problems) > 0 {
 		return model.Project{}, invalid(problems...)
 	}
@@ -169,6 +187,9 @@ func (s *Service) UpsertProject(ctx context.Context, p model.Project) (model.Pro
 		IosAppID:        p.IOSAppID,
 		AndroidPackage:  p.AndroidPackage,
 		AssetsDir:       p.AssetsDir,
+		PostizAccounts:  formatAccounts(p.PostizAccounts),
+		DailyCap:        int64(p.DailyCap),
+		MinDaysBetween:  int64(p.MinDaysBetween),
 		Status:          p.Status,
 		Now:             db.FormatTime(s.now()),
 	})
@@ -388,8 +409,8 @@ func defaultKind(platform string) string {
 // satisfy every rule; a human editing a draft may repeat old wording.
 func (s *Service) check(ctx context.Context, q *db.Queries, proj db.Project, req model.DraftRequest, selfID int64, strict bool) (errs, warns []string, err error) {
 	errs, warns = ValidateDraft(projectModel(proj), req)
-	if req.MediaPath != "" {
-		if problem := s.checkMedia(req.Platform, req.MediaPath); problem != "" {
+	for _, m := range req.MediaPaths {
+		if problem := s.checkMedia(req.Platform, m); problem != "" {
 			errs = append(errs, problem)
 		}
 	}
@@ -426,7 +447,7 @@ func (s *Service) CreateDraft(ctx context.Context, req model.DraftRequest, actor
 	}
 	req.Text = strings.TrimSpace(req.Text)
 	req.Title = strings.TrimSpace(req.Title)
-	req.MediaPath = strings.TrimSpace(req.MediaPath)
+	req.MediaPaths = trimAll(req.MediaPaths)
 	req.ReplyToURL = strings.TrimSpace(req.ReplyToURL)
 
 	var res model.PostResult
@@ -449,10 +470,11 @@ func (s *Service) CreateDraft(ctx context.Context, req model.DraftRequest, actor
 		row, err := q.CreatePost(ctx, db.CreatePostParams{
 			ProjectID:  proj.ID,
 			Platform:   req.Platform,
+			Account:    accountFor(proj, req.Platform),
 			Kind:       req.Kind,
 			Title:      req.Title,
 			Text:       req.Text,
-			MediaPath:  req.MediaPath,
+			MediaPaths: strings.Join(req.MediaPaths, "\n"),
 			ReplyToUrl: req.ReplyToURL,
 			Warnings:   strings.Join(warns, "\n"),
 			CreatedBy:  actor,
@@ -488,7 +510,7 @@ func (s *Service) EditDraft(ctx context.Context, id int64, req model.EditRequest
 		}
 		draft := model.DraftRequest{
 			Project: project.Slug, Platform: post.Platform, Kind: post.Kind,
-			Title: post.Title, Text: post.Text, MediaPath: post.MediaPath, ReplyToURL: post.ReplyToUrl,
+			Title: post.Title, Text: post.Text, MediaPaths: splitLines(post.MediaPaths), ReplyToURL: post.ReplyToUrl,
 		}
 		if req.Text != nil {
 			draft.Text = strings.TrimSpace(*req.Text)
@@ -496,8 +518,8 @@ func (s *Service) EditDraft(ctx context.Context, id int64, req model.EditRequest
 		if req.Title != nil {
 			draft.Title = strings.TrimSpace(*req.Title)
 		}
-		if req.MediaPath != nil {
-			draft.MediaPath = strings.TrimSpace(*req.MediaPath)
+		if req.MediaPaths != nil {
+			draft.MediaPaths = trimAll(*req.MediaPaths)
 		}
 		errs, warns, err := s.check(ctx, q, project, draft, post.ID, req.Actor == ActorAgent)
 		if err != nil {
@@ -508,7 +530,7 @@ func (s *Service) EditDraft(ctx context.Context, id int64, req model.EditRequest
 		}
 		now := db.FormatTime(s.now())
 		row, err := q.UpdateDraftContent(ctx, db.UpdateDraftContentParams{
-			ID: id, Text: draft.Text, Title: draft.Title, MediaPath: draft.MediaPath,
+			ID: id, Text: draft.Text, Title: draft.Title, MediaPaths: strings.Join(draft.MediaPaths, "\n"),
 			Warnings: strings.Join(warns, "\n"), Now: now,
 		})
 		if err != nil {
@@ -523,10 +545,11 @@ func (s *Service) EditDraft(ctx context.Context, id int64, req model.EditRequest
 	return res, err
 }
 
-func (s *Service) committed(ctx context.Context, q *db.Queries, platform string, exclude int64) ([]Slot, error) {
+func (s *Service) committed(ctx context.Context, q *db.Queries, platform, account string, exclude int64) ([]Slot, error) {
 	now := s.now()
 	rows, err := q.CommittedPostsBetween(ctx, db.CommittedPostsBetweenParams{
 		Platform: platform,
+		Account:  account,
 		From:     nullString(db.FormatTime(now.Add(-8 * 24 * time.Hour))),
 		To:       nullString(db.FormatTime(now.Add(200 * 24 * time.Hour))),
 	})
@@ -557,13 +580,18 @@ func (s *Service) slotFor(ctx context.Context, q *db.Queries, post db.Post, requ
 	if post.Platform == model.PlatformReddit {
 		return sql.NullString{}, nil, nil
 	}
-	committed, err := s.committed(ctx, q, post.Platform, post.ID)
+	committed, err := s.committed(ctx, q, post.Platform, post.Account, post.ID)
 	if err != nil {
 		return sql.NullString{}, nil, err
 	}
+	proj, err := q.GetProjectByID(ctx, post.ProjectID)
+	if err != nil {
+		return sql.NullString{}, nil, err
+	}
+	lim := limitsOf(proj)
 	sched := s.cfg.Schedule
 	if requested == "" {
-		at, err := sched.NextSlot(s.now(), post.ProjectID, committed)
+		at, err := sched.NextSlot(s.now(), post.ProjectID, lim, committed)
 		if err != nil {
 			return sql.NullString{}, nil, invalid(err.Error())
 		}
@@ -577,7 +605,7 @@ func (s *Service) slotFor(ctx context.Context, q *db.Queries, post db.Post, requ
 		return sql.NullString{}, nil, invalid(fmt.Sprintf("time must be at least %s from now", sched.Lead))
 	}
 	// A human naming a time overrides the frequency rules; say what it breaks.
-	warns := sched.Violations(at, post.ProjectID, committed)
+	warns := sched.Violations(at, post.ProjectID, lim, committed)
 	if sched.OutsideWindow(at) {
 		warns = append(warns, "outside the daily posting window")
 	}
@@ -1101,14 +1129,16 @@ func projectModel(r db.Project) model.Project {
 		Tags: splitComma(r.Tags), Hooks: splitLines(r.Hooks), ForbiddenClaims: splitLines(r.ForbiddenClaims),
 		WebsiteURL: r.WebsiteUrl, StoreIOSURL: r.StoreIosUrl, StoreAndroidURL: r.StoreAndroidUrl,
 		IOSAppID: r.IosAppID, AndroidPackage: r.AndroidPackage, AssetsDir: r.AssetsDir,
-		Status: r.Status, UpdatedAt: r.UpdatedAt,
+		PostizAccounts: parseAccounts(r.PostizAccounts), DailyCap: int(r.DailyCap),
+		MinDaysBetween: int(r.MinDaysBetween), Status: r.Status, UpdatedAt: r.UpdatedAt,
 	}
 }
 
 func postModel(r db.Post, slug string) model.Post {
 	return model.Post{
 		ID: r.ID, Project: slug, Platform: r.Platform, Kind: r.Kind, Title: r.Title, Text: r.Text,
-		MediaPath: r.MediaPath, ReplyToURL: r.ReplyToUrl, Status: r.Status, Revision: r.Revision,
+		MediaPaths: splitLines(r.MediaPaths), Account: r.Account, ReplyToURL: r.ReplyToUrl,
+		Status: r.Status, Revision: r.Revision,
 		CreatedBy: r.CreatedBy, PostizPostID: r.PostizPostID, ReleaseURL: r.ReleaseUrl, Error: r.Error,
 		ScheduledAt: r.ScheduledAt.String, PublishedAt: r.PublishedAt.String,
 		ApprovedAt: r.ApprovedAt.String, ApprovedBy: r.ApprovedBy, CreatedAt: r.CreatedAt,
@@ -1118,6 +1148,50 @@ func postModel(r db.Post, slug string) model.Post {
 
 func eventModel(r db.PostEvent) model.PostEvent {
 	return model.PostEvent{ID: r.ID, PostID: r.PostID, Action: r.Action, Actor: r.Actor, Detail: r.Detail, CreatedAt: r.CreatedAt}
+}
+
+// Accounts are stored as "platform=channel" lines so the column stays
+// readable in sqlite3 and diffable in projects.yaml.
+func parseAccounts(v string) map[string]string {
+	out := map[string]string{}
+	for _, line := range splitLines(v) {
+		if k, val, ok := strings.Cut(line, "="); ok {
+			if k, val = strings.TrimSpace(k), strings.TrimSpace(val); k != "" && val != "" {
+				out[k] = val
+			}
+		}
+	}
+	if len(out) == 0 {
+		return nil
+	}
+	return out
+}
+
+func formatAccounts(m map[string]string) string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	lines := make([]string, 0, len(keys))
+	for _, k := range keys {
+		if v := strings.TrimSpace(m[k]); v != "" {
+			lines = append(lines, k+"="+v)
+		}
+	}
+	return strings.Join(lines, "\n")
+}
+
+func accountFor(p db.Project, platform string) string {
+	return parseAccounts(p.PostizAccounts)[platform]
+}
+
+func limitsOf(p db.Project) Limits {
+	lim := Limits{PerDay: int(p.DailyCap), Gap: time.Duration(p.MinDaysBetween) * 24 * time.Hour}
+	if lim.PerDay < 1 {
+		lim.PerDay = DefaultLimits.PerDay
+	}
+	return lim
 }
 
 func nullString(v string) sql.NullString { return sql.NullString{String: v, Valid: v != ""} }

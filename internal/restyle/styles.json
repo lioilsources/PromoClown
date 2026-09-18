@@ -1,0 +1,632 @@
+[
+  {
+    "id": "anime",
+    "label": "Anime",
+    "group": "Popular",
+    "block": "anime style, clean cel-shaded linework, vibrant flat colors, expressive anime features, soft gradient shading",
+    "tier": 2
+  },
+  {
+    "id": "comic",
+    "label": "Comic book",
+    "group": "Popular",
+    "block": "western comic-book style, bold inked outlines, flat cel shading, halftone dot shading, dramatic color blocks",
+    "tier": 2
+  },
+  {
+    "id": "watercolor",
+    "label": "Watercolor",
+    "group": "Popular",
+    "block": "loose watercolor painting, soft wet-on-wet washes, bleeding pigment edges, visible paper grain, light airy palette",
+    "tier": 2
+  },
+  {
+    "id": "oilportrait",
+    "label": "Oil painting",
+    "group": "Popular",
+    "block": "classical oil painting, visible brushstrokes, rich layered glazes, warm gallery lighting, canvas texture",
+    "tier": 2
+  },
+  {
+    "id": "pencil",
+    "label": "Pencil sketch",
+    "group": "Popular",
+    "block": "graphite pencil sketch, fine hatching and cross-hatching, soft smudged shading, white paper, monochrome",
+    "tier": 2
+  },
+  {
+    "id": "popart",
+    "label": "Pop art",
+    "group": "Popular",
+    "block": "pop art style, bold flat primary colors, thick black outlines, ben-day dots, high-contrast graphic composition",
+    "tier": 2
+  },
+  {
+    "id": "cyberpunk",
+    "label": "Cyberpunk",
+    "group": "Popular",
+    "block": "cyberpunk aesthetic, neon-soaked night city, magenta and cyan rim light, rain-slick reflections, high-tech dystopian mood",
+    "tier": 2
+  },
+  {
+    "id": "noir",
+    "label": "Film noir",
+    "group": "Popular",
+    "block": "film noir style, high-contrast black and white, hard chiaroscuro lighting, venetian blind shadows, cinematic 1940s mood",
+    "tier": 2
+  },
+  {
+    "id": "botticelli",
+    "label": "Botticelli",
+    "group": "Painters",
+    "block": "early renaissance tempera painting by Sandro Botticelli, graceful linear contours, long flowing golden hair, pale porcelain skin, transparent fluttering drapery, flowers and orange grove, gentle wistful expression, delicate pastel palette",
+    "tier": 1
+  },
+  {
+    "id": "davinci",
+    "label": "Da Vinci (sfumato)",
+    "group": "Painters",
+    "block": "portrait painting by Leonardo da Vinci, sfumato, soft smoky shadows without hard edges, enigmatic half smile, muted olive umber and dark green palette, hazy distant landscape, high renaissance oil on poplar",
+    "tier": 1
+  },
+  {
+    "id": "davinci-chalk",
+    "label": "Da Vinci (red chalk study)",
+    "group": "Painters",
+    "block": "red chalk figure study by Leonardo da Vinci, sanguine on toned paper, fine parallel hatching, anatomical precision, unfinished sketch edges, faint mirror handwriting notes in the margin",
+    "tier": 1
+  },
+  {
+    "id": "elgreco",
+    "label": "El Greco",
+    "group": "Painters",
+    "block": "mannerist painting by El Greco, dramatically elongated flame-like figure, upturned ecstatic eyes, cold flickering light, stormy grey sky, acid green crimson and silver, restless swirling drapery, spiritual intensity",
+    "tier": 1
+  },
+  {
+    "id": "vermeer",
+    "label": "Vermeer",
+    "group": "Painters",
+    "block": "painting by Johannes Vermeer, soft daylight from a window on the left, pearl earring and turban, ultramarine and lemon yellow, quiet domestic interior, pointillé highlights, calm serene stillness, smooth Dutch golden age oil",
+    "tier": 1
+  },
+  {
+    "id": "goya-caprichos",
+    "label": "Goya (Caprichos etching)",
+    "group": "Painters",
+    "block": "etching and aquatint by Francisco Goya from Los Caprichos, monochrome sepia print, grainy aquatint shadows, satirical grotesque figure, owls and bats in the gloom, hand-written caption below",
+    "tier": 1
+  },
+  {
+    "id": "goya-black",
+    "label": "Goya (Black Paintings)",
+    "group": "Painters",
+    "block": "black painting by Francisco Goya, murky black brown and ochre palette, grotesque haunted figure emerging from darkness, wild frantic brushstrokes, gaping mouth and staring eyes, nightmare mural on plaster",
+    "tier": 1
+  },
+  {
+    "id": "monet",
+    "label": "Monet",
+    "group": "Painters",
+    "block": "plein air painting by Claude Monet, figure with parasol in a windswept meadow, dappled sunlight and moving clouds, loose feathery brushstrokes, lavender and green shadows, bright airy sky, form dissolving in light",
+    "tier": 1
+  },
+  {
+    "id": "seurat",
+    "label": "Seurat (pointillism)",
+    "group": "Painters",
+    "block": "pointillist painting by Georges Seurat, entire image built from tiny dots of pure colour, stiff formal figures in profile, sunny riverside park, optical mixing, calm frozen geometry, soft shimmering surface",
+    "tier": 1
+  },
+  {
+    "id": "cezanne",
+    "label": "Cezanne",
+    "group": "Painters",
+    "block": "painting by Paul Cezanne, figure built from patches of parallel constructive brushstrokes, blue-green ochre and grey-violet palette, solid geometric volumes, slightly tilted perspective, calm weighty stillness",
+    "tier": 1
+  },
+  {
+    "id": "vangogh-arles",
+    "label": "Van Gogh (Arles)",
+    "group": "Painters",
+    "block": "portrait painting by Vincent van Gogh in Arles, thick impasto brushstrokes, vivid complementary colours, yellow and blue, green shadows on the face, flat patterned background, directional hatched strokes following the form, visible paint ridges",
+    "tier": 1
+  },
+  {
+    "id": "vangogh-saintremy",
+    "label": "Van Gogh (Saint-Remy)",
+    "group": "Painters",
+    "block": "late painting by Vincent van Gogh in Saint-Rémy, swirling turbulent brushstrokes, spiralling sky and cypress, rhythmic curling lines around the figure, deep blue and glowing yellow, restless energy, thick oil",
+    "tier": 1
+  },
+  {
+    "id": "gauguin",
+    "label": "Gauguin (Tahiti)",
+    "group": "Painters",
+    "block": "Tahitian painting by Paul Gauguin, flat cloisonné colour areas with dark outlines, saturated warm ochre pink and violet, tropical foliage, calm monumental figure, matte chalky surface, symbolist stillness",
+    "tier": 1
+  },
+  {
+    "id": "lautrec-cabaret",
+    "label": "Toulouse-Lautrec (cabaret)",
+    "group": "Painters",
+    "block": "cabaret painting by Henri de Toulouse-Lautrec, thinned oil on raw cardboard, streaky diagonal strokes, sickly green gaslight on the face, red lips and orange hair, Montmartre bar interior, unfinished sketchy edges, brown cardboard showing through",
+    "tier": 1
+  },
+  {
+    "id": "lautrec-poster",
+    "label": "Toulouse-Lautrec (poster)",
+    "group": "Painters",
+    "block": "lithograph poster by Henri de Toulouse-Lautrec, flat bold colour areas, sinuous black silhouette contours, Moulin Rouge dancer, spattered crachis texture, cropped Japanese composition, bold hand-lettered title, ochre red and black",
+    "tier": 1
+  },
+  {
+    "id": "beardsley",
+    "label": "Beardsley (ink drawing)",
+    "group": "Painters",
+    "block": "pen and ink illustration by Aubrey Beardsley, stark black and white, large flat black areas against blank white, single sinuous ink line, peacock and rose ornament, decadent elegant figure, japanese asymmetry",
+    "tier": 1
+  },
+  {
+    "id": "munch",
+    "label": "Munch",
+    "group": "Painters",
+    "block": "expressionist painting by Edvard Munch, anxious figure, wavy undulating brushstrokes flowing through sky and ground, blood orange sky over dark blue fjord, hollow skull-like face, thinly scrubbed paint, existential dread",
+    "tier": 1
+  },
+  {
+    "id": "klimt-golden",
+    "label": "Klimt (Golden Phase)",
+    "group": "Painters",
+    "block": "golden period painting by Gustav Klimt, figure wrapped in a flat gold leaf robe of spirals and rectangles, realistic softly painted face and hands, mosaic ornament, byzantine gold background, embrace, jewel colours",
+    "tier": 1
+  },
+  {
+    "id": "picasso-blue",
+    "label": "Picasso (Blue Period)",
+    "group": "Painters",
+    "block": "blue period painting by Pablo Picasso, monochrome cold blue and blue-green palette, gaunt melancholic figure, elongated hands, hunched posture, flat sombre background, thin dry paint",
+    "tier": 1
+  },
+  {
+    "id": "picasso-rose",
+    "label": "Picasso (Rose Period)",
+    "group": "Painters",
+    "block": "rose period painting by Pablo Picasso, warm pink ochre and terracotta palette, harlequin diamond costume, circus saltimbanque figure, quiet dignity, flat dusty background, delicate thin paint",
+    "tier": 1
+  },
+  {
+    "id": "kandinsky-early",
+    "label": "Kandinsky (early tempera)",
+    "group": "Painters",
+    "block": "early tempera painting by Wassily Kandinsky before abstraction, fairy-tale folk scene, rider in old Russian costume, jewel-like dabs of colour on dark ground, glowing pointillist dots, medieval towers, night blue with gold and crimson",
+    "tier": 1
+  },
+  {
+    "id": "matisse-fauve",
+    "label": "Matisse (Fauvism)",
+    "group": "Painters",
+    "block": "fauvist painting by Henri Matisse, wild unmixed colour, green stripe down the face, red and turquoise flat planes, loose broad brushstrokes, decorative patterned interior, joyful bold simplicity",
+    "tier": 1
+  },
+  {
+    "id": "schiele",
+    "label": "Schiele",
+    "group": "Painters",
+    "block": "figure drawing by Egon Schiele, nervous jagged contour line, contorted angular pose, bony elongated hands, gouache and watercolour patches of orange red and sickly green on bare paper, empty white background, raw expressionist intensity",
+    "tier": 1
+  },
+  {
+    "id": "kubista",
+    "label": "Kubista (cubo-expressionism)",
+    "group": "Painters",
+    "block": "Czech cubo-expressionist painting by Bohumil Kubista, figure built from sharp crystalline facets, cold blue green and ochre planes, dramatic raking light and deep shadow, tense angular composition, intense staring face, dense heavy oil",
+    "tier": 1
+  },
+  {
+    "id": "mucha-slav-epic",
+    "label": "Mucha (Slav Epic)",
+    "group": "Painters",
+    "block": "monumental egg tempera painting by Alphonse Mucha from the Slav Epic, pale luminous blue and white tones, crowd of Slavic figures in linen folk dress, glowing symbolic figure hovering above, misty historical vision, soft muted fresco-like surface",
+    "tier": 1
+  },
+  {
+    "id": "chagall",
+    "label": "Chagall",
+    "group": "Painters",
+    "block": "dreamlike painting by Marc Chagall, floating lovers drifting over a village, upside-down cow and fiddler, glowing cobalt blue and crimson, soft translucent layers, folk fairy tale, weightless joy",
+    "tier": 1
+  },
+  {
+    "id": "josef-capek",
+    "label": "Josef Capek (naive cubism)",
+    "group": "Painters",
+    "block": "Czech painting by Josef Capek, blocky simplified figure like a wooden toy, rough thick outlines, chunky flat planes of brick red ochre and grey-blue, childlike naive geometry, coarse matte texture, tender humour",
+    "tier": 1
+  },
+  {
+    "id": "rivera",
+    "label": "Diego Rivera (mural)",
+    "group": "Painters",
+    "block": "mural fresco by Diego Rivera, monumental rounded figure with simplified solid volumes, Mexican worker or calla lily seller, earthy terracotta ochre and green, flat matte surface, social realism, crowded composition",
+    "tier": 1
+  },
+  {
+    "id": "lempicka",
+    "label": "Lempicka (Art Deco)",
+    "group": "Painters",
+    "block": "art deco portrait by Tamara de Lempicka, glossy metallic sculpted figure, streamlined drapery in silver green and scarlet, sharp geometric shading, skyscraper backdrop, cool glamorous stare, polished tubular volumes",
+    "tier": 1
+  },
+  {
+    "id": "magritte",
+    "label": "Magritte",
+    "group": "Painters",
+    "block": "surrealist painting by Rene Magritte, bowler hat and dark overcoat, face hidden behind a floating green apple, cloudy blue daytime sky, flat deadpan illustrative rendering, uncanny calm, clean smooth paint",
+    "tier": 1
+  },
+  {
+    "id": "hopper",
+    "label": "Hopper",
+    "group": "Painters",
+    "block": "painting by Edward Hopper, solitary figure in a quiet room or diner, hard raking morning sunlight, long geometric shadows, muted greens and ochres, large window, american realism, melancholy urban stillness",
+    "tier": 1
+  },
+  {
+    "id": "dali",
+    "label": "Dali (surrealism)",
+    "group": "Painters",
+    "block": "surrealist painting by Salvador Dali, figure in a vast empty desert plain under a clear sky, melting soft forms propped on crutches, long shadows, ants and drawers, hyper-smooth academic rendering, uncanny dream logic",
+    "tier": 1
+  },
+  {
+    "id": "kahlo",
+    "label": "Frida Kahlo",
+    "group": "Painters",
+    "block": "self-portrait painting by Frida Kahlo, frontal gaze, joined eyebrows, flowers braided into hair, embroidered Tehuana dress, lush tropical leaves and a small monkey, flat naive Mexican folk retablo style, saturated colours",
+    "tier": 1
+  },
+  {
+    "id": "picasso-cubist",
+    "label": "Picasso (Cubist portrait)",
+    "group": "Painters",
+    "block": "cubist portrait by Pablo Picasso, face shown in profile and frontal view at once, both eyes on one side, fractured angular planes, thick black outlines, bold flat red yellow green and purple, patterned wallpaper",
+    "tier": 1
+  },
+  {
+    "id": "lada",
+    "label": "Josef Lada",
+    "group": "Painters",
+    "block": "Czech folk illustration by Josef Lada, round-faced jolly figure with rosy cheeks, thick black outlines, flat cheerful colours, snowy village with pointed roofs, naive childlike proportions, gentle humour, gouache",
+    "tier": 1
+  },
+  {
+    "id": "matisse-cutout",
+    "label": "Matisse (cut-outs)",
+    "group": "Painters",
+    "block": "paper cut-out by Henri Matisse, figure as a single flat cobalt blue silhouette cut from gouache-painted paper, simplified curving limbs, white background, scissors-cut edges, leaf and star shapes, jazz-like playfulness",
+    "tier": 1
+  },
+  {
+    "id": "bacon",
+    "label": "Francis Bacon",
+    "group": "Painters",
+    "block": "painting by Francis Bacon, smeared distorted figure with blurred twisting face, seated inside a thin drawn cage of lines, flat orange or violet ground, raw fleshy pinks, isolated on a bare stage, visceral unease",
+    "tier": 1
+  },
+  {
+    "id": "warhol",
+    "label": "Warhol (silkscreen)",
+    "group": "Painters",
+    "block": "pop art silkscreen portrait by Andy Warhol, high-contrast photo reduced to flat blocks, misregistered neon colour fills, hot pink turquoise and yellow, repeated grid of the same face, halftone grain, flat glossy celebrity icon",
+    "tier": 1
+  },
+  {
+    "id": "lichtenstein",
+    "label": "Lichtenstein (comic dots)",
+    "group": "Painters",
+    "block": "pop art painting by Roy Lichtenstein, enlarged comic strip panel, Ben-Day dot shading, thick black outlines, primary red yellow and blue, dramatic close-up face, speech bubble with bold text, flat printed look",
+    "tier": 1
+  },
+  {
+    "id": "hockney-pool",
+    "label": "Hockney (pool)",
+    "group": "Painters",
+    "block": "1960s Los Angeles acrylic painting by David Hockney, flat clean colour fields, turquoise swimming pool with stylised ripples, modernist house and palm trees, crisp shadows, bright even sunlight, deadpan cool stillness",
+    "tier": 1
+  },
+  {
+    "id": "basquiat",
+    "label": "Basquiat",
+    "group": "Painters",
+    "block": "neo-expressionist painting by Jean-Michel Basquiat, raw scrawled figure with skull-like head, three-pointed crown, exposed anatomy lines, graffiti text fragments and crossed-out words, oil stick and acrylic on rough canvas, chaotic bright colours",
+    "tier": 1
+  },
+  {
+    "id": "haring",
+    "label": "Keith Haring",
+    "group": "Painters",
+    "block": "painting by Keith Haring, figure as a thick black outline pictogram, radiant motion lines around the body, flat bright red yellow and blue, dancing pose, dense playful pattern, subway chalk graffiti energy",
+    "tier": 1
+  },
+  {
+    "id": "ukiyoe",
+    "label": "Ukiyo-e woodblock",
+    "group": "Asia",
+    "block": "ukiyo-e style, bold black outlines, flat color areas, elegant curved lines, stylized hair and clothing folds, limited color palette, japanese woodblock print aesthetic",
+    "tier": 2
+  },
+  {
+    "id": "chineseink",
+    "label": "Chinese ink wash",
+    "group": "Asia",
+    "block": "traditional chinese ink wash painting, flowing black ink brushstrokes, minimal color, elegant empty space, soft gradients, expressive line work, misty atmosphere",
+    "tier": 2
+  },
+  {
+    "id": "persian",
+    "label": "Persian miniature",
+    "group": "Asia",
+    "block": "persian miniature style, highly detailed decorative patterns, rich jewel tones, flattened perspective, elegant elongated figures, intricate clothing and background ornaments",
+    "tier": 2
+  },
+  {
+    "id": "indian",
+    "label": "Indian miniature",
+    "group": "Asia",
+    "block": "detailed indian miniature painting, flat vibrant colors, intricate decorative patterns, stylized elongated figures, ornate borders, rich reds and golds",
+    "tier": 2
+  },
+  {
+    "id": "burmese",
+    "label": "Burmese temple painting",
+    "group": "Asia",
+    "block": "traditional burmese temple painting style, flowing elegant lines, rich gold and red tones, ornate decorative details, soft idealized faces, luminous atmosphere",
+    "tier": 2
+  },
+  {
+    "id": "thangka",
+    "label": "Tibetan thangka",
+    "group": "Asia",
+    "block": "tibetan thangka painting style, precise symmetrical composition, rich mineral pigments, gold outlines, ornate halo and cloud motifs, flat stylized figures",
+    "tier": 2
+  },
+  {
+    "id": "rinpa",
+    "label": "Rinpa gold screen",
+    "group": "Asia",
+    "block": "japanese rinpa screen style, gold leaf background, bold flat silhouettes, stylized waves and grasses, mineral pigments, decorative asymmetry",
+    "tier": 2
+  },
+  {
+    "id": "dunhuang",
+    "label": "Dunhuang cave mural",
+    "group": "Asia",
+    "block": "dunhuang cave mural style, flowing celestial ribbons, ochre and lapis pigments, weathered plaster texture, serene stylized figures, flat halo",
+    "tier": 2
+  },
+  {
+    "id": "minhwa",
+    "label": "Korean minhwa",
+    "group": "Asia",
+    "block": "korean minhwa folk painting style, flat cheerful colours, naive charming proportions, decorative peonies and tigers motifs, hanji paper texture",
+    "tier": 2
+  },
+  {
+    "id": "papercut",
+    "label": "Paper cut",
+    "group": "Asia",
+    "block": "traditional paper cut style, single flat colour silhouette, intricate symmetrical cutouts, sharp negative space, decorative floral lattice",
+    "tier": 2
+  },
+  {
+    "id": "filipino",
+    "label": "Traditional Filipino",
+    "group": "Asia",
+    "block": "traditional filipino style, intricate weaving patterns, soft warm colors, graceful elongated figures, decorative textile motifs",
+    "tier": 2
+  },
+  {
+    "id": "romanfresco",
+    "label": "Roman fresco",
+    "group": "Europe",
+    "block": "roman fresco style, soft pastel colors, slightly weathered texture, classical drapery, calm idealized faces, muted earth and ochre palette, wall-painting look",
+    "tier": 2
+  },
+  {
+    "id": "greek",
+    "label": "Classical Greek",
+    "group": "Europe",
+    "block": "classical greek inspired painting, idealized muscular anatomy, clean marble-like skin, balanced composition, soft drapery folds, harmonious proportions, muted earth tones",
+    "tier": 2
+  },
+  {
+    "id": "minoan",
+    "label": "Minoan fresco",
+    "group": "Europe",
+    "block": "minoan fresco style, flowing curved contours, terracotta and marine blue, stylized profile with large eye, spiral and wave motifs, plaster texture",
+    "tier": 2
+  },
+  {
+    "id": "byzantine",
+    "label": "Byzantine icon",
+    "group": "Europe",
+    "block": "byzantine icon style, flat gold leaf ground, elongated solemn figures, stylized drapery folds, red and deep blue robes, hieratic frontal composition",
+    "tier": 2
+  },
+  {
+    "id": "illumination",
+    "label": "Illuminated manuscript",
+    "group": "Europe",
+    "block": "medieval illuminated manuscript style, gold leaf, ornate vine border, flat jewel colours, stylized figure inside a decorated initial, vellum texture",
+    "tier": 2
+  },
+  {
+    "id": "stainedglass",
+    "label": "Stained glass",
+    "group": "Europe",
+    "block": "gothic stained glass window style, bold black lead lines, luminous saturated colour panels, flat shapes, backlit glow, geometric tracery",
+    "tier": 2
+  },
+  {
+    "id": "baroque",
+    "label": "Dramatic Baroque",
+    "group": "Europe",
+    "block": "dramatic baroque painting, strong chiaroscuro lighting, deep shadows, rich dark colors, dynamic composition, emotional intensity, detailed fabric folds",
+    "tier": 2
+  },
+  {
+    "id": "impressionist",
+    "label": "Impressionist",
+    "group": "Europe",
+    "block": "impressionist plein air painting, broken brushstrokes, vibrating complementary colours, soft daylight, loose edges, atmospheric immediacy",
+    "tier": 2
+  },
+  {
+    "id": "artnouveau",
+    "label": "Art Nouveau",
+    "group": "Europe",
+    "block": "art nouveau lithograph poster by Alphonse Mucha, woman framed by a circular halo motif, flowing decorative hair, ornamental mosaic border, pale pastel tones with gold, elegant whiplash lines, stylised flowers, flat poster colours",
+    "tier": 2
+  },
+  {
+    "id": "secession",
+    "label": "Vienna Secession",
+    "group": "Europe",
+    "block": "vienna secession style, flat gilded ornament, geometric mosaic patterns, elongated figure, decorative square motifs, gold and muted green",
+    "tier": 2
+  },
+  {
+    "id": "artdeco",
+    "label": "Art Deco poster",
+    "group": "Europe",
+    "block": "art deco poster style, streamlined geometric forms, strong symmetry, metallic gold and black, flat colour blocks, elegant stylized figure",
+    "tier": 2
+  },
+  {
+    "id": "constructivist",
+    "label": "Constructivist poster",
+    "group": "Europe",
+    "block": "russian constructivist poster style, bold diagonal composition, red black and cream, geometric shapes, photomontage feel, heavy sans-serif blocks",
+    "tier": 2
+  },
+  {
+    "id": "woodcut",
+    "label": "Expressionist woodcut",
+    "group": "Europe",
+    "block": "german expressionist woodcut print, harsh carved lines, stark black and white, angular distorted forms, visible gouge marks, raw emotional energy",
+    "tier": 2
+  },
+  {
+    "id": "maya",
+    "label": "Maya mural",
+    "group": "Americas & Oceania",
+    "block": "classic maya mural style, formal profile and three-quarter views, intricate geometric patterns, jade green and deep red colors, hieroglyphic decorative elements, stylized proportions",
+    "tier": 2
+  },
+  {
+    "id": "aztec",
+    "label": "Aztec codex",
+    "group": "Americas & Oceania",
+    "block": "aztec codex and stone relief style, bold black outlines, vibrant red turquoise and gold accents, geometric feather and sun motifs, formal stylized figures",
+    "tier": 2
+  },
+  {
+    "id": "inca",
+    "label": "Inca textile & goldwork",
+    "group": "Americas & Oceania",
+    "block": "inca textile and goldwork inspired style, precise geometric patterns, rich gold and deep red tones, formal frontal composition, stylized strong bodies",
+    "tier": 2
+  },
+  {
+    "id": "ledger",
+    "label": "Plains ledger art",
+    "group": "Americas & Oceania",
+    "block": "plains ledger art style, bold outlines, flat colors, dynamic movement lines, symbolic geometric patterns, earth tones with bright accents",
+    "tier": 2
+  },
+  {
+    "id": "huichol",
+    "label": "Huichol yarn painting",
+    "group": "Americas & Oceania",
+    "block": "huichol yarn painting style, dense parallel yarn lines, vivid contrasting colours, symbolic peyote and deer motifs, flat filled forms",
+    "tier": 2
+  },
+  {
+    "id": "aboriginal",
+    "label": "Aboriginal dot painting",
+    "group": "Americas & Oceania",
+    "block": "australian aboriginal dot painting style, intricate dot patterns, earth pigment colors, x-ray style internal forms, symbolic story elements, flat ceremonial composition",
+    "tier": 2
+  },
+  {
+    "id": "polynesian",
+    "label": "Traditional Polynesian",
+    "group": "Americas & Oceania",
+    "block": "traditional polynesian style, bold geometric tattoos, strong black outlines, stylized powerful bodies, warm skin tones, carved wood aesthetic",
+    "tier": 2
+  },
+  {
+    "id": "egyptian",
+    "label": "Ancient Egyptian",
+    "group": "Africa & Near East",
+    "block": "ancient egyptian wall painting style, strict side profile views, flat bold colors, hierarchical proportions, black outlines, ochre skin tones, hieroglyphic decorative elements, formal composition",
+    "tier": 2
+  },
+  {
+    "id": "ashanti",
+    "label": "Ashanti (Ghana)",
+    "group": "Africa & Near East",
+    "block": "ashanti inspired style, rich gold tones, geometric textile patterns, strong stylized figures, decorative symbols, warm earth and gold palette",
+    "tier": 2
+  },
+  {
+    "id": "dogon",
+    "label": "Dogon (Mali)",
+    "group": "Africa & Near East",
+    "block": "dogon sculptural style, elongated stylized figures, abstract geometric forms, strong vertical lines, earthy wood-like tones, ritualistic presence",
+    "tier": 2
+  },
+  {
+    "id": "himba",
+    "label": "Himba (Namibia)",
+    "group": "Africa & Near East",
+    "block": "himba inspired style, rich red ochre skin tones, minimal clothing emphasis, strong natural anatomy, warm desert light, textured skin details",
+    "tier": 2
+  },
+  {
+    "id": "maasai",
+    "label": "Maasai",
+    "group": "Africa & Near East",
+    "block": "maasai inspired style, bold red and beadwork patterns, elongated elegant figures, strong vertical composition, vibrant contrasting colors",
+    "tier": 2
+  },
+  {
+    "id": "assyrian",
+    "label": "Assyrian palace relief",
+    "group": "Africa & Near East",
+    "block": "assyrian palace relief style, strong black outlines, low-relief shading, formal profile views, detailed hair and beard patterns, monumental composition",
+    "tier": 2
+  },
+  {
+    "id": "mesopotamian",
+    "label": "Mesopotamian relief",
+    "group": "Africa & Near East",
+    "block": "mesopotamian relief style, composite profile views, formal hierarchical proportions, detailed patterned hair, carved stone texture, earthy tones",
+    "tier": 2
+  },
+  {
+    "id": "arabian",
+    "label": "Pre-Islamic Arabian",
+    "group": "Africa & Near East",
+    "block": "pre-islamic arabian style, elegant elongated figures, soft desert tones, flowing drapery, refined facial features, calm monumental presence",
+    "tier": 2
+  },
+  {
+    "id": "hebrew",
+    "label": "Ancient Hebrew",
+    "group": "Africa & Near East",
+    "block": "ancient near eastern hebrew inspired style, simple strong outlines, modest earth palette, solemn dignified figures, subtle patterned textiles, formal composition",
+    "tier": 2
+  }
+]

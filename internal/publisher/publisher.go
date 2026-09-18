@@ -23,8 +23,9 @@ import (
 )
 
 type Config struct {
-	// Integrations maps platform → Postiz integration id. Missing platforms
-	// are resolved from GET /integrations by provider identifier.
+	// Integrations maps "platform" or "platform:account" → Postiz integration
+	// id. Missing keys are resolved from GET /integrations by provider
+	// identifier, and by channel name when the post names an account.
 	Integrations   map[string]string
 	YouTubePrivacy string // public | unlisted | private
 	XWhoCanReply   string // everyone | following | mentionedUsers | subscribers | verified
@@ -129,8 +130,15 @@ func (p *Publisher) HandleWebhook(ctx context.Context, body []byte) {
 	p.runSync(ctx)
 }
 
-func (p *Publisher) integrationFor(ctx context.Context, platform string) (string, error) {
-	if id := p.cfg.Integrations[platform]; id != "" {
+// integrationFor resolves the Postiz channel a post goes out from. A post that
+// names an account (its project's postiz_accounts) must match that channel;
+// one that does not takes the platform's only channel, as before.
+func (p *Publisher) integrationFor(ctx context.Context, platform, account string) (string, error) {
+	key := platform
+	if account != "" {
+		key = platform + ":" + account
+	}
+	if id := p.cfg.Integrations[key]; id != "" {
 		return id, nil
 	}
 	list, err := p.pz.Integrations(ctx)
@@ -139,21 +147,39 @@ func (p *Publisher) integrationFor(ctx context.Context, platform string) (string
 	}
 	var found []postiz.Integration
 	for _, in := range list {
-		if in.Identifier == platform && !in.Disabled {
-			found = append(found, in)
+		if in.Identifier != platform || in.Disabled {
+			continue
 		}
+		if account != "" && !isAccount(in, account) {
+			continue
+		}
+		found = append(found, in)
 	}
 	switch len(found) {
 	case 0:
+		if account != "" {
+			return "", fmt.Errorf("no enabled %s channel %q in Postiz; connect it, or map it with POSTIZ_INTEGRATIONS=%s=<id>",
+				platform, account, key)
+		}
 		return "", fmt.Errorf("no enabled %s channel in Postiz; connect it first", platform)
 	case 1:
 		if p.cfg.Integrations == nil {
 			p.cfg.Integrations = map[string]string{}
 		}
-		p.cfg.Integrations[platform] = found[0].ID
+		p.cfg.Integrations[key] = found[0].ID
 		return found[0].ID, nil
 	}
-	return "", fmt.Errorf("%d %s channels in Postiz; pick one with POSTIZ_INTEGRATIONS", len(found), platform)
+	return "", fmt.Errorf("%d %s channels in Postiz match %q; pick one with POSTIZ_INTEGRATIONS=%s=<id>",
+		len(found), platform, account, key)
+}
+
+// isAccount matches the project's account against what Postiz knows about a
+// channel: its id, or its name with any leading @ ignored.
+func isAccount(in postiz.Integration, account string) bool {
+	want := strings.ToLower(strings.TrimPrefix(account, "@"))
+	return in.ID == account ||
+		strings.ToLower(strings.TrimPrefix(in.Name, "@")) == want ||
+		strings.ToLower(strings.TrimPrefix(in.Profile, "@")) == want
 }
 
 func (p *Publisher) settings(post model.Post) map[string]any {
@@ -206,7 +232,7 @@ func (p *Publisher) fail(ctx context.Context, post model.Post, err error) {
 }
 
 func (p *Publisher) publish(ctx context.Context, post model.Post) error {
-	integration, err := p.integrationFor(ctx, post.Platform)
+	integration, err := p.integrationFor(ctx, post.Platform, post.Account)
 	if err != nil {
 		return err
 	}
@@ -227,11 +253,11 @@ func (p *Publisher) publish(ctx context.Context, post model.Post) error {
 		return p.svc.MarkScheduled(ctx, post.ID, existing.ID, existing.Group, at)
 	}
 
-	var media []postiz.Media
-	if post.MediaPath != "" {
-		m, err := p.upload(ctx, post.MediaPath)
+	media := make([]postiz.Media, 0, len(post.MediaPaths))
+	for _, rel := range post.MediaPaths {
+		m, err := p.upload(ctx, rel)
 		if err != nil {
-			return fmt.Errorf("upload %s: %w", post.MediaPath, err)
+			return fmt.Errorf("upload %s: %w", rel, err)
 		}
 		media = append(media, m)
 	}
@@ -243,7 +269,7 @@ func (p *Publisher) publish(ctx context.Context, post model.Post) error {
 		Tags:      []postiz.Tag{},
 		Posts: []postiz.Entry{{
 			Integration: postiz.IntegrationRef{ID: integration},
-			Value:       []postiz.Value{{Content: post.Text, Image: nonNil(media)}},
+			Value:       []postiz.Value{{Content: post.Text, Image: media}},
 			Settings:    p.settings(post),
 		}},
 	})
@@ -255,13 +281,6 @@ func (p *Publisher) publish(ctx context.Context, post model.Post) error {
 	}
 	p.log.Info("scheduled in postiz", "post", post.ID, "postiz", created[0].PostID, "at", at.Format(time.RFC3339))
 	return p.svc.MarkScheduled(ctx, post.ID, created[0].PostID, "", at)
-}
-
-func nonNil(m []postiz.Media) []postiz.Media {
-	if m == nil {
-		return []postiz.Media{}
-	}
-	return m
 }
 
 func (p *Publisher) upload(ctx context.Context, rel string) (postiz.Media, error) {

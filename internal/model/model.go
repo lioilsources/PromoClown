@@ -39,9 +39,21 @@ type Project struct {
 	IOSAppID        string   `json:"ios_app_id,omitempty" yaml:"ios_app_id"`
 	AndroidPackage  string   `json:"android_package,omitempty" yaml:"android_package"`
 	AssetsDir       string   `json:"assets_dir,omitempty" yaml:"assets_dir"`
-	Status          string   `json:"status,omitempty" yaml:"status"`
-	UpdatedAt       string   `json:"updated_at,omitempty" yaml:"-"`
+	// PostizAccounts maps a platform to the Postiz channel that publishes it
+	// ("x": "wakeupm_sfx"); a platform left out uses POSTIZ_INTEGRATIONS.
+	PostizAccounts map[string]string `json:"postiz_accounts,omitempty" yaml:"postiz_accounts"`
+	// DailyCap is how many posts this project may put on one account in a day,
+	// MinDaysBetween the gap between two of its posts on the same platform.
+	// Zero means the default: one a day, seven days apart.
+	DailyCap       int    `json:"daily_cap,omitempty" yaml:"daily_cap"`
+	MinDaysBetween int    `json:"min_days_between,omitempty" yaml:"min_days_between"`
+	Status         string `json:"status,omitempty" yaml:"status"`
+	UpdatedAt      string `json:"updated_at,omitempty" yaml:"-"`
 }
+
+// Account is the Postiz channel this project posts to on the platform, empty
+// when it uses the platform's default channel.
+func (p Project) Account(platform string) string { return p.PostizAccounts[platform] }
 
 // Links returns the project's public links, store links first.
 func (p Project) Links() []string {
@@ -55,25 +67,26 @@ func (p Project) Links() []string {
 }
 
 type Post struct {
-	ID           int64  `json:"id"`
-	Project      string `json:"project"`
-	Platform     string `json:"platform"`
-	Kind         string `json:"kind"`
-	Title        string `json:"title,omitempty"`
-	Text         string `json:"text"`
-	MediaPath    string `json:"media_path,omitempty"`
-	ReplyToURL   string `json:"reply_to_url,omitempty"`
-	Status       string `json:"status"`
-	Revision     int64  `json:"revision"`
-	CreatedBy    string `json:"created_by"`
-	PostizPostID string `json:"postiz_post_id,omitempty"`
-	ReleaseURL   string `json:"release_url,omitempty"`
-	Error        string `json:"error,omitempty"`
-	ScheduledAt  string `json:"scheduled_at,omitempty"`
-	PublishedAt  string `json:"published_at,omitempty"`
-	ApprovedAt   string `json:"approved_at,omitempty"`
-	ApprovedBy   string `json:"approved_by,omitempty"`
-	CreatedAt    string `json:"created_at"`
+	ID           int64    `json:"id"`
+	Project      string   `json:"project"`
+	Platform     string   `json:"platform"`
+	Kind         string   `json:"kind"`
+	Title        string   `json:"title,omitempty"`
+	Text         string   `json:"text"`
+	MediaPaths   []string `json:"media_paths,omitempty"`
+	Account      string   `json:"account,omitempty"`
+	ReplyToURL   string   `json:"reply_to_url,omitempty"`
+	Status       string   `json:"status"`
+	Revision     int64    `json:"revision"`
+	CreatedBy    string   `json:"created_by"`
+	PostizPostID string   `json:"postiz_post_id,omitempty"`
+	ReleaseURL   string   `json:"release_url,omitempty"`
+	Error        string   `json:"error,omitempty"`
+	ScheduledAt  string   `json:"scheduled_at,omitempty"`
+	PublishedAt  string   `json:"published_at,omitempty"`
+	ApprovedAt   string   `json:"approved_at,omitempty"`
+	ApprovedBy   string   `json:"approved_by,omitempty"`
+	CreatedAt    string   `json:"created_at"`
 	// Revision of the last Telegram preview; approving by text uses it.
 	NotifiedRevision int64 `json:"notified_revision,omitempty"`
 	TelegramMsgID    int64 `json:"-"`
@@ -89,13 +102,13 @@ type PostEvent struct {
 }
 
 type DraftRequest struct {
-	Project    string `json:"project"`
-	Platform   string `json:"platform"`
-	Kind       string `json:"kind,omitempty"`
-	Title      string `json:"title,omitempty"`
-	Text       string `json:"text"`
-	MediaPath  string `json:"media_path,omitempty"`
-	ReplyToURL string `json:"reply_to_url,omitempty"`
+	Project    string   `json:"project"`
+	Platform   string   `json:"platform"`
+	Kind       string   `json:"kind,omitempty"`
+	Title      string   `json:"title,omitempty"`
+	Text       string   `json:"text"`
+	MediaPaths []string `json:"media_paths,omitempty"`
+	ReplyToURL string   `json:"reply_to_url,omitempty"`
 }
 
 // PostResult is returned by every call that creates or changes a post.
@@ -113,10 +126,10 @@ type ApproveRequest struct {
 }
 
 type EditRequest struct {
-	Text      *string `json:"text,omitempty"`
-	Title     *string `json:"title,omitempty"`
-	MediaPath *string `json:"media_path,omitempty"`
-	Actor     string  `json:"actor,omitempty"`
+	Text       *string   `json:"text,omitempty"`
+	Title      *string   `json:"title,omitempty"`
+	MediaPaths *[]string `json:"media_paths,omitempty"`
+	Actor      string    `json:"actor,omitempty"`
 }
 
 type RejectRequest struct {
@@ -134,6 +147,38 @@ type RetryRequest struct {
 type PublishedRequest struct {
 	URL   string `json:"url,omitempty"`
 	Actor string `json:"actor,omitempty"`
+}
+
+// Tribute is a picture somebody else made, queued to be restyled and posted
+// with a credit to its author. The queue is filled from Telegram during the
+// day and drained by promo-tribute at night, when the GPU is free.
+type Tribute struct {
+	ID          int64    `json:"id"`
+	Project     string   `json:"project"`
+	Credit      string   `json:"credit"` // "@handle" the post thanks
+	SourcePath  string   `json:"source_path"`
+	Note        string   `json:"note,omitempty"`
+	Status      string   `json:"status"`
+	PostID      int64    `json:"post_id,omitempty"`
+	Styles      []string `json:"styles,omitempty"`
+	Error       string   `json:"error,omitempty"`
+	SubmittedBy string   `json:"submitted_by,omitempty"`
+	CreatedAt   string   `json:"created_at"`
+}
+
+type TributeRequest struct {
+	Project    string `json:"project"`
+	Credit     string `json:"credit"`
+	SourcePath string `json:"source_path"`
+	Note       string `json:"note,omitempty"`
+	Actor      string `json:"actor,omitempty"`
+}
+
+// TributeDoneRequest reports the draft a tribute turned into.
+type TributeDoneRequest struct {
+	PostID int64    `json:"post_id"`
+	Styles []string `json:"styles,omitempty"`
+	Error  string   `json:"error,omitempty"`
 }
 
 type Mention struct {

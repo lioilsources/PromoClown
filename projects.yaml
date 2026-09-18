@@ -29,6 +29,30 @@ projects:
       - online multiplayer
       - pay to win
 
+  # Tsumiki posts tributes: somebody else's picture restyled four ways, with a
+  # credit to its author. Several a day are fine and they need no weekly gap —
+  # each one is a different artist, not a repeat of the same announcement. They
+  # go out from their own X account, so a busy Tsumiki day never blocks Kirian.
+  - slug: tsumiki
+    name: Tsumiki
+    status: active
+    tagline: A Telegram bot that restyles a photo into a painting while keeping the pose and the face.
+    audience: Illustrators, manga and anime fans, and people who like seeing themselves painted.
+    tags: [telegram bot, ai art, restyle, manga, illustration]
+    website_url: https://t.me/tsumikimanga_bot
+    assets_dir: tsumiki
+    postiz_accounts:
+      x: wakeupm_sfx
+    daily_cap: 3
+    min_days_between: 0
+    hooks:
+      - Send a photo, get it back as a painting — the pose and the face stay yours.
+      - 90 painter and era styles, from Botticelli to ukiyo-e.
+      - Runs on a machine at home, not on somebody's cloud.
+    forbidden_claims:
+      - free forever
+      - unlimited
+
   - slug: doggiowars
     name: DoggioWars
     status: active

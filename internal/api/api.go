@@ -17,6 +17,8 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -76,6 +78,7 @@ func New(svc *core.Service, cfg Config, webhook WebhookFunc, log *slog.Logger) h
 	agent("GET /projects/{slug}", s.getProject)
 	agent("GET /projects/{slug}/assets", s.listAssets)
 	agent("POST /projects/{slug}/assets", s.uploadAsset)
+	agent("GET /assets/{path...}", s.getAsset)
 	admin("POST /projects", s.upsertProjects)
 
 	agent("GET /posts", s.listPosts)
@@ -88,6 +91,14 @@ func New(svc *core.Service, cfg Config, webhook WebhookFunc, log *slog.Logger) h
 	admin("POST /posts/{id}/reject", s.rejectPost)
 	admin("POST /posts/{id}/retry", s.retryPost)
 	admin("POST /posts/{id}/published", s.markPublished)
+
+	agent("GET /tributes", s.listTributes)
+	agent("GET /tributes/{id}", s.getTribute)
+	agent("POST /tributes/claim", s.claimTribute)
+	agent("POST /tributes/{id}/done", s.finishTribute)
+	admin("POST /tributes", s.enqueueTribute)
+	admin("POST /tributes/{id}/retry", s.retryTribute)
+	admin("POST /tributes/{id}/cancel", s.cancelTribute)
 
 	agent("POST /mentions", s.importMentions)
 	agent("GET /mentions", s.listMentions)
@@ -192,6 +203,29 @@ func (s *server) uploadAsset(w http.ResponseWriter, r *http.Request, _ string) {
 	defer file.Close()
 	out, err := s.svc.SaveUpload(r.Context(), r.PathValue("slug"), header.Filename, file)
 	s.respond(w, http.StatusCreated, out, err)
+}
+
+// getAsset streams a stored asset back. The night job runs on the Spark while
+// the assets live with promo-api, so it has to fetch the source picture before
+// it can restyle it.
+func (s *server) getAsset(w http.ResponseWriter, r *http.Request, _ string) {
+	path, err := s.svc.AssetPath(r.PathValue("path"))
+	if err != nil {
+		s.fail(w, err)
+		return
+	}
+	f, err := os.Open(path)
+	if err != nil {
+		s.fail(w, fmt.Errorf("asset %s: %w", r.PathValue("path"), core.ErrNotFound))
+		return
+	}
+	defer f.Close()
+	fi, err := f.Stat()
+	if err != nil || fi.IsDir() {
+		s.fail(w, fmt.Errorf("asset %s: %w", r.PathValue("path"), core.ErrNotFound))
+		return
+	}
+	http.ServeContent(w, r, filepath.Base(path), fi.ModTime(), f)
 }
 
 // Posts ---------------------------------------------------------------------------
@@ -315,6 +349,77 @@ func (s *server) markPublished(w http.ResponseWriter, r *http.Request, actor str
 		return
 	}
 	out, err := s.svc.MarkPublished(r.Context(), id, req.URL, time.Time{}, actor)
+	s.respond(w, http.StatusOK, out, err)
+}
+
+// Tributes -------------------------------------------------------------------------
+
+func (s *server) listTributes(w http.ResponseWriter, r *http.Request, _ string) {
+	limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
+	out, err := s.svc.ListTributes(r.Context(), r.URL.Query().Get("status"), limit)
+	s.respond(w, http.StatusOK, out, err)
+}
+
+func (s *server) getTribute(w http.ResponseWriter, r *http.Request, _ string) {
+	id, err := pathID(r)
+	if err != nil {
+		s.fail(w, err)
+		return
+	}
+	out, err := s.svc.GetTribute(r.Context(), id)
+	s.respond(w, http.StatusOK, out, err)
+}
+
+func (s *server) enqueueTribute(w http.ResponseWriter, r *http.Request, actor string) {
+	var req model.TributeRequest
+	if err := decode(w, r, &req); err != nil {
+		s.fail(w, err)
+		return
+	}
+	req.Actor = actor
+	out, err := s.svc.EnqueueTribute(r.Context(), req)
+	s.respond(w, http.StatusCreated, out, err)
+}
+
+// claimTribute hands the night job the next picture to work on. An empty queue
+// answers 404, which is the worker's signal to stop.
+func (s *server) claimTribute(w http.ResponseWriter, r *http.Request, _ string) {
+	out, err := s.svc.ClaimTribute(r.Context())
+	s.respond(w, http.StatusOK, out, err)
+}
+
+func (s *server) finishTribute(w http.ResponseWriter, r *http.Request, _ string) {
+	id, err := pathID(r)
+	if err != nil {
+		s.fail(w, err)
+		return
+	}
+	var req model.TributeDoneRequest
+	if err := decode(w, r, &req); err != nil {
+		s.fail(w, err)
+		return
+	}
+	out, err := s.svc.FinishTribute(r.Context(), id, req)
+	s.respond(w, http.StatusOK, out, err)
+}
+
+func (s *server) retryTribute(w http.ResponseWriter, r *http.Request, _ string) {
+	id, err := pathID(r)
+	if err != nil {
+		s.fail(w, err)
+		return
+	}
+	out, err := s.svc.RetryTribute(r.Context(), id)
+	s.respond(w, http.StatusOK, out, err)
+}
+
+func (s *server) cancelTribute(w http.ResponseWriter, r *http.Request, _ string) {
+	id, err := pathID(r)
+	if err != nil {
+		s.fail(w, err)
+		return
+	}
+	out, err := s.svc.CancelTribute(r.Context(), id)
 	s.respond(w, http.StatusOK, out, err)
 }
 

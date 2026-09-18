@@ -46,7 +46,7 @@ SET status = 'approved',
     error = '',
     updated_at = ?1
 WHERE id = ?4 AND status = 'draft' AND revision = ?5
-RETURNING id, project_id, platform, kind, title, text, media_path, reply_to_url, warnings, status, revision, created_by, postiz_post_id, postiz_group, release_url, error, scheduled_at, published_at, approved_at, approved_by, telegram_msg_id, notified_revision, created_at, updated_at
+RETURNING id, project_id, platform, kind, title, text, media_paths, reply_to_url, warnings, status, revision, created_by, postiz_post_id, postiz_group, release_url, error, scheduled_at, published_at, approved_at, approved_by, telegram_msg_id, notified_revision, created_at, updated_at, account
 `
 
 type ApprovePostParams struct {
@@ -73,7 +73,7 @@ func (q *Queries) ApprovePost(ctx context.Context, arg ApprovePostParams) (Post,
 		&i.Kind,
 		&i.Title,
 		&i.Text,
-		&i.MediaPath,
+		&i.MediaPaths,
 		&i.ReplyToUrl,
 		&i.Warnings,
 		&i.Status,
@@ -91,27 +91,37 @@ func (q *Queries) ApprovePost(ctx context.Context, arg ApprovePostParams) (Post,
 		&i.NotifiedRevision,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Account,
 	)
 	return i, err
 }
 
 const committedPostsBetween = `-- name: CommittedPostsBetween :many
-SELECT id, project_id, platform, kind, title, text, media_path, reply_to_url, warnings, status, revision, created_by, postiz_post_id, postiz_group, release_url, error, scheduled_at, published_at, approved_at, approved_by, telegram_msg_id, notified_revision, created_at, updated_at FROM posts
+SELECT id, project_id, platform, kind, title, text, media_paths, reply_to_url, warnings, status, revision, created_by, postiz_post_id, postiz_group, release_url, error, scheduled_at, published_at, approved_at, approved_by, telegram_msg_id, notified_revision, created_at, updated_at, account FROM posts
 WHERE status IN ('approved', 'scheduled', 'published')
   AND platform = ?1
-  AND COALESCE(published_at, scheduled_at) >= ?2
-  AND COALESCE(published_at, scheduled_at) < ?3
+  AND account = ?2
+  AND COALESCE(published_at, scheduled_at) >= ?3
+  AND COALESCE(published_at, scheduled_at) < ?4
 ORDER BY COALESCE(published_at, scheduled_at)
 `
 
 type CommittedPostsBetweenParams struct {
 	Platform string
+	Account  string
 	From     sql.NullString
 	To       sql.NullString
 }
 
+// Only the same account: two projects posting from two X accounts never
+// compete for the same day.
 func (q *Queries) CommittedPostsBetween(ctx context.Context, arg CommittedPostsBetweenParams) ([]Post, error) {
-	rows, err := q.db.QueryContext(ctx, committedPostsBetween, arg.Platform, arg.From, arg.To)
+	rows, err := q.db.QueryContext(ctx, committedPostsBetween,
+		arg.Platform,
+		arg.Account,
+		arg.From,
+		arg.To,
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -126,7 +136,7 @@ func (q *Queries) CommittedPostsBetween(ctx context.Context, arg CommittedPostsB
 			&i.Kind,
 			&i.Title,
 			&i.Text,
-			&i.MediaPath,
+			&i.MediaPaths,
 			&i.ReplyToUrl,
 			&i.Warnings,
 			&i.Status,
@@ -144,6 +154,7 @@ func (q *Queries) CommittedPostsBetween(ctx context.Context, arg CommittedPostsB
 			&i.NotifiedRevision,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.Account,
 		); err != nil {
 			return nil, err
 		}
@@ -160,23 +171,24 @@ func (q *Queries) CommittedPostsBetween(ctx context.Context, arg CommittedPostsB
 
 const createPost = `-- name: CreatePost :one
 INSERT INTO posts (
-    project_id, platform, kind, title, text, media_path, reply_to_url, warnings,
+    project_id, platform, account, kind, title, text, media_paths, reply_to_url, warnings,
     created_by, status, created_at, updated_at
 ) VALUES (
     ?1, ?2, ?3, ?4,
     ?5, ?6, ?7, ?8,
-    ?9, 'draft', ?10, ?10
+    ?9, ?10, 'draft', ?11, ?11
 )
-RETURNING id, project_id, platform, kind, title, text, media_path, reply_to_url, warnings, status, revision, created_by, postiz_post_id, postiz_group, release_url, error, scheduled_at, published_at, approved_at, approved_by, telegram_msg_id, notified_revision, created_at, updated_at
+RETURNING id, project_id, platform, kind, title, text, media_paths, reply_to_url, warnings, status, revision, created_by, postiz_post_id, postiz_group, release_url, error, scheduled_at, published_at, approved_at, approved_by, telegram_msg_id, notified_revision, created_at, updated_at, account
 `
 
 type CreatePostParams struct {
 	ProjectID  int64
 	Platform   string
+	Account    string
 	Kind       string
 	Title      string
 	Text       string
-	MediaPath  string
+	MediaPaths string
 	ReplyToUrl string
 	Warnings   string
 	CreatedBy  string
@@ -187,10 +199,11 @@ func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (Post, e
 	row := q.db.QueryRowContext(ctx, createPost,
 		arg.ProjectID,
 		arg.Platform,
+		arg.Account,
 		arg.Kind,
 		arg.Title,
 		arg.Text,
-		arg.MediaPath,
+		arg.MediaPaths,
 		arg.ReplyToUrl,
 		arg.Warnings,
 		arg.CreatedBy,
@@ -204,7 +217,7 @@ func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (Post, e
 		&i.Kind,
 		&i.Title,
 		&i.Text,
-		&i.MediaPath,
+		&i.MediaPaths,
 		&i.ReplyToUrl,
 		&i.Warnings,
 		&i.Status,
@@ -222,12 +235,13 @@ func (q *Queries) CreatePost(ctx context.Context, arg CreatePostParams) (Post, e
 		&i.NotifiedRevision,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Account,
 	)
 	return i, err
 }
 
 const findPostByPostizRef = `-- name: FindPostByPostizRef :one
-SELECT id, project_id, platform, kind, title, text, media_path, reply_to_url, warnings, status, revision, created_by, postiz_post_id, postiz_group, release_url, error, scheduled_at, published_at, approved_at, approved_by, telegram_msg_id, notified_revision, created_at, updated_at FROM posts
+SELECT id, project_id, platform, kind, title, text, media_paths, reply_to_url, warnings, status, revision, created_by, postiz_post_id, postiz_group, release_url, error, scheduled_at, published_at, approved_at, approved_by, telegram_msg_id, notified_revision, created_at, updated_at, account FROM posts
 WHERE (postiz_post_id != '' AND postiz_post_id = ?1)
    OR (postiz_group != '' AND postiz_group = ?1)
 LIMIT 1
@@ -243,7 +257,7 @@ func (q *Queries) FindPostByPostizRef(ctx context.Context, ref string) (Post, er
 		&i.Kind,
 		&i.Title,
 		&i.Text,
-		&i.MediaPath,
+		&i.MediaPaths,
 		&i.ReplyToUrl,
 		&i.Warnings,
 		&i.Status,
@@ -261,12 +275,13 @@ func (q *Queries) FindPostByPostizRef(ctx context.Context, ref string) (Post, er
 		&i.NotifiedRevision,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Account,
 	)
 	return i, err
 }
 
 const findPublishedByReleaseURL = `-- name: FindPublishedByReleaseURL :one
-SELECT id, project_id, platform, kind, title, text, media_path, reply_to_url, warnings, status, revision, created_by, postiz_post_id, postiz_group, release_url, error, scheduled_at, published_at, approved_at, approved_by, telegram_msg_id, notified_revision, created_at, updated_at FROM posts
+SELECT id, project_id, platform, kind, title, text, media_paths, reply_to_url, warnings, status, revision, created_by, postiz_post_id, postiz_group, release_url, error, scheduled_at, published_at, approved_at, approved_by, telegram_msg_id, notified_revision, created_at, updated_at, account FROM posts
 WHERE platform = ?1 AND release_url != ''
   AND instr(release_url, ?2) > 0
 ORDER BY id DESC
@@ -288,7 +303,7 @@ func (q *Queries) FindPublishedByReleaseURL(ctx context.Context, arg FindPublish
 		&i.Kind,
 		&i.Title,
 		&i.Text,
-		&i.MediaPath,
+		&i.MediaPaths,
 		&i.ReplyToUrl,
 		&i.Warnings,
 		&i.Status,
@@ -306,12 +321,13 @@ func (q *Queries) FindPublishedByReleaseURL(ctx context.Context, arg FindPublish
 		&i.NotifiedRevision,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Account,
 	)
 	return i, err
 }
 
 const getPost = `-- name: GetPost :one
-SELECT id, project_id, platform, kind, title, text, media_path, reply_to_url, warnings, status, revision, created_by, postiz_post_id, postiz_group, release_url, error, scheduled_at, published_at, approved_at, approved_by, telegram_msg_id, notified_revision, created_at, updated_at FROM posts WHERE id = ?
+SELECT id, project_id, platform, kind, title, text, media_paths, reply_to_url, warnings, status, revision, created_by, postiz_post_id, postiz_group, release_url, error, scheduled_at, published_at, approved_at, approved_by, telegram_msg_id, notified_revision, created_at, updated_at, account FROM posts WHERE id = ?
 `
 
 func (q *Queries) GetPost(ctx context.Context, id int64) (Post, error) {
@@ -324,7 +340,7 @@ func (q *Queries) GetPost(ctx context.Context, id int64) (Post, error) {
 		&i.Kind,
 		&i.Title,
 		&i.Text,
-		&i.MediaPath,
+		&i.MediaPaths,
 		&i.ReplyToUrl,
 		&i.Warnings,
 		&i.Status,
@@ -342,12 +358,13 @@ func (q *Queries) GetPost(ctx context.Context, id int64) (Post, error) {
 		&i.NotifiedRevision,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Account,
 	)
 	return i, err
 }
 
 const listApprovedForPostiz = `-- name: ListApprovedForPostiz :many
-SELECT id, project_id, platform, kind, title, text, media_path, reply_to_url, warnings, status, revision, created_by, postiz_post_id, postiz_group, release_url, error, scheduled_at, published_at, approved_at, approved_by, telegram_msg_id, notified_revision, created_at, updated_at FROM posts
+SELECT id, project_id, platform, kind, title, text, media_paths, reply_to_url, warnings, status, revision, created_by, postiz_post_id, postiz_group, release_url, error, scheduled_at, published_at, approved_at, approved_by, telegram_msg_id, notified_revision, created_at, updated_at, account FROM posts
 WHERE status = 'approved' AND platform != 'reddit'
 ORDER BY scheduled_at, id
 `
@@ -368,7 +385,7 @@ func (q *Queries) ListApprovedForPostiz(ctx context.Context) ([]Post, error) {
 			&i.Kind,
 			&i.Title,
 			&i.Text,
-			&i.MediaPath,
+			&i.MediaPaths,
 			&i.ReplyToUrl,
 			&i.Warnings,
 			&i.Status,
@@ -386,6 +403,7 @@ func (q *Queries) ListApprovedForPostiz(ctx context.Context) ([]Post, error) {
 			&i.NotifiedRevision,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.Account,
 		); err != nil {
 			return nil, err
 		}
@@ -401,7 +419,7 @@ func (q *Queries) ListApprovedForPostiz(ctx context.Context) ([]Post, error) {
 }
 
 const listDraftsToNotify = `-- name: ListDraftsToNotify :many
-SELECT id, project_id, platform, kind, title, text, media_path, reply_to_url, warnings, status, revision, created_by, postiz_post_id, postiz_group, release_url, error, scheduled_at, published_at, approved_at, approved_by, telegram_msg_id, notified_revision, created_at, updated_at FROM posts
+SELECT id, project_id, platform, kind, title, text, media_paths, reply_to_url, warnings, status, revision, created_by, postiz_post_id, postiz_group, release_url, error, scheduled_at, published_at, approved_at, approved_by, telegram_msg_id, notified_revision, created_at, updated_at, account FROM posts
 WHERE status = 'draft' AND notified_revision != revision
 ORDER BY id
 `
@@ -422,7 +440,7 @@ func (q *Queries) ListDraftsToNotify(ctx context.Context) ([]Post, error) {
 			&i.Kind,
 			&i.Title,
 			&i.Text,
-			&i.MediaPath,
+			&i.MediaPaths,
 			&i.ReplyToUrl,
 			&i.Warnings,
 			&i.Status,
@@ -440,6 +458,7 @@ func (q *Queries) ListDraftsToNotify(ctx context.Context) ([]Post, error) {
 			&i.NotifiedRevision,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.Account,
 		); err != nil {
 			return nil, err
 		}
@@ -490,7 +509,7 @@ func (q *Queries) ListPostEvents(ctx context.Context, postID int64) ([]PostEvent
 }
 
 const listPosts = `-- name: ListPosts :many
-SELECT id, project_id, platform, kind, title, text, media_path, reply_to_url, warnings, status, revision, created_by, postiz_post_id, postiz_group, release_url, error, scheduled_at, published_at, approved_at, approved_by, telegram_msg_id, notified_revision, created_at, updated_at FROM posts
+SELECT id, project_id, platform, kind, title, text, media_paths, reply_to_url, warnings, status, revision, created_by, postiz_post_id, postiz_group, release_url, error, scheduled_at, published_at, approved_at, approved_by, telegram_msg_id, notified_revision, created_at, updated_at, account FROM posts
 WHERE (CAST(?1 AS TEXT) IS NULL OR status = CAST(?1 AS TEXT))
   AND (CAST(?2 AS INTEGER) IS NULL OR project_id = CAST(?2 AS INTEGER))
   AND (CAST(?3 AS TEXT) IS NULL OR platform = CAST(?3 AS TEXT))
@@ -526,7 +545,7 @@ func (q *Queries) ListPosts(ctx context.Context, arg ListPostsParams) ([]Post, e
 			&i.Kind,
 			&i.Title,
 			&i.Text,
-			&i.MediaPath,
+			&i.MediaPaths,
 			&i.ReplyToUrl,
 			&i.Warnings,
 			&i.Status,
@@ -544,6 +563,7 @@ func (q *Queries) ListPosts(ctx context.Context, arg ListPostsParams) ([]Post, e
 			&i.NotifiedRevision,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.Account,
 		); err != nil {
 			return nil, err
 		}
@@ -559,7 +579,7 @@ func (q *Queries) ListPosts(ctx context.Context, arg ListPostsParams) ([]Post, e
 }
 
 const listScheduled = `-- name: ListScheduled :many
-SELECT id, project_id, platform, kind, title, text, media_path, reply_to_url, warnings, status, revision, created_by, postiz_post_id, postiz_group, release_url, error, scheduled_at, published_at, approved_at, approved_by, telegram_msg_id, notified_revision, created_at, updated_at FROM posts WHERE status = 'scheduled' ORDER BY scheduled_at, id
+SELECT id, project_id, platform, kind, title, text, media_paths, reply_to_url, warnings, status, revision, created_by, postiz_post_id, postiz_group, release_url, error, scheduled_at, published_at, approved_at, approved_by, telegram_msg_id, notified_revision, created_at, updated_at, account FROM posts WHERE status = 'scheduled' ORDER BY scheduled_at, id
 `
 
 func (q *Queries) ListScheduled(ctx context.Context) ([]Post, error) {
@@ -578,7 +598,7 @@ func (q *Queries) ListScheduled(ctx context.Context) ([]Post, error) {
 			&i.Kind,
 			&i.Title,
 			&i.Text,
-			&i.MediaPath,
+			&i.MediaPaths,
 			&i.ReplyToUrl,
 			&i.Warnings,
 			&i.Status,
@@ -596,6 +616,7 @@ func (q *Queries) ListScheduled(ctx context.Context) ([]Post, error) {
 			&i.NotifiedRevision,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.Account,
 		); err != nil {
 			return nil, err
 		}
@@ -660,7 +681,7 @@ SET status = 'failed',
     error = ?1,
     updated_at = ?2
 WHERE id = ?3 AND status IN ('approved', 'scheduled')
-RETURNING id, project_id, platform, kind, title, text, media_path, reply_to_url, warnings, status, revision, created_by, postiz_post_id, postiz_group, release_url, error, scheduled_at, published_at, approved_at, approved_by, telegram_msg_id, notified_revision, created_at, updated_at
+RETURNING id, project_id, platform, kind, title, text, media_paths, reply_to_url, warnings, status, revision, created_by, postiz_post_id, postiz_group, release_url, error, scheduled_at, published_at, approved_at, approved_by, telegram_msg_id, notified_revision, created_at, updated_at, account
 `
 
 type MarkFailedParams struct {
@@ -679,7 +700,7 @@ func (q *Queries) MarkFailed(ctx context.Context, arg MarkFailedParams) (Post, e
 		&i.Kind,
 		&i.Title,
 		&i.Text,
-		&i.MediaPath,
+		&i.MediaPaths,
 		&i.ReplyToUrl,
 		&i.Warnings,
 		&i.Status,
@@ -697,6 +718,7 @@ func (q *Queries) MarkFailed(ctx context.Context, arg MarkFailedParams) (Post, e
 		&i.NotifiedRevision,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Account,
 	)
 	return i, err
 }
@@ -709,7 +731,7 @@ SET status = 'published',
     error = '',
     updated_at = ?3
 WHERE id = ?4 AND status IN ('approved', 'scheduled')
-RETURNING id, project_id, platform, kind, title, text, media_path, reply_to_url, warnings, status, revision, created_by, postiz_post_id, postiz_group, release_url, error, scheduled_at, published_at, approved_at, approved_by, telegram_msg_id, notified_revision, created_at, updated_at
+RETURNING id, project_id, platform, kind, title, text, media_paths, reply_to_url, warnings, status, revision, created_by, postiz_post_id, postiz_group, release_url, error, scheduled_at, published_at, approved_at, approved_by, telegram_msg_id, notified_revision, created_at, updated_at, account
 `
 
 type MarkPublishedParams struct {
@@ -734,7 +756,7 @@ func (q *Queries) MarkPublished(ctx context.Context, arg MarkPublishedParams) (P
 		&i.Kind,
 		&i.Title,
 		&i.Text,
-		&i.MediaPath,
+		&i.MediaPaths,
 		&i.ReplyToUrl,
 		&i.Warnings,
 		&i.Status,
@@ -752,6 +774,7 @@ func (q *Queries) MarkPublished(ctx context.Context, arg MarkPublishedParams) (P
 		&i.NotifiedRevision,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Account,
 	)
 	return i, err
 }
@@ -765,7 +788,7 @@ SET status = 'scheduled',
     error = '',
     updated_at = ?4
 WHERE id = ?5 AND status = 'approved'
-RETURNING id, project_id, platform, kind, title, text, media_path, reply_to_url, warnings, status, revision, created_by, postiz_post_id, postiz_group, release_url, error, scheduled_at, published_at, approved_at, approved_by, telegram_msg_id, notified_revision, created_at, updated_at
+RETURNING id, project_id, platform, kind, title, text, media_paths, reply_to_url, warnings, status, revision, created_by, postiz_post_id, postiz_group, release_url, error, scheduled_at, published_at, approved_at, approved_by, telegram_msg_id, notified_revision, created_at, updated_at, account
 `
 
 type MarkScheduledParams struct {
@@ -792,7 +815,7 @@ func (q *Queries) MarkScheduled(ctx context.Context, arg MarkScheduledParams) (P
 		&i.Kind,
 		&i.Title,
 		&i.Text,
-		&i.MediaPath,
+		&i.MediaPaths,
 		&i.ReplyToUrl,
 		&i.Warnings,
 		&i.Status,
@@ -810,12 +833,13 @@ func (q *Queries) MarkScheduled(ctx context.Context, arg MarkScheduledParams) (P
 		&i.NotifiedRevision,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Account,
 	)
 	return i, err
 }
 
 const postLog = `-- name: PostLog :many
-SELECT id, project_id, platform, kind, title, text, media_path, reply_to_url, warnings, status, revision, created_by, postiz_post_id, postiz_group, release_url, error, scheduled_at, published_at, approved_at, approved_by, telegram_msg_id, notified_revision, created_at, updated_at FROM posts
+SELECT id, project_id, platform, kind, title, text, media_paths, reply_to_url, warnings, status, revision, created_by, postiz_post_id, postiz_group, release_url, error, scheduled_at, published_at, approved_at, approved_by, telegram_msg_id, notified_revision, created_at, updated_at, account FROM posts
 WHERE status IN ('approved', 'scheduled', 'published')
   AND COALESCE(published_at, scheduled_at, approved_at) >= ?1
 ORDER BY COALESCE(published_at, scheduled_at, approved_at) DESC
@@ -839,7 +863,7 @@ func (q *Queries) PostLog(ctx context.Context, since sql.NullString) ([]Post, er
 			&i.Kind,
 			&i.Title,
 			&i.Text,
-			&i.MediaPath,
+			&i.MediaPaths,
 			&i.ReplyToUrl,
 			&i.Warnings,
 			&i.Status,
@@ -857,6 +881,7 @@ func (q *Queries) PostLog(ctx context.Context, since sql.NullString) ([]Post, er
 			&i.NotifiedRevision,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.Account,
 		); err != nil {
 			return nil, err
 		}
@@ -872,7 +897,7 @@ func (q *Queries) PostLog(ctx context.Context, since sql.NullString) ([]Post, er
 }
 
 const postsCreatedSince = `-- name: PostsCreatedSince :many
-SELECT id, project_id, platform, kind, title, text, media_path, reply_to_url, warnings, status, revision, created_by, postiz_post_id, postiz_group, release_url, error, scheduled_at, published_at, approved_at, approved_by, telegram_msg_id, notified_revision, created_at, updated_at FROM posts
+SELECT id, project_id, platform, kind, title, text, media_paths, reply_to_url, warnings, status, revision, created_by, postiz_post_id, postiz_group, release_url, error, scheduled_at, published_at, approved_at, approved_by, telegram_msg_id, notified_revision, created_at, updated_at, account FROM posts
 WHERE created_at >= ?1
 ORDER BY id
 `
@@ -895,7 +920,7 @@ func (q *Queries) PostsCreatedSince(ctx context.Context, since string) ([]Post, 
 			&i.Kind,
 			&i.Title,
 			&i.Text,
-			&i.MediaPath,
+			&i.MediaPaths,
 			&i.ReplyToUrl,
 			&i.Warnings,
 			&i.Status,
@@ -913,6 +938,7 @@ func (q *Queries) PostsCreatedSince(ctx context.Context, since string) ([]Post, 
 			&i.NotifiedRevision,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.Account,
 		); err != nil {
 			return nil, err
 		}
@@ -933,7 +959,7 @@ SET status = 'rejected',
     error = ?1,
     updated_at = ?2
 WHERE id = ?3 AND status IN ('draft', 'approved', 'failed')
-RETURNING id, project_id, platform, kind, title, text, media_path, reply_to_url, warnings, status, revision, created_by, postiz_post_id, postiz_group, release_url, error, scheduled_at, published_at, approved_at, approved_by, telegram_msg_id, notified_revision, created_at, updated_at
+RETURNING id, project_id, platform, kind, title, text, media_paths, reply_to_url, warnings, status, revision, created_by, postiz_post_id, postiz_group, release_url, error, scheduled_at, published_at, approved_at, approved_by, telegram_msg_id, notified_revision, created_at, updated_at, account
 `
 
 type RejectPostParams struct {
@@ -952,7 +978,7 @@ func (q *Queries) RejectPost(ctx context.Context, arg RejectPostParams) (Post, e
 		&i.Kind,
 		&i.Title,
 		&i.Text,
-		&i.MediaPath,
+		&i.MediaPaths,
 		&i.ReplyToUrl,
 		&i.Warnings,
 		&i.Status,
@@ -970,6 +996,7 @@ func (q *Queries) RejectPost(ctx context.Context, arg RejectPostParams) (Post, e
 		&i.NotifiedRevision,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Account,
 	)
 	return i, err
 }
@@ -981,7 +1008,7 @@ SET status = 'approved',
     scheduled_at = ?1,
     updated_at = ?2
 WHERE id = ?3 AND status = 'failed'
-RETURNING id, project_id, platform, kind, title, text, media_path, reply_to_url, warnings, status, revision, created_by, postiz_post_id, postiz_group, release_url, error, scheduled_at, published_at, approved_at, approved_by, telegram_msg_id, notified_revision, created_at, updated_at
+RETURNING id, project_id, platform, kind, title, text, media_paths, reply_to_url, warnings, status, revision, created_by, postiz_post_id, postiz_group, release_url, error, scheduled_at, published_at, approved_at, approved_by, telegram_msg_id, notified_revision, created_at, updated_at, account
 `
 
 type RetryPostParams struct {
@@ -1001,7 +1028,7 @@ func (q *Queries) RetryPost(ctx context.Context, arg RetryPostParams) (Post, err
 		&i.Kind,
 		&i.Title,
 		&i.Text,
-		&i.MediaPath,
+		&i.MediaPaths,
 		&i.ReplyToUrl,
 		&i.Warnings,
 		&i.Status,
@@ -1019,6 +1046,7 @@ func (q *Queries) RetryPost(ctx context.Context, arg RetryPostParams) (Post, err
 		&i.NotifiedRevision,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Account,
 	)
 	return i, err
 }
@@ -1061,28 +1089,28 @@ const updateDraftContent = `-- name: UpdateDraftContent :one
 UPDATE posts
 SET text = ?1,
     title = ?2,
-    media_path = ?3,
+    media_paths = ?3,
     warnings = ?4,
     revision = revision + 1,
     updated_at = ?5
 WHERE id = ?6 AND status = 'draft'
-RETURNING id, project_id, platform, kind, title, text, media_path, reply_to_url, warnings, status, revision, created_by, postiz_post_id, postiz_group, release_url, error, scheduled_at, published_at, approved_at, approved_by, telegram_msg_id, notified_revision, created_at, updated_at
+RETURNING id, project_id, platform, kind, title, text, media_paths, reply_to_url, warnings, status, revision, created_by, postiz_post_id, postiz_group, release_url, error, scheduled_at, published_at, approved_at, approved_by, telegram_msg_id, notified_revision, created_at, updated_at, account
 `
 
 type UpdateDraftContentParams struct {
-	Text      string
-	Title     string
-	MediaPath string
-	Warnings  string
-	Now       string
-	ID        int64
+	Text       string
+	Title      string
+	MediaPaths string
+	Warnings   string
+	Now        string
+	ID         int64
 }
 
 func (q *Queries) UpdateDraftContent(ctx context.Context, arg UpdateDraftContentParams) (Post, error) {
 	row := q.db.QueryRowContext(ctx, updateDraftContent,
 		arg.Text,
 		arg.Title,
-		arg.MediaPath,
+		arg.MediaPaths,
 		arg.Warnings,
 		arg.Now,
 		arg.ID,
@@ -1095,7 +1123,7 @@ func (q *Queries) UpdateDraftContent(ctx context.Context, arg UpdateDraftContent
 		&i.Kind,
 		&i.Title,
 		&i.Text,
-		&i.MediaPath,
+		&i.MediaPaths,
 		&i.ReplyToUrl,
 		&i.Warnings,
 		&i.Status,
@@ -1113,6 +1141,7 @@ func (q *Queries) UpdateDraftContent(ctx context.Context, arg UpdateDraftContent
 		&i.NotifiedRevision,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Account,
 	)
 	return i, err
 }

@@ -28,6 +28,9 @@ const (
 	youtubeMaxDescBytes = 5000
 	redditMaxReply      = 10000
 
+	// X and Bluesky both take four images, or one video instead.
+	maxImagesPerPost = 4
+
 	// DuplicateThreshold is the word-shingle Jaccard similarity above which two
 	// texts count as the same post.
 	DuplicateThreshold = 0.75
@@ -107,6 +110,8 @@ func ValidateDraft(p model.Project, req model.DraftRequest) (errs, warns []strin
 		errs = append(errs, fmt.Sprintf("unknown kind %q (use %s)", req.Kind, strings.Join(model.Kinds, ", ")))
 	}
 
+	errs = append(errs, mediaProblems(req.Platform, req.MediaPaths)...)
+
 	switch req.Platform {
 	case model.PlatformX:
 		if n := XLength(text); n > xMaxWeighted {
@@ -130,7 +135,7 @@ func ValidateDraft(p model.Project, req model.DraftRequest) (errs, warns []strin
 		if strings.ContainsAny(title+text, "<>") {
 			errs = append(errs, "youtube rejects < and > in title and description")
 		}
-		if req.MediaPath == "" {
+		if len(req.MediaPaths) == 0 {
 			errs = append(errs, "youtube needs a video (--media)")
 		}
 	case model.PlatformReddit:
@@ -159,7 +164,7 @@ func ValidateDraft(p model.Project, req model.DraftRequest) (errs, warns []strin
 		if links := p.Links(); len(links) > 0 && !containsAny(text, links) {
 			warns = append(warns, "no store or website link of the project in the text")
 		}
-		if req.MediaPath == "" {
+		if len(req.MediaPaths) == 0 {
 			warns = append(warns, "no visual attached")
 		}
 	}
@@ -170,6 +175,44 @@ func ValidateDraft(p model.Project, req model.DraftRequest) (errs, warns []strin
 		warns = append(warns, fmt.Sprintf("%d emoji", n))
 	}
 	return errs, warns
+}
+
+// mediaProblems checks how many attachments the platform takes and whether
+// they may be mixed. A video never travels with anything else.
+func mediaProblems(platform string, paths []string) []string {
+	var errs []string
+	seen := make(map[string]bool, len(paths))
+	videos := 0
+	for _, p := range paths {
+		if seen[p] {
+			errs = append(errs, fmt.Sprintf("media %s is attached twice", p))
+		}
+		seen[p] = true
+		if MediaKind(p) == "video" {
+			videos++
+		}
+	}
+	max := maxImagesPerPost
+	switch platform {
+	case model.PlatformYouTube:
+		max = 1
+	case model.PlatformReddit:
+		max = 0
+	}
+	if len(paths) > max {
+		switch max {
+		case 0:
+			errs = append(errs, "reddit replies carry no media")
+		case 1:
+			errs = append(errs, fmt.Sprintf("%s takes one attachment, got %d", platform, len(paths)))
+		default:
+			errs = append(errs, fmt.Sprintf("%s takes at most %d images, got %d", platform, max, len(paths)))
+		}
+	}
+	if videos > 0 && len(paths) > 1 {
+		errs = append(errs, "a video must be the only attachment")
+	}
+	return errs
 }
 
 // Similarity is the Jaccard index of the two texts' word bigrams (unigrams for
@@ -235,9 +278,9 @@ type Slot struct {
 	At        time.Time
 }
 
-// Schedule turns the frequency rules into concrete publication times:
-// at most one post per platform per local calendar day, and at most one post
-// per project per platform in any seven days.
+// Schedule turns the frequency rules into concrete publication times. The
+// caps themselves belong to the project (Limits), because the tribute posts
+// go out several times a day while an app announcement keeps to one a week.
 type Schedule struct {
 	Loc         *time.Location
 	WindowStart time.Duration // offset from local midnight, e.g. 9h
@@ -245,26 +288,56 @@ type Schedule struct {
 	Lead        time.Duration // minimum gap between approval and publication
 }
 
-const projectGap = 7 * 24 * time.Hour
+// Limits are one project's frequency caps on one platform.
+type Limits struct {
+	// PerDay is how many posts the account may carry in a local calendar day;
+	// anything below one is read as one.
+	PerDay int
+	// Gap is the minimum distance between two posts of this project. Zero
+	// allows them back to back, subject to PerDay.
+	Gap time.Duration
+}
+
+// DefaultLimits are the rules from PROMO_RULES.md: one post per account per
+// day, one per project per platform per week.
+var DefaultLimits = Limits{PerDay: 1, Gap: 7 * 24 * time.Hour}
+
+func (l Limits) perDay() int {
+	if l.PerDay < 1 {
+		return 1
+	}
+	return l.PerDay
+}
 
 type conflict struct {
 	slot       Slot
-	sameDay    bool
+	dayFull    bool
 	projectGap bool
 }
 
-func (s Schedule) conflicts(at time.Time, projectID int64, committed []Slot) []conflict {
-	var out []conflict
+func sameLocalDay(a, b time.Time) bool {
+	return a.Year() == b.Year() && a.YearDay() == b.YearDay()
+}
+
+func (s Schedule) conflicts(at time.Time, projectID int64, lim Limits, committed []Slot) []conflict {
 	local := at.In(s.Loc)
+	var day []Slot
 	for _, c := range committed {
-		cl := c.At.In(s.Loc)
-		k := conflict{slot: c}
-		k.sameDay = cl.Year() == local.Year() && cl.YearDay() == local.YearDay()
-		if c.ProjectID == projectID {
-			d := at.Sub(c.At)
-			k.projectGap = d < projectGap && d > -projectGap
+		if sameLocalDay(c.At.In(s.Loc), local) {
+			day = append(day, c)
 		}
-		if k.sameDay || k.projectGap {
+	}
+	full := len(day) >= lim.perDay()
+
+	var out []conflict
+	for _, c := range committed {
+		k := conflict{slot: c}
+		k.dayFull = full && sameLocalDay(c.At.In(s.Loc), local)
+		if c.ProjectID == projectID && lim.Gap > 0 {
+			d := at.Sub(c.At)
+			k.projectGap = d < lim.Gap && d > -lim.Gap
+		}
+		if k.dayFull || k.projectGap {
 			out = append(out, k)
 		}
 	}
@@ -272,18 +345,31 @@ func (s Schedule) conflicts(at time.Time, projectID int64, committed []Slot) []c
 }
 
 // Violations lists the rules a post of projectID at time at would break.
-func (s Schedule) Violations(at time.Time, projectID int64, committed []Slot) []string {
+func (s Schedule) Violations(at time.Time, projectID int64, lim Limits, committed []Slot) []string {
 	var out []string
-	for _, c := range s.conflicts(at, projectID, committed) {
+	var full []string
+	for _, c := range s.conflicts(at, projectID, lim, committed) {
 		when := c.slot.At.In(s.Loc).Format("2006-01-02 15:04")
-		if c.sameDay {
-			out = append(out, fmt.Sprintf("platform already has #%d that day (%s)", c.slot.PostID, when))
+		if c.dayFull {
+			full = append(full, fmt.Sprintf("#%d at %s", c.slot.PostID, when))
 		}
 		if c.projectGap {
-			out = append(out, fmt.Sprintf("project already has #%d on this platform within 7 days (%s)", c.slot.PostID, when))
+			out = append(out, fmt.Sprintf("project already has #%d on this platform within %s (%s)",
+				c.slot.PostID, humanDays(lim.Gap), when))
 		}
 	}
+	if len(full) > 0 {
+		out = append(out, fmt.Sprintf("the account already has %d of %d posts that day (%s)",
+			len(full), lim.perDay(), strings.Join(full, ", ")))
+	}
 	return out
+}
+
+func humanDays(d time.Duration) string {
+	if days := int(d.Hours() / 24); days >= 1 {
+		return fmt.Sprintf("%d days", days)
+	}
+	return d.String()
 }
 
 // OutsideWindow reports whether at falls outside the daily posting window.
@@ -294,7 +380,7 @@ func (s Schedule) OutsideWindow(at time.Time) bool {
 
 // NextSlot returns the earliest time inside the posting window, at least Lead
 // after now, that breaks no frequency rule.
-func (s Schedule) NextSlot(now time.Time, projectID int64, committed []Slot) (time.Time, error) {
+func (s Schedule) NextSlot(now time.Time, projectID int64, lim Limits, committed []Slot) (time.Time, error) {
 	earliest := roundUp(now.Add(s.Lead).In(s.Loc))
 	for i := 0; i < 120; i++ {
 		day := earliest.AddDate(0, 0, i)
@@ -304,19 +390,19 @@ func (s Schedule) NextSlot(now time.Time, projectID int64, committed []Slot) (ti
 			cand = earliest
 		}
 		for cand.Before(end) {
-			cs := s.conflicts(cand, projectID, committed)
+			cs := s.conflicts(cand, projectID, lim, committed)
 			if len(cs) == 0 {
 				return cand.UTC(), nil
 			}
 			next, busy := cand, false
 			for _, c := range cs {
-				if c.sameDay {
+				if c.dayFull {
 					busy = true
 					break
 				}
 				// Too close to the project's other post: earliest escape is
-				// seven days after it, possibly later the same day.
-				if t := c.slot.At.Add(projectGap); t.After(next) {
+				// one gap after it, possibly later the same day.
+				if t := c.slot.At.Add(lim.Gap); t.After(next) {
 					next = t
 				}
 			}

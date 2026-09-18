@@ -1,0 +1,339 @@
+{
+  "1": {
+    "class_type": "CheckpointLoaderSimple",
+    "_meta": {
+      "title": "SDXL checkpoint"
+    },
+    "inputs": {
+      "ckpt_name": "__CKPT__"
+    }
+  },
+  "2": {
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "Reference photo"
+    },
+    "inputs": {
+      "image": "__IMAGE__",
+      "upload": "image"
+    }
+  },
+  "3": {
+    "class_type": "ImageResizeKJv2",
+    "_meta": {
+      "title": "Fit reference to latent"
+    },
+    "inputs": {
+      "image": [
+        "2",
+        0
+      ],
+      "width": 832,
+      "height": 1216,
+      "upscale_method": "lanczos",
+      "keep_proportion": "pad",
+      "pad_color": "0, 0, 0",
+      "crop_position": "center",
+      "divisible_by": 8
+    }
+  },
+  "4": {
+    "class_type": "DepthAnythingV2Preprocessor",
+    "_meta": {
+      "title": "Depth map from reference"
+    },
+    "inputs": {
+      "image": [
+        "3",
+        0
+      ],
+      "ckpt_name": "depth_anything_v2_vitl.pth",
+      "resolution": 768
+    }
+  },
+  "5": {
+    "class_type": "ControlNetLoader",
+    "_meta": {
+      "title": "Union ControlNet"
+    },
+    "inputs": {
+      "control_net_name": "controlnet-union-sdxl-promax-xinsir.safetensors"
+    }
+  },
+  "6": {
+    "class_type": "SetUnionControlNetType",
+    "_meta": {
+      "title": "Union type: depth"
+    },
+    "inputs": {
+      "control_net": [
+        "5",
+        0
+      ],
+      "type": "depth"
+    }
+  },
+  "7": {
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "Positive"
+    },
+    "inputs": {
+      "clip": [
+        "1",
+        1
+      ],
+      "text": "__PROMPT__"
+    }
+  },
+  "8": {
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "Negative"
+    },
+    "inputs": {
+      "clip": [
+        "1",
+        1
+      ],
+      "text": "__NEGATIVE__"
+    }
+  },
+  "9": {
+    "class_type": "InstantIDModelLoader",
+    "_meta": {
+      "title": "InstantID"
+    },
+    "inputs": {
+      "instantid_file": "ip-adapter.bin"
+    }
+  },
+  "10": {
+    "class_type": "InstantIDFaceAnalysis",
+    "_meta": {
+      "title": "Face analysis (InsightFace)"
+    },
+    "inputs": {
+      "provider": "CPU"
+    }
+  },
+  "11": {
+    "class_type": "ControlNetLoader",
+    "_meta": {
+      "title": "InstantID ControlNet"
+    },
+    "inputs": {
+      "control_net_name": "instantid-controlnet-sdxl.safetensors"
+    }
+  },
+  "12": {
+    "class_type": "ApplyInstantIDAdvanced",
+    "_meta": {
+      "title": "Keep the face (InstantID)"
+    },
+    "inputs": {
+      "instantid": [
+        "9",
+        0
+      ],
+      "insightface": [
+        "10",
+        0
+      ],
+      "control_net": [
+        "11",
+        0
+      ],
+      "image": [
+        "3",
+        0
+      ],
+      "model": [
+        "1",
+        0
+      ],
+      "positive": [
+        "7",
+        0
+      ],
+      "negative": [
+        "8",
+        0
+      ],
+      "ip_weight": 0.6,
+      "cn_strength": 0.8,
+      "start_at": 0.0,
+      "end_at": 1.0,
+      "noise": 0.35,
+      "combine_embeds": "average"
+    }
+  },
+  "13": {
+    "class_type": "ControlNetApplyAdvanced",
+    "_meta": {
+      "title": "Keep the pose (depth)"
+    },
+    "inputs": {
+      "positive": [
+        "12",
+        1
+      ],
+      "negative": [
+        "12",
+        2
+      ],
+      "control_net": [
+        "6",
+        0
+      ],
+      "image": [
+        "4",
+        0
+      ],
+      "strength": 0.75,
+      "start_percent": 0.0,
+      "end_percent": 0.9
+    }
+  },
+  "14": {
+    "class_type": "EmptyLatentImage",
+    "_meta": {
+      "title": "Latent (bucket)"
+    },
+    "inputs": {
+      "width": 832,
+      "height": 1216,
+      "batch_size": 1
+    }
+  },
+  "15": {
+    "class_type": "KSampler",
+    "_meta": {
+      "title": "KSampler"
+    },
+    "inputs": {
+      "model": [
+        "12",
+        0
+      ],
+      "positive": [
+        "13",
+        0
+      ],
+      "negative": [
+        "13",
+        1
+      ],
+      "latent_image": [
+        "14",
+        0
+      ],
+      "seed": 0,
+      "steps": 30,
+      "cfg": 5.0,
+      "sampler_name": "dpmpp_2m",
+      "scheduler": "karras",
+      "denoise": 1.0
+    }
+  },
+  "16": {
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE Decode"
+    },
+    "inputs": {
+      "samples": [
+        "15",
+        0
+      ],
+      "vae": [
+        "1",
+        2
+      ]
+    }
+  },
+  "17": {
+    "class_type": "UltralyticsDetectorProvider",
+    "_meta": {
+      "title": "BBOX face detector"
+    },
+    "inputs": {
+      "model_name": "bbox/face_yolov8m.pt"
+    }
+  },
+  "18": {
+    "class_type": "FaceDetailer",
+    "_meta": {
+      "title": "Face detail pass"
+    },
+    "inputs": {
+      "image": [
+        "16",
+        0
+      ],
+      "model": [
+        "12",
+        0
+      ],
+      "clip": [
+        "1",
+        1
+      ],
+      "vae": [
+        "1",
+        2
+      ],
+      "positive": [
+        "12",
+        1
+      ],
+      "negative": [
+        "12",
+        2
+      ],
+      "bbox_detector": [
+        "17",
+        0
+      ],
+      "guide_size": 512.0,
+      "guide_size_for": true,
+      "max_size": 1024.0,
+      "seed": 0,
+      "steps": 20,
+      "cfg": 5.0,
+      "sampler_name": "dpmpp_2m",
+      "scheduler": "karras",
+      "denoise": 0.4,
+      "feather": 5,
+      "noise_mask": true,
+      "force_inpaint": true,
+      "bbox_threshold": 0.5,
+      "bbox_dilation": 10,
+      "bbox_crop_factor": 3.0,
+      "sam_detection_hint": "center-1",
+      "sam_dilation": 0,
+      "sam_threshold": 0.93,
+      "sam_bbox_expansion": 0,
+      "sam_mask_hint_threshold": 0.7,
+      "sam_mask_hint_use_negative": "False",
+      "drop_size": 10,
+      "wildcard": "",
+      "cycle": 1,
+      "inpaint_model": false,
+      "noise_mask_feather": 20
+    }
+  },
+  "19": {
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "Save"
+    },
+    "inputs": {
+      "images": [
+        "18",
+        0
+      ],
+      "filename_prefix": "tsumiki_restyle"
+    }
+  }
+}

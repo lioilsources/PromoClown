@@ -86,7 +86,7 @@ func setup(t *testing.T) (*core.Service, *Publisher, *fakePostiz, int64) {
 		t.Fatal(err)
 	}
 	res, err := svc.CreateDraft(ctx, model.DraftRequest{
-		Project: "kiran", Platform: "bluesky", Text: "Kiran 1.2 is out", MediaPath: "kiran/shot.png",
+		Project: "kiran", Platform: "bluesky", Text: "Kiran 1.2 is out", MediaPaths: []string{"kiran/shot.png"},
 	}, core.ActorAgent)
 	if err != nil {
 		t.Fatal(err)

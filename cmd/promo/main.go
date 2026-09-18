@@ -34,7 +34,7 @@ const usage = `promo — promo state for the OpenClaw agent
   promo projects import <projects.yaml>                      (admin token)
 
   promo posts draft --project <slug> --platform bluesky|x|youtube|reddit --text "..."
-                    [--title "..."] [--kind post|short|video|reply] [--media <asset path or local file>]
+                    [--title "..."] [--kind post|short|video|reply] [--media <asset path or local file>]...
                     [--reply-to <reddit url>]
   promo posts list [--status draft|approved|scheduled|published|rejected|failed] [--project] [--platform] [--limit]
   promo posts show <id>
@@ -43,6 +43,10 @@ const usage = `promo — promo state for the OpenClaw agent
   promo posts reject <id> [--reason "..."]                   (admin token)
   promo posts edit <id> [--text] [--title] [--media]         (admin token)
   promo posts retry <id> [--at ...]                          (admin token)
+
+  promo tributes list [--status queued|running|drafted|failed] [--limit]
+  promo tributes add --project <slug> --credit @artist --media <file>   (admin token)
+  promo tributes retry <id> | cancel <id>                    (admin token)
 
   promo mentions pending [--platform] [--limit]
   promo mentions new                  unreported mentions, marked reported on read
@@ -98,6 +102,8 @@ func run(ctx context.Context, args []string, stdin io.Reader, stdout, stderr io.
 		err = a.projects(ctx, sub, rest)
 	case "posts":
 		err = a.posts(ctx, sub, rest)
+	case "tributes":
+		err = a.tributes(ctx, sub, rest)
 	case "mentions":
 		err = a.mentions(ctx, sub, rest)
 	case "reviews":
@@ -377,7 +383,8 @@ func (a *app) posts(ctx context.Context, sub string, args []string) error {
 	text := fs.String("text", "", "")
 	title := fs.String("title", "", "")
 	kind := fs.String("kind", "", "")
-	media := fs.String("media", "", "")
+	var media stringList
+	fs.Var(&media, "media", "")
 	replyTo := fs.String("reply-to", "", "")
 	at := fs.String("at", "", "")
 	reason := fs.String("reason", "", "")
@@ -394,13 +401,13 @@ func (a *app) posts(ctx context.Context, sub string, args []string) error {
 		if *project == "" || *platform == "" || *text == "" {
 			return usageError("posts draft needs --project, --platform and --text")
 		}
-		mediaPath, err := a.resolveMedia(ctx, *project, *media)
+		mediaPaths, err := a.resolveMedia(ctx, *project, media)
 		if err != nil {
 			return err
 		}
 		res, err := a.api.Draft(ctx, model.DraftRequest{
 			Project: *project, Platform: *platform, Kind: *kind, Title: *title,
-			Text: *text, MediaPath: mediaPath, ReplyToURL: *replyTo,
+			Text: *text, MediaPaths: mediaPaths, ReplyToURL: *replyTo,
 		})
 		if err != nil {
 			return err
@@ -522,11 +529,11 @@ func (a *app) posts(ctx context.Context, sub string, args []string) error {
 			if err != nil {
 				return err
 			}
-			resolved, err := a.resolveMedia(ctx, p.Project, *media)
+			resolved, err := a.resolveMedia(ctx, p.Project, media)
 			if err != nil {
 				return err
 			}
-			req.MediaPath = &resolved
+			req.MediaPaths = &resolved
 		}
 		res, err := a.api.Edit(ctx, id, req)
 		if err != nil {
@@ -555,18 +562,34 @@ func (a *app) posts(ctx context.Context, sub string, args []string) error {
 
 // resolveMedia uploads a local file and returns its media path; anything that
 // is not a local file is taken as a path inside the project assets.
-func (a *app) resolveMedia(ctx context.Context, project, media string) (string, error) {
-	if media == "" {
-		return "", nil
+// stringList collects a flag given more than once, in the order it was given.
+type stringList []string
+
+func (l *stringList) String() string { return strings.Join(*l, ",") }
+
+func (l *stringList) Set(v string) error {
+	if v = strings.TrimSpace(v); v != "" {
+		*l = append(*l, v)
 	}
-	if fi, err := os.Stat(media); err == nil && !fi.IsDir() {
-		asset, err := a.api.UploadAsset(ctx, project, media)
-		if err != nil {
-			return "", fmt.Errorf("upload %s: %w", filepath.Base(media), err)
+	return nil
+}
+
+// resolveMedia turns each --media into an asset path, uploading the ones that
+// name a local file.
+func (a *app) resolveMedia(ctx context.Context, project string, media stringList) ([]string, error) {
+	out := make([]string, 0, len(media))
+	for _, m := range media {
+		if fi, err := os.Stat(m); err == nil && !fi.IsDir() {
+			asset, err := a.api.UploadAsset(ctx, project, m)
+			if err != nil {
+				return nil, fmt.Errorf("upload %s: %w", filepath.Base(m), err)
+			}
+			out = append(out, asset.Path)
+			continue
 		}
-		return asset.Path, nil
+		out = append(out, m)
 	}
-	return media, nil
+	return out, nil
 }
 
 func (a *app) printPost(p model.Post) {
@@ -577,8 +600,8 @@ func (a *app) printPost(p model.Post) {
 	if p.ReplyToURL != "" {
 		fmt.Fprintf(a.out, "reply to: %s\n", p.ReplyToURL)
 	}
-	if p.MediaPath != "" {
-		fmt.Fprintf(a.out, "media: %s\n", p.MediaPath)
+	for _, m := range p.MediaPaths {
+		fmt.Fprintf(a.out, "media: %s\n", m)
 	}
 	for _, kv := range [][2]string{{"created", p.CreatedAt}, {"approved", p.ApprovedAt}, {"scheduled", p.ScheduledAt},
 		{"published", p.PublishedAt}, {"url", p.ReleaseURL}, {"error", p.Error}} {
@@ -660,6 +683,87 @@ func parseIDs(args []string) ([]int64, error) {
 		}
 	}
 	return ids, nil
+}
+
+func (a *app) tributes(ctx context.Context, sub string, args []string) error {
+	fs := flag.NewFlagSet("tributes "+sub, flag.ContinueOnError)
+	asJSON := fs.Bool("json", false, "")
+	status := fs.String("status", "", "")
+	limit := fs.Int("limit", 50, "")
+	project := fs.String("project", "", "")
+	credit := fs.String("credit", "", "")
+	note := fs.String("note", "", "")
+	var media stringList
+	fs.Var(&media, "media", "")
+	pos, err := parseFlags(fs, args)
+	if err != nil {
+		return err
+	}
+
+	switch sub {
+	case "list":
+		list, err := a.api.Tributes(ctx, *status, *limit)
+		if err != nil {
+			return err
+		}
+		if *asJSON {
+			return a.printJSON(list)
+		}
+		if len(list) == 0 {
+			fmt.Fprintln(a.out, "No tributes.")
+			return nil
+		}
+		for _, t := range list {
+			line := fmt.Sprintf("#%d %s · %s · %s · %s", t.ID, t.Status, t.Project, t.Credit, t.SourcePath)
+			if t.PostID != 0 {
+				line += fmt.Sprintf(" → post #%d", t.PostID)
+			}
+			if t.Error != "" {
+				line += " · " + t.Error
+			}
+			fmt.Fprintln(a.out, line)
+		}
+		return nil
+
+	case "add":
+		if *project == "" || *credit == "" || len(media) != 1 {
+			return usageError("tributes add needs --project, --credit and one --media")
+		}
+		paths, err := a.resolveMedia(ctx, *project, media)
+		if err != nil {
+			return err
+		}
+		t, err := a.api.EnqueueTribute(ctx, model.TributeRequest{
+			Project: *project, Credit: *credit, SourcePath: paths[0], Note: *note,
+		})
+		if err != nil {
+			return err
+		}
+		if *asJSON {
+			return a.printJSON(t)
+		}
+		fmt.Fprintf(a.out, "Tribute #%d queued for %s (%s). The night run drafts the post; you approve it in Telegram.\n",
+			t.ID, t.Credit, t.Project)
+		return nil
+
+	case "retry", "cancel":
+		id, err := parseID(pos, "tributes "+sub)
+		if err != nil {
+			return err
+		}
+		var t model.Tribute
+		if sub == "retry" {
+			t, err = a.api.RetryTribute(ctx, id)
+		} else {
+			t, err = a.api.CancelTribute(ctx, id)
+		}
+		if err != nil {
+			return err
+		}
+		fmt.Fprintf(a.out, "#%d is now %s\n", t.ID, t.Status)
+		return nil
+	}
+	return usageError("unknown tributes command %q", sub)
 }
 
 func (a *app) mentions(ctx context.Context, sub string, args []string) error {

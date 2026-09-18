@@ -56,8 +56,8 @@ func TestPostLifecycle(t *testing.T) {
 
 	draft := model.DraftRequest{
 		Project: "kiran", Platform: "bluesky",
-		Text:      "Kiran 1.2: offline maps for hikers. https://apps.apple.com/app/id1",
-		MediaPath: "kiran/shot.png",
+		Text:       "Kiran 1.2: offline maps for hikers. https://apps.apple.com/app/id1",
+		MediaPaths: []string{"kiran/shot.png"},
 	}
 	res, err := svc.CreateDraft(ctx, draft, ActorAgent)
 	if err != nil {
@@ -77,7 +77,7 @@ func TestPostLifecycle(t *testing.T) {
 
 	// Missing media and forbidden claims are refused together.
 	_, err = svc.CreateDraft(ctx, model.DraftRequest{
-		Project: "kiran", Platform: "x", Text: "No ads ever!", MediaPath: "kiran/missing.png",
+		Project: "kiran", Platform: "x", Text: "No ads ever!", MediaPaths: []string{"kiran/missing.png"},
 	}, ActorAgent)
 	if !errors.As(err, &verr) || len(verr.Problems) != 2 {
 		t.Fatalf("want two problems, got %v", err)
@@ -109,7 +109,7 @@ func TestPostLifecycle(t *testing.T) {
 	// A second Bluesky post the same day lands on the next free day.
 	res2, err := svc.CreateDraft(ctx, model.DraftRequest{
 		Project: "kiran", Platform: "bluesky", Text: "How we built tile caching in Flutter https://apps.apple.com/app/id1",
-		MediaPath: "kiran/shot.png",
+		MediaPaths: []string{"kiran/shot.png"},
 	}, ActorAgent)
 	if err != nil {
 		t.Fatal(err)

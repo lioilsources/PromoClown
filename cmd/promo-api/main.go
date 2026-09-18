@@ -47,9 +47,10 @@ type config struct {
 	publishInterval, syncInterval  time.Duration
 	youtubePrivacy, xWhoCanReply   string
 
-	tgToken string
-	tgChat  int64
-	tgUsers map[int64]bool
+	tgToken        string
+	tgChat         int64
+	tgUsers        map[int64]bool
+	tributeProject string
 
 	redditRetention time.Duration
 }
@@ -124,6 +125,8 @@ func loadConfig() (config, error) {
 		}
 		c.integrations[strings.TrimSpace(k)] = strings.TrimSpace(v)
 	}
+
+	c.tributeProject = env("TRIBUTE_PROJECT", "tsumiki")
 
 	if c.tgToken != "" {
 		for _, v := range splitList(os.Getenv("TELEGRAM_ALLOWED_USER_IDS")) {
@@ -304,10 +307,11 @@ func serve(ctx context.Context, cfg config, log *slog.Logger) error {
 
 	if cfg.tgToken != "" {
 		bot := approvals.New(svc, telegram.New(cfg.tgToken), approvals.Config{
-			ChatID:       cfg.tgChat,
-			AllowedUsers: cfg.tgUsers,
-			OffsetFile:   filepath.Join(filepath.Dir(cfg.dbPath), "telegram-offset"),
-			PostizURL:    cfg.postizUI,
+			ChatID:         cfg.tgChat,
+			AllowedUsers:   cfg.tgUsers,
+			OffsetFile:     filepath.Join(filepath.Dir(cfg.dbPath), "telegram-offset"),
+			PostizURL:      cfg.postizUI,
+			TributeProject: cfg.tributeProject,
 		}, log.With("component", "approvals"), nudge)
 		go bot.Run(ctx)
 	} else {

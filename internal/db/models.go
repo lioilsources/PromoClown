@@ -31,7 +31,7 @@ type Post struct {
 	Kind             string
 	Title            string
 	Text             string
-	MediaPath        string
+	MediaPaths       string
 	ReplyToUrl       string
 	Warnings         string
 	Status           string
@@ -49,6 +49,7 @@ type Post struct {
 	NotifiedRevision int64
 	CreatedAt        string
 	UpdatedAt        string
+	Account          string
 }
 
 type PostEvent struct {
@@ -79,6 +80,9 @@ type Project struct {
 	Status          string
 	CreatedAt       string
 	UpdatedAt       string
+	PostizAccounts  string
+	DailyCap        int64
+	MinDaysBetween  int64
 }
 
 type Review struct {
@@ -97,4 +101,19 @@ type Review struct {
 	SeenAt     string
 	NotifiedAt sql.NullString
 	Handled    bool
+}
+
+type Tribute struct {
+	ID          int64
+	ProjectID   int64
+	Credit      string
+	SourcePath  string
+	Note        string
+	Status      string
+	PostID      sql.NullInt64
+	Styles      string
+	Error       string
+	SubmittedBy string
+	CreatedAt   string
+	UpdatedAt   string
 }

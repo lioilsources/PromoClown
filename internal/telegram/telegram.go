@@ -41,6 +41,31 @@ type Message struct {
 	From      *User  `json:"from"`
 	Chat      Chat   `json:"chat"`
 	Text      string `json:"text"`
+	Caption   string `json:"caption"`
+	// Photo carries the same picture in several sizes, smallest first.
+	Photo    []PhotoSize `json:"photo"`
+	Document *Document   `json:"document"`
+}
+
+type PhotoSize struct {
+	FileID   string `json:"file_id"`
+	Width    int    `json:"width"`
+	Height   int    `json:"height"`
+	FileSize int64  `json:"file_size"`
+}
+
+type Document struct {
+	FileID   string `json:"file_id"`
+	FileName string `json:"file_name"`
+	MimeType string `json:"mime_type"`
+	FileSize int64  `json:"file_size"`
+}
+
+// File is what getFile answers: a path valid for an hour on the file endpoint.
+type File struct {
+	FileID   string `json:"file_id"`
+	FilePath string `json:"file_path"`
+	FileSize int64  `json:"file_size"`
 }
 
 type CallbackQuery struct {
@@ -197,6 +222,96 @@ func (c *Client) SendMedia(ctx context.Context, chatID int64, kind, filename str
 	req.Header.Set("Content-Type", mw.FormDataContentType())
 	var out Message
 	return out, c.send(req, &out)
+}
+
+// SendMediaGroup sends two to ten files as one album. Telegram attaches no
+// inline keyboard to an album, so the caller sends the buttons separately.
+func (c *Client) SendMediaGroup(ctx context.Context, chatID int64, items []GroupItem, caption string) ([]Message, error) {
+	if len(items) < 2 || len(items) > 10 {
+		return nil, fmt.Errorf("media group takes 2 to 10 items, got %d", len(items))
+	}
+	type entry struct {
+		Type      string `json:"type"`
+		Media     string `json:"media"`
+		Caption   string `json:"caption,omitempty"`
+		ParseMode string `json:"parse_mode,omitempty"`
+	}
+	descr := make([]entry, len(items))
+	for i, it := range items {
+		kind := "photo"
+		if it.Kind == "video" {
+			kind = "video"
+		}
+		descr[i] = entry{Type: kind, Media: fmt.Sprintf("attach://file%d", i)}
+	}
+	// Only the first item's caption is shown, as the album's caption.
+	if caption != "" {
+		descr[0].Caption, descr[0].ParseMode = caption, "HTML"
+	}
+	spec, err := json.Marshal(descr)
+	if err != nil {
+		return nil, err
+	}
+
+	pr, pw := io.Pipe()
+	mw := multipart.NewWriter(pw)
+	go func() {
+		err := mw.WriteField("chat_id", strconv.FormatInt(chatID, 10))
+		if err == nil {
+			err = mw.WriteField("media", string(spec))
+		}
+		for i, it := range items {
+			if err != nil {
+				break
+			}
+			var part io.Writer
+			if part, err = mw.CreateFormFile(fmt.Sprintf("file%d", i), it.Filename); err == nil {
+				_, err = io.Copy(part, it.Content)
+			}
+		}
+		if err == nil {
+			err = mw.Close()
+		}
+		pw.CloseWithError(err)
+	}()
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.endpoint("sendMediaGroup"), pr)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Content-Type", mw.FormDataContentType())
+	var out []Message
+	return out, c.send(req, &out)
+}
+
+// GroupItem is one file of an album.
+type GroupItem struct {
+	Kind     string // image | video
+	Filename string
+	Content  io.Reader
+}
+
+// GetFile resolves a file id to a download path.
+func (c *Client) GetFile(ctx context.Context, fileID string) (File, error) {
+	var out File
+	return out, c.call(ctx, "getFile", map[string]any{"file_id": fileID}, &out)
+}
+
+// Download streams a file the bot was sent. The caller closes the body.
+func (c *Client) Download(ctx context.Context, filePath string) (io.ReadCloser, error) {
+	url := c.BaseURL + "/file/bot" + c.Token + "/" + filePath
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := c.HTTP.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("telegram download: %s", strings.ReplaceAll(err.Error(), c.Token, "<token>"))
+	}
+	if resp.StatusCode != http.StatusOK {
+		resp.Body.Close()
+		return nil, fmt.Errorf("telegram download %s: HTTP %d", filePath, resp.StatusCode)
+	}
+	return resp.Body, nil
 }
 
 func (c *Client) AnswerCallback(ctx context.Context, callbackID, text string) error {

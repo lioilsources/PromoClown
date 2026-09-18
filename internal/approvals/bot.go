@@ -30,6 +30,9 @@ type Config struct {
 	Tick         time.Duration
 	OffsetFile   string // remembers the update offset across restarts
 	PostizURL    string // for links in notifications
+	// TributeProject is the project a picture sent to the bot belongs to
+	// unless its caption names another with "#slug".
+	TributeProject string
 }
 
 type Bot struct {
@@ -160,6 +163,10 @@ func (b *Bot) handle(ctx context.Context, u telegram.Update) {
 			}
 			return
 		}
+		if len(m.Photo) > 0 || m.Document != nil {
+			b.handlePhoto(ctx, m)
+			return
+		}
 		cmd, err := Parse(m.Text)
 		if err != nil {
 			b.say(ctx, m.Chat.ID, "❓ "+html.EscapeString(err.Error())+"\n\n"+helpText)
@@ -198,7 +205,12 @@ const helpText = `<b>Schvalování postů</b>
 <code>no 12 důvod</code> zamítnout
 <code>retry 12</code> znovu zkusit neúspěšný post
 <code>done 12 url</code> Reddit odpověď odeslaná ručně
-<code>show 12</code> · <code>list</code>`
+<code>show 12</code> · <code>list</code>
+
+<b>Tribute</b>
+Pošli obrázek a do popisku autora: <code>@artist</code>.
+Jiný projekt: <code>#slug</code>. V noci z něj vzniknou 4 obrázky
+v různých malířských stylech a přijde návrh ke schválení.`
 
 type result struct {
 	text         string
@@ -396,7 +408,7 @@ func (b *Bot) sendPreview(ctx context.Context, p model.Post, warns []string) (in
 	kb := b.keyboard(p)
 	chat := b.cfg.ChatID
 
-	if p.MediaPath != "" {
+	if len(p.MediaPaths) > 0 {
 		if sent, id, note := b.sendPreviewMedia(ctx, p, body, kb); sent {
 			if id != 0 {
 				return id, nil
@@ -420,43 +432,104 @@ func (b *Bot) sendPreview(ctx context.Context, p model.Post, warns []string) (in
 }
 
 // sendPreviewMedia returns sent=true when the media went out; id is non-zero
-// when the buttons went with it.
+// when the buttons went with it. Several images travel as one album, which
+// Telegram will not decorate with buttons, so those follow in their own
+// message.
 func (b *Bot) sendPreviewMedia(ctx context.Context, p model.Post, body string, kb *telegram.Keyboard) (sent bool, id int64, note string) {
-	path, err := b.svc.AssetPath(p.MediaPath)
-	if err != nil {
-		return false, 0, "📎 " + html.EscapeString(err.Error())
+	files, notes := b.openMedia(p)
+	defer func() {
+		for _, f := range files {
+			f.Close()
+		}
+	}()
+	switch {
+	case len(files) == 0:
+		return false, 0, strings.Join(notes, "\n")
+	case len(files) > 1:
+		items := make([]telegram.GroupItem, len(files))
+		for i, f := range files {
+			items[i] = telegram.GroupItem{Kind: f.kind, Filename: filepath.Base(f.Name()), Content: f}
+		}
+		caption := ""
+		if visibleLen(body) <= 1024 && len(notes) == 0 {
+			caption = body
+		}
+		if _, err := b.tg.SendMediaGroup(ctx, b.cfg.ChatID, items, caption); err != nil {
+			b.log.Warn("telegram: album preview failed, sending text", "post", p.ID, "err", err)
+			return false, 0, mediaList(p.MediaPaths)
+		}
+		if caption != "" {
+			// The album carries the text; the buttons still need a message.
+			msg, err := b.tg.SendMessage(ctx, b.cfg.ChatID, previewHeader(p, nil, b.svc.Location()), kb)
+			if err != nil {
+				return true, 0, ""
+			}
+			return true, msg.MessageID, ""
+		}
+		return true, 0, strings.Join(notes, "\n")
 	}
-	fi, err := os.Stat(path)
-	if err != nil {
-		return false, 0, "📎 médium nenalezeno: " + html.EscapeString(p.MediaPath)
-	}
-	kind := core.MediaKind(path)
-	limit := int64(10 << 20)
-	if kind == "video" {
-		limit = 50 << 20
-	}
-	if kind == "other" || fi.Size() > limit {
-		return false, 0, fmt.Sprintf("📎 %s (%d MB, na náhled moc velké)", html.EscapeString(p.MediaPath), fi.Size()>>20)
-	}
-	f, err := os.Open(path)
-	if err != nil {
-		return false, 0, "📎 " + html.EscapeString(err.Error())
-	}
-	defer f.Close()
 
-	if visibleLen(body) <= 1024 {
-		msg, err := b.tg.SendMedia(ctx, b.cfg.ChatID, kind, filepath.Base(path), f, body, kb)
+	f := files[0]
+	if visibleLen(body) <= 1024 && len(notes) == 0 {
+		msg, err := b.tg.SendMedia(ctx, b.cfg.ChatID, f.kind, filepath.Base(f.Name()), f, body, kb)
 		if err == nil {
 			return true, msg.MessageID, ""
 		}
 		b.log.Warn("telegram: media preview failed, sending text", "post", p.ID, "err", err)
-		return false, 0, "📎 " + html.EscapeString(p.MediaPath)
+		return false, 0, mediaList(p.MediaPaths)
 	}
-	if _, err := b.tg.SendMedia(ctx, b.cfg.ChatID, kind, filepath.Base(path), f, "", nil); err != nil {
+	if _, err := b.tg.SendMedia(ctx, b.cfg.ChatID, f.kind, filepath.Base(f.Name()), f, "", nil); err != nil {
 		b.log.Warn("telegram: media preview failed", "post", p.ID, "err", err)
-		return false, 0, "📎 " + html.EscapeString(p.MediaPath)
+		return false, 0, mediaList(p.MediaPaths)
 	}
-	return true, 0, ""
+	return true, 0, strings.Join(notes, "\n")
+}
+
+// mediaFile is an open asset plus what Telegram should send it as.
+type mediaFile struct {
+	*os.File
+	kind string
+}
+
+// openMedia opens what can be previewed and describes what cannot, so a post
+// with one oversized image still shows the other three.
+func (b *Bot) openMedia(p model.Post) (files []*mediaFile, notes []string) {
+	for _, rel := range p.MediaPaths {
+		path, err := b.svc.AssetPath(rel)
+		if err != nil {
+			notes = append(notes, "📎 "+html.EscapeString(err.Error()))
+			continue
+		}
+		fi, err := os.Stat(path)
+		if err != nil {
+			notes = append(notes, "📎 médium nenalezeno: "+html.EscapeString(rel))
+			continue
+		}
+		kind := core.MediaKind(path)
+		limit := int64(10 << 20)
+		if kind == "video" {
+			limit = 50 << 20
+		}
+		if kind == "other" || fi.Size() > limit {
+			notes = append(notes, fmt.Sprintf("📎 %s (%d MB, na náhled moc velké)", html.EscapeString(rel), fi.Size()>>20))
+			continue
+		}
+		f, err := os.Open(path)
+		if err != nil {
+			notes = append(notes, "📎 "+html.EscapeString(err.Error()))
+			continue
+		}
+		files = append(files, &mediaFile{File: f, kind: kind})
+	}
+	return files, notes
+}
+
+func mediaList(paths []string) string {
+	out := make([]string, len(paths))
+	for i, p := range paths {
+		out[i] = "📎 " + html.EscapeString(p)
+	}
+	return strings.Join(out, "\n")
 }
 
 func (b *Bot) notifyEvents(ctx context.Context) {
