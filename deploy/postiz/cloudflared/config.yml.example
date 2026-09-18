@@ -1,13 +1,17 @@
-# Tunnel for postiz.ol1n.com. Create it once on JODA, which holds the account
+# Tunnel for social.ol1n.com. Create it once on JODA, which holds the account
 # cert (~/.cloudflared/cert.pem):
 #
 #   cloudflared tunnel create postiz            # prints the UUID, writes ~/.cloudflared/<UUID>.json
-#   cloudflared tunnel route dns postiz postiz.ol1n.com
+#   cloudflared tunnel route dns <UUID> social.ol1n.com
+#
+# Route by UUID, not by name: JODA's ~/.cloudflared/config.yml names a default
+# tunnel, and the name argument loses to it — the CNAME then silently points at
+# the wrong tunnel and the hostname answers an empty 404.
 #
 # Copy <UUID>.json next to this file as credentials.json (git-ignored) on the
 # host that runs Postiz, and put the UUID below.
 #
-# Cloudflare Access (Zero Trust → Access → Applications), app postiz.ol1n.com:
+# Cloudflare Access (Zero Trust → Access → Applications), app social.ol1n.com:
 #   - Allow: your e-mail
 #   - Bypass: path /uploads/*   Postiz downloads its own media through this URL
 #                               when publishing; behind Access it gets a login page.
@@ -15,6 +19,6 @@ tunnel: <TUNNEL-UUID>
 credentials-file: /etc/cloudflared/credentials.json
 
 ingress:
-  - hostname: postiz.ol1n.com
+  - hostname: social.ol1n.com
     service: http://postiz:5000
   - service: http_status:404

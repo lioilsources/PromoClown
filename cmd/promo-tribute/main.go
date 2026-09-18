@@ -30,17 +30,21 @@ Renders every queued tribute and drafts the post. Nothing is published.
 
   --variants N   images per post (default 4, the most X and Bluesky take)
   --max N        stop after N tributes (default 0, the whole queue)
-  --template T   post text; {credit} is the author's handle, {link} the
-                 project's website, {styles} the style labels
+  --template T   post text; {credit} is the author's handle, {styles} the
+                 style labels, {link} the project's website (left out by
+                 default: the link belongs in the account profile)
   --seed N       repeat a run's style choice and generation seeds
   --dry-run      pick styles and print what would be rendered
 
 Env: PROMO_API_URL, PROMO_TOKEN, COMFY_URL (default http://127.0.0.1:8188)
 `
 
-// The credit comes first: the post exists to point at the artist, and the
-// promo line has to read as a footnote to that, not the other way round.
-const defaultTemplate = "Tribute to {credit} 🎨\n\n{styles}\n\n{link}"
+// The credit is the whole post: it exists to point at the artist. The link to
+// the bot lives in the account's profile, not in every post — X charges
+// $0.20 for a post carrying a link against $0.015 for one without, and three
+// tributes a day is the difference between $18 and $1.40 a month. {link} is
+// still available for a project that wants it.
+const defaultTemplate = "Tribute to {credit} 🎨\n\n{styles}"
 
 func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)

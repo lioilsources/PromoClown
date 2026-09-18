@@ -22,11 +22,12 @@ Pořadí odpovídá plánu (§9) s úpravami z README („Odchylky od plánu").
    ```bash
    mac$ for n in PROMO_AGENT_TOKEN PROMO_ADMIN_TOKEN OPENCLAW_GATEWAY_TOKEN; do echo "$n=$(openssl rand -hex 32)"; done
    ```
-3. **X** (developer.x.com, Free): app → User authentication settings → OAuth 1.0a, **Read and Write**, Type of App **Native App**, callback `https://postiz.ol1n.com/integrations/social/x`. Zkopíruj Consumer API Key + Secret.
+3. **X** (developer.x.com): app → User authentication settings → OAuth 1.0a, **Read and Write**, Type of App **Native App**, callback `https://social.ol1n.com/integrations/social/x`, Website URL `https://t.me/tsumikimanga_bot`. Zkopíruj Consumer API Key + Secret → `X_API_KEY` / `X_API_SECRET` v `deploy/postiz/.env`.
+   **Pozor:** od února 2026 free tier pro nové vývojáře není, default je pay-per-use — post bez odkazu $0,015, **s odkazem $0,20**. Proto šablona tributů odkaz nenese; ten patří do profilu účtu.
 4. **Google Cloud** (projekt např. `promoclown`):
    - zapni **YouTube Data API v3**;
    - OAuth consent screen: External, Testing, sebe přidej jako test usera;
-   - Credentials → OAuth client ID → *Web application*, redirect `https://postiz.ol1n.com/integrations/social/youtube` (pro Postiz);
+   - Credentials → OAuth client ID → *Web application*, redirect `https://social.ol1n.com/integrations/social/youtube` (pro Postiz);
    - Credentials → API key omezený na YouTube Data API v3 (pro `youtube-comments`); ID kanálu `UC…` najdeš na youtube.com/account_advanced.
 5. **Bluesky**: Settings → Privacy and security → App passwords → `postiz` a zvlášť `promoclown-monitor` (jde revokovat samostatně).
 6. **Reddit**: požádej o přístup k Data API (Responsible Builder Policy, odkaz v „Reddit Data API Wiki" na support.reddithelp.com). Popis: osobní nekomerční read-only monitoring pár subredditů a vlastního inboxu, desítky requestů denně. Po schválení reddit.com/prefs/apps → *script* app; účet bez 2FA.
@@ -36,19 +37,28 @@ Pořadí odpovídá plánu (§9) s úpravami z README („Odchylky od plánu").
 10. **Cloudflare tunel pro Postiz** — na JODA, kde je `~/.cloudflared/cert.pem`:
     ```bash
     joda$ cloudflared tunnel create postiz              # vypíše UUID, zapíše ~/.cloudflared/<UUID>.json
-    joda$ cloudflared tunnel route dns postiz postiz.ol1n.com
+    joda$ cloudflared tunnel route dns a26613b2-38d2-4fe6-b6b9-268b54babf9b social.ol1n.com
     ```
-    Hotovo 2026-09-14: tunel `postiz` = `a26613b2-38d2-4fe6-b6b9-268b54babf9b`.
-    **Past:** pro `postiz.ol1n.com` už existoval starý CNAME na tunel `media_network`;
-    `route dns` (i s `-f`) ho nepřepíše, jen hlásí „already configured … tunnelID=46b3669e".
-    Řešení: v dashboardu (DNS → záznam `postiz`) smazat nebo přepsat cíl na
-    `a26613b2-38d2-4fe6-b6b9-268b54babf9b.cfargotunnel.com`; token v `~/.cloudflare/api.env`
-    na Macu má jen Access práva, DNS ne.
+    Hotovo 2026-09-18: tunel `postiz` = `a26613b2-38d2-4fe6-b6b9-268b54babf9b`,
+    veřejné jméno **`social.ol1n.com`**.
 
-    Access aplikace jsou založené přes API (2026-09-14): `postiz.ol1n.com` s policy
-    *owner-sso* (allow, e-maily zkopírované z aplikace `finetune`) a `postiz.ol1n.com/uploads`
-    s policy *bypass everyone* — Postiz si při publikaci stahuje vlastní média přes veřejnou
-    URL a za Access by dostal login stránku. Ručně: Zero Trust → Access → Applications.
+    **Past 1 — jméno tunelu prohraje s lokálním configem.** `route dns postiz …`
+    založilo CNAME na `media_network` (46b3669e), protože `~/.cloudflared/config.yml`
+    na JODĚ určuje default tunel. Hostname pak odpovídá prázdné 404 od cloudflared.
+    Routuj vždy **UUID**, a výsledek ověř requestem, ne logem.
+
+    **Past 2 — starý CNAME nejde přepsat.** `postiz.ol1n.com` drží tunel
+    `media_network` a `route dns` ho nepřepíše ani s `-f` („already configured").
+    Token v `~/.cloudflare/api.env` na Macu má Access práva, DNS ne, takže se to
+    musí klikat v dashboardu. Proto vzniklo nové jméno `social.ol1n.com` —
+    to `cloudflared` založit umí sám.
+
+    Access aplikace jsou založené přes API: `social.ol1n.com` s policy *owner-sso*
+    (allow, tři e-maily) a `social.ol1n.com/uploads` s policy *bypass everyone* —
+    Postiz si při publikaci stahuje vlastní média přes veřejnou URL a za Access
+    by dostal login stránku. Policy jsou **inline, ne sdílené**: nové aplikaci
+    se nedá předat id policy jiné aplikace (`policy … not found`), musí se poslat
+    celý objekt. Ručně: Zero Trust → Access → Applications.
 
 ## Fáze A — Spark: model, OpenClaw, Telegram
 
@@ -226,7 +236,7 @@ Veřejná URL závisí na opravě DNS záznamu (fáze E bod 10).
 
 Pak:
 
-1. https://postiz.ol1n.com → vytvoř účet. V `.env` nastav `POSTIZ_DISABLE_REGISTRATION=true` a `make deploy-postiz POSTIZ_HOST=spark` (UI je dostupné z LAN).
+1. https://social.ol1n.com → vytvoř účet. V `.env` nastav `POSTIZ_DISABLE_REGISTRATION=true` a `make deploy-postiz POSTIZ_HOST=spark` (UI je dostupné z LAN).
 2. Přidej kanály: **Bluesky** (identifier + app password `postiz`), **X**, **YouTube**.
 3. Settings → Developers → Public API → klíč.
 4. Na JODA do `deploy/promo-api/.env`:

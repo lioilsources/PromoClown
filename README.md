@@ -25,7 +25,7 @@ nasazení krok za krokem je v [`docs/RUNBOOK.md`](docs/RUNBOOK.md).
      youtube-comments · reddit-monitor                 │ Postiz API key jen zde
      bluesky-mentions                                  ▼
    heartbeat 15 min · weekly-plan · daily-digest   Postiz + Temporal (docker :4007)
-                                                   postiz.ol1n.com (CF Tunnel + Access)
+                                                   social.ol1n.com (CF Tunnel + Access)
                                                    → Bluesky, X, YouTube
 ```
 

@@ -3,7 +3,7 @@
 # Based on gitroomhq/postiz-docker-compose @ dd4969e (2026-07-30). Changes:
 # secrets and URLs come from .env; the only published port binds to one
 # address; Temporal UI and admin tools sit behind the "debug" profile; a
-# cloudflared connector serves postiz.ol1n.com; logs rotate.
+# cloudflared connector serves social.ol1n.com; logs rotate.
 #
 # Postiz >= 2.12 needs Temporal, which brings Elasticsearch and a second
 # Postgres. Budget about 3 GB of RAM for this file: JODA (3.8 GB, swap already
@@ -179,7 +179,7 @@ services:
         condition: service_healthy
     logging: *logging
 
-  # Tunnel connector for postiz.ol1n.com. See cloudflared/config.yml.example.
+  # Tunnel connector for social.ol1n.com. See cloudflared/config.yml.example.
   cloudflared:
     image: cloudflare/cloudflared:latest
     container_name: postiz-cloudflared
