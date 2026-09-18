@@ -156,13 +156,13 @@ func (s *Service) UpsertProject(ctx context.Context, p model.Project) (model.Pro
 	if p.DailyCap == 0 {
 		p.DailyCap = DefaultLimits.PerDay
 	}
-	if p.MinDaysBetween == 0 {
-		p.MinDaysBetween = int(DefaultLimits.Gap.Hours() / 24)
+	if p.MinDaysBetween == nil {
+		p.MinDaysBetween = intPtr(int(DefaultLimits.Gap.Hours() / 24))
 	}
 	if p.DailyCap < 1 {
 		problems = append(problems, "daily_cap must be at least 1")
 	}
-	if p.MinDaysBetween < 0 {
+	if *p.MinDaysBetween < 0 {
 		problems = append(problems, "min_days_between cannot be negative")
 	}
 	for platform := range p.PostizAccounts {
@@ -189,7 +189,7 @@ func (s *Service) UpsertProject(ctx context.Context, p model.Project) (model.Pro
 		AssetsDir:       p.AssetsDir,
 		PostizAccounts:  formatAccounts(p.PostizAccounts),
 		DailyCap:        int64(p.DailyCap),
-		MinDaysBetween:  int64(p.MinDaysBetween),
+		MinDaysBetween:  int64(*p.MinDaysBetween),
 		Status:          p.Status,
 		Now:             db.FormatTime(s.now()),
 	})
@@ -1130,7 +1130,7 @@ func projectModel(r db.Project) model.Project {
 		WebsiteURL: r.WebsiteUrl, StoreIOSURL: r.StoreIosUrl, StoreAndroidURL: r.StoreAndroidUrl,
 		IOSAppID: r.IosAppID, AndroidPackage: r.AndroidPackage, AssetsDir: r.AssetsDir,
 		PostizAccounts: parseAccounts(r.PostizAccounts), DailyCap: int(r.DailyCap),
-		MinDaysBetween: int(r.MinDaysBetween), Status: r.Status, UpdatedAt: r.UpdatedAt,
+		MinDaysBetween: intPtr(int(r.MinDaysBetween)), Status: r.Status, UpdatedAt: r.UpdatedAt,
 	}
 }
 
@@ -1193,6 +1193,8 @@ func limitsOf(p db.Project) Limits {
 	}
 	return lim
 }
+
+func intPtr(v int) *int { return &v }
 
 func nullString(v string) sql.NullString { return sql.NullString{String: v, Valid: v != ""} }
 

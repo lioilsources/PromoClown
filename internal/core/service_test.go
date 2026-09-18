@@ -235,3 +235,27 @@ func TestAssetPathStaysInsideRoot(t *testing.T) {
 		t.Fatalf("escaped the assets root: %s", p)
 	}
 }
+
+// min_days_between 0 is "no gap at all", which a project file must be able to
+// say; leaving the field out still means the default week.
+func TestMinDaysBetweenZeroSurvivesUpsert(t *testing.T) {
+	ctx := context.Background()
+	svc, _ := newTestService(t)
+	zero := 0
+
+	p, err := svc.UpsertProject(ctx, model.Project{Slug: "tribute", Name: "Tribute", MinDaysBetween: &zero, DailyCap: 3})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if p.MinDaysBetween == nil || *p.MinDaysBetween != 0 || p.DailyCap != 3 {
+		t.Fatalf("saved %+v", p)
+	}
+
+	d, err := svc.UpsertProject(ctx, model.Project{Slug: "quiet", Name: "Quiet"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if d.MinDaysBetween == nil || *d.MinDaysBetween != 7 || d.DailyCap != 1 {
+		t.Fatalf("defaults %+v", d)
+	}
+}

@@ -42,11 +42,14 @@ type Project struct {
 	// PostizAccounts maps a platform to the Postiz channel that publishes it
 	// ("x": "wakeupm_sfx"); a platform left out uses POSTIZ_INTEGRATIONS.
 	PostizAccounts map[string]string `json:"postiz_accounts,omitempty" yaml:"postiz_accounts"`
-	// DailyCap is how many posts this project may put on one account in a day,
-	// MinDaysBetween the gap between two of its posts on the same platform.
-	// Zero means the default: one a day, seven days apart.
-	DailyCap       int    `json:"daily_cap,omitempty" yaml:"daily_cap"`
-	MinDaysBetween int    `json:"min_days_between,omitempty" yaml:"min_days_between"`
+	// DailyCap is how many posts this project may put on one account in a day;
+	// zero means the default of one.
+	DailyCap int `json:"daily_cap,omitempty" yaml:"daily_cap"`
+	// MinDaysBetween is the gap between two of this project's posts on the same
+	// platform. It is a pointer because zero is a real answer — tributes credit
+	// a different artist every time and need no gap — and has to be told apart
+	// from a config file that does not mention it at all, which means seven.
+	MinDaysBetween *int   `json:"min_days_between,omitempty" yaml:"min_days_between"`
 	Status         string `json:"status,omitempty" yaml:"status"`
 	UpdatedAt      string `json:"updated_at,omitempty" yaml:"-"`
 }
