@@ -8,10 +8,10 @@
         every: "15m",
         target: "telegram",
         to: "${TELEGRAM_OWNER_ID}",
-        // qwen36-agent (openclaw-default) běží jen v okně llm rag-schedule.sh 17–01
+        // qwen36-agent (openclaw-default) běží jen v okně llm rag-schedule.sh 19–01
         // (AiStack/PLAN-spark-scheduler.md, 2026-10-01); 00:55 kvůli přepnutí v 01:00
         // a timeoutu 300 s. Mimo okno by heartbeat padal „Heartbeat check failed“.
-        activeHours: { start: "17:05", end: "00:55", timezone: "Europe/Prague" },
+        activeHours: { start: "19:05", end: "00:55", timezone: "Europe/Prague" },
         lightContext: true,
         isolatedSession: true,
         timeoutSeconds: 300,

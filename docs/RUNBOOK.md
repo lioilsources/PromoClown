@@ -303,11 +303,11 @@ spark$ journalctl --user -u promo-tribute -f
 mac$   go run ./cmd/promo tributes list
 ```
 
-Proč 16:30: tributy potřebují ComfyUI, které běží jen v profilu **comfy** SPARKu
+Proč 12:30: tributy potřebují ComfyUI, které běží jen v profilu **comfy** SPARKu
 (okna v AiStack `PLAN-spark-scheduler.md` §3, plánovač `rag-schedule.sh` ve
 WorldLibraryProject). Jeden obrázek trvá 66–120 s, čtyři tedy 5–8 minut; fronta musí
 doběhnout před koncem comfy okna, jinak zbytek zůstane `queued` na další den. Když se
-okna posunou, posune se i `promo-tribute.timer` (do 30. 9. 2026 23:00).
+okna posunou, posune se i `promo-tribute.timer` (do 30. 9. 2026 23:00, 1. 10. dopoledne 16:30).
 
 **Nastavení, která jsou naměřená, ne odhadnutá** (MangaPrompts
 `docs/restyle-rollout-results.md`): checkpoint `sd_xl_base_1.0`, InstantID
