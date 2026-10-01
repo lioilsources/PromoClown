@@ -7,6 +7,7 @@
 package main
 
 import (
+	"cmp"
 	"context"
 	"flag"
 	"fmt"
@@ -15,6 +16,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"slices"
 	"strings"
 	"syscall"
 
@@ -36,7 +38,9 @@ Renders every queued tribute and drafts the post. Nothing is published.
                  belongs in the account profile)
   --by NAME      signature under the post (default TsumikiBot)
   --seed N       repeat a run's style choice and generation seeds
-  --dry-run      pick styles and print what would be rendered
+  --dry-run      list the queued tributes and the styles each would get;
+                 read-only: nothing is claimed, rendered or marked failed,
+                 the queue is left exactly as it was
 
 Env: PROMO_API_URL, PROMO_TOKEN, COMFY_URL (default http://127.0.0.1:8188)
 `
@@ -96,7 +100,6 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 		variants: *variants,
 		template: *template,
 		by:       *by,
-		dryRun:   *dryRun,
 		out:      stdout,
 		errOut:   stderr,
 	}
@@ -110,6 +113,16 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 			state = "done"
 		}
 		fmt.Fprintf(stderr, "  [%d/%d] %s %s\n", i+1, total, s.Label, state)
+	}
+
+	if *dryRun {
+		n, err := w.preview(ctx, *max)
+		if err != nil {
+			fmt.Fprintf(stderr, "promo-tribute: %v\n", err)
+			return 1
+		}
+		fmt.Fprintf(stderr, "tributes previewed: %d (dry run, queue untouched)\n", n)
+		return 0
 	}
 
 	done, failed := w.drain(ctx, *max)
@@ -126,10 +139,39 @@ type worker struct {
 	variants int
 	template string
 	by       string
-	dryRun   bool
 	rand     *rand.Rand
 	out      io.Writer
 	errOut   io.Writer
+}
+
+// previewListLimit is the most tributes a dry run looks at; promo-api caps a
+// list at this many anyway.
+const previewListLimit = 500
+
+// preview is the dry run. It reads the queue through the list endpoint and
+// never claims or finishes anything: claiming flips a row to "running", and a
+// row given back with an error lands in "failed", which the agent token cannot
+// undo (retry is admin-only). On 2026-09-30 that turned tributes #34–#36 into
+// failures.
+func (w *worker) preview(ctx context.Context, max int) (int, error) {
+	queued, err := w.api.Tributes(ctx, "queued", previewListLimit)
+	if err != nil {
+		return 0, fmt.Errorf("list queued tributes: %w", err)
+	}
+	// The list is newest first; a real run claims the oldest first.
+	slices.SortFunc(queued, func(a, b model.Tribute) int { return cmp.Compare(a.ID, b.ID) })
+	if max > 0 && len(queued) > max {
+		queued = queued[:max]
+	}
+	for _, t := range queued {
+		styles := restyle.Pick(w.variants, w.rand)
+		ids := make([]string, len(styles))
+		for i, s := range styles {
+			ids[i] = s.ID
+		}
+		fmt.Fprintf(w.out, "#%d %s → %s\n", t.ID, t.Credit, strings.Join(ids, ", "))
+	}
+	return len(queued), nil
 }
 
 func (w *worker) drain(ctx context.Context, max int) (done, failed int) {
@@ -168,11 +210,6 @@ func (w *worker) process(ctx context.Context, t model.Tribute) error {
 	ids := make([]string, len(styles))
 	for i, s := range styles {
 		labels[i], ids[i] = s.Label, s.ID
-	}
-
-	if w.dryRun {
-		fmt.Fprintf(w.out, "#%d %s → %s\n", t.ID, t.Credit, strings.Join(ids, ", "))
-		return fmt.Errorf("dry run, nothing rendered")
 	}
 
 	dir, err := os.MkdirTemp("", "promo-tribute-")
