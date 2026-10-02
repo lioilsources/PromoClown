@@ -2,11 +2,11 @@
 Description=PromoClown: drain the tribute queue before the comfy window ends
 
 [Timer]
-# 12:30 is the end of the comfy window (07:00-13:00 in rag-schedule.sh,
-# AiStack/PLAN-spark-scheduler.md §3, since 2026-10-01 afternoon; 16:30 before).
-# At 13:00 ComfyUI is stopped for the director shift, so a run started later
-# would find no GPU.
-OnCalendar=*-*-* 12:30:00
+# 11:30: 90 min before the comfy window ends (07:00-13:00 in rag-schedule.sh,
+# AiStack/PLAN-spark-scheduler.md §3). At 13:00 ComfyUI is stopped for the
+# director shift. 12:30 was too late: on 2026-10-02 seven tributes (4 images,
+# 66-120 s each) needed ~40 min and the director switch had to wait.
+OnCalendar=*-*-* 11:30:00
 Persistent=true
 
 [Install]
