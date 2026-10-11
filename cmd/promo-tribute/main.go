@@ -27,6 +27,7 @@ import (
 )
 
 const usage = `usage: promo-tribute run [--variants 4] [--max 0] [--template "..."] [--dry-run]
+                         [--hot 93] [--cool 87] [--thermal-csv PATH]
 
 Renders every queued tribute and drafts the post. Nothing is published.
 
@@ -41,8 +42,15 @@ Renders every queued tribute and drafts the post. Nothing is published.
   --dry-run      list the queued tributes and the styles each would get;
                  read-only: nothing is claimed, rendered or marked failed,
                  the queue is left exactly as it was
+  --hot C        before each tribute and each image, pause when the Spark's
+                 hottest thermal zone is at or above C (default 93)
+  --cool C       and stay paused until it is below C (default 87)
+  --thermal-csv  the thermal log whose last row is read (default
+                 ~/ops/thermal.csv; empty turns the pause off). A missing or
+                 stale log never blocks.
 
-Env: PROMO_API_URL, PROMO_TOKEN, COMFY_URL (default http://127.0.0.1:8188)
+Env: PROMO_API_URL, PROMO_TOKEN, COMFY_URL (default http://127.0.0.1:8188),
+     PROMO_THERMAL_CSV
 `
 
 // The credit stays first — the post exists to point at the artist — with the
@@ -79,7 +87,14 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 	seed := fs.Uint64("seed", 0, "")
 	comfyURL := fs.String("comfy", envOr("COMFY_URL", "http://127.0.0.1:8188"), "")
 	dryRun := fs.Bool("dry-run", false, "")
+	hot := fs.Float64("hot", defaultHotC, "")
+	cool := fs.Float64("cool", defaultCoolC, "")
+	thermalCSV := fs.String("thermal-csv", defaultThermalCSV(), "")
 	if err := fs.Parse(args[1:]); err != nil {
+		return 2
+	}
+	if *cool > *hot {
+		fmt.Fprintln(stderr, "promo-tribute: --cool must not be above --hot")
 		return 2
 	}
 	if *variants < 1 || *variants > 4 {
@@ -100,9 +115,11 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 		variants: *variants,
 		template: *template,
 		by:       *by,
+		thermal:  newThermalGuard(*thermalCSV, *hot, *cool, stderr),
 		out:      stdout,
 		errOut:   stderr,
 	}
+	w.comfy.Before = w.thermal.wait
 	if *seed != 0 {
 		w.comfy.Rand = restyle.NewRand(*seed)
 		w.rand = restyle.NewRand(*seed)
@@ -139,6 +156,7 @@ type worker struct {
 	variants int
 	template string
 	by       string
+	thermal  *thermalGuard
 	rand     *rand.Rand
 	out      io.Writer
 	errOut   io.Writer
@@ -176,7 +194,9 @@ func (w *worker) preview(ctx context.Context, max int) (int, error) {
 
 func (w *worker) drain(ctx context.Context, max int) (done, failed int) {
 	for max == 0 || done+failed < max {
-		if ctx.Err() != nil {
+		// Cool down before claiming: a tribute claimed and then abandoned to a
+		// wait that outlasts the run would be recorded as failed.
+		if ctx.Err() != nil || w.thermal.wait(ctx) != nil {
 			return done, failed
 		}
 		t, err := w.api.ClaimTribute(ctx)

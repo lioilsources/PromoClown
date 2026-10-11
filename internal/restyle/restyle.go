@@ -374,6 +374,9 @@ type Client struct {
 	// Progress, when set, is called as a variant starts and again once its
 	// file is on disk.
 	Progress func(index, total int, s Style, done bool)
+	// Before, when set, runs ahead of every variant and may block (the tribute
+	// worker waits there for the box to cool down). Its error ends the batch.
+	Before func(ctx context.Context) error
 
 	clientID string
 }
@@ -439,6 +442,11 @@ func (c *Client) Restyle(ctx context.Context, srcImagePath string, styles []Styl
 
 	results := make([]Result, 0, len(styles))
 	for i, s := range styles {
+		if c.Before != nil {
+			if err := c.Before(ctx); err != nil {
+				return results, fmt.Errorf("restyle %s: %w", s.ID, err)
+			}
+		}
 		if c.Progress != nil {
 			c.Progress(i, len(styles), s, false)
 		}
