@@ -51,4 +51,5 @@ giving up — so get it right the first time: `promo-ingest`, not
 - `store-reviews` — App Store and Google Play reviews (read-only).
 - `youtube-comments` — comments on Ol1n's YouTube channel (read-only).
 - `bluesky-mentions` — Bluesky mentions, replies and quotes (read-only).
-- `reddit-monitor` — Reddit search in chosen subreddits and Ol1n's Reddit inbox (read-only).
+
+Reddit has no tool: API access was refused, so never run `reddit-monitor` and never open reddit.com. Ol1n searches by hand and sends the thread link; the `reddit-monitor` skill says what to do with it.

@@ -30,7 +30,7 @@ ingest() { # ingest <reviews|mentions> <monitor command...>
 ingest reviews store-reviews fetch --since "$since"
 ingest mentions youtube-comments fetch --since "$since"
 ingest mentions bluesky-mentions fetch --since "$since"
-ingest mentions reddit-monitor inbox --since "$since"
+# No reddit-monitor: Reddit refused API access for this use.
 
 if [ "$failures" -gt 0 ]; then
     echo "promo-ingest: $failures problem(s)" >&2
