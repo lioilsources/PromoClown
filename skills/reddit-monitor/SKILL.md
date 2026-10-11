@@ -1,26 +1,23 @@
 ---
 name: reddit-monitor
-description: Read-only Reddit search in chosen subreddits and read-only inbox with the `reddit-monitor` CLI. Use to find threads where one of Ol1n's apps genuinely answers someone's question, and to see replies to Ol1n.
-metadata: {"openclaw": {"emoji": "👽", "os": ["linux"], "requires": {"bins": ["reddit-monitor", "promo"]}}}
+description: Reddit threads Ol1n found by hand. Use when Ol1n sends a Reddit link (and usually what the thread asks) to save it and draft a reply for him to post. Reddit is never searched or read from here.
+metadata: {"openclaw": {"emoji": "👽", "os": ["linux"], "requires": {"bins": ["promo"]}}}
 ---
 
 # reddit-monitor
 
-```bash
-# Threads (posts only; Reddit search cannot search comments)
-reddit-monitor search --sub FlutterDev,indiegames,SideProject,iosapps,androidapps \
-  --keywords "offline maps,trail app" --since 7d
+Reddit refused API access for this use, so nothing here talks to Reddit: never
+run the `reddit-monitor` CLI and never open reddit.com. Ol1n searches by hand
+(the weekly plan gives him ready search links) and Reddit's own notifications
+tell him about replies.
 
-# Replies, mentions and messages to Ol1n (does not mark them read)
-reddit-monitor inbox --since 48h | promo mentions import
-```
+When Ol1n sends a thread link:
 
-Both print a JSON array. Search results are noisy, so do not import them wholesale:
-
-1. Read the results and keep only threads where someone asks for exactly what
-   one of the apps does.
-2. Save each keeper: `promo mentions add --platform reddit --kind search
-   --external-id <t3_id> --url <url> --author <author> --text "<title>" --project <slug>`.
+1. Take the thread id from the link: `…/r/<subreddit>/comments/<id>/…` gives
+   `t3_<id>`. Use what Ol1n wrote about the thread as its text; if he sent only
+   the link, ask him what the thread asks instead of guessing.
+2. Save it: `promo mentions add --platform reddit --kind search
+   --external-id t3_<id> --url <url> --text "<what the thread asks>" --project <slug>`.
 3. If a reply would genuinely help, draft it:
    `promo posts draft --platform reddit --kind reply --reply-to <url> --project <slug> --text "…"`.
    Answer the question first, say plainly that Ol1n made the app, link last.
