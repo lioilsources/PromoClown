@@ -112,6 +112,9 @@ func startFake(t *testing.T, f *fakeAPI) {
 	t.Cleanup(srv.Close)
 	t.Setenv("PROMO_API_URL", srv.URL)
 	t.Setenv("PROMO_TOKEN", "agent-token")
+	// No thermal log on the machine running the tests; without this a real
+	// run would sit out the whole thermal wait.
+	t.Setenv("PROMO_THERMAL_CSV", "")
 }
 
 // A dry run must leave the queue alone: on 2026-09-30 it claimed tributes

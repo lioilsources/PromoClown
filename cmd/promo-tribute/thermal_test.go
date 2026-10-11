@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -21,7 +22,7 @@ func thermalRow(ts time.Time, zone float64) string {
 func TestThermalZone(t *testing.T) {
 	now := time.Date(2026, 10, 11, 12, 0, 0, 0, time.Local)
 	path := filepath.Join(t.TempDir(), "thermal.csv")
-	g := newThermalGuard(path, defaultHotC, defaultCoolC, &bytes.Buffer{})
+	g := newThermalGuard(path, defaultHotC, defaultCoolC, time.Minute, &bytes.Buffer{})
 	g.now = func() time.Time { return now }
 
 	if _, ok := g.zone(); ok {
@@ -70,7 +71,7 @@ func TestThermalWait(t *testing.T) {
 		}
 	}
 	var log bytes.Buffer
-	g := newThermalGuard(path, defaultHotC, defaultCoolC, &log)
+	g := newThermalGuard(path, defaultHotC, defaultCoolC, time.Minute, &log)
 	g.now = func() time.Time { return now }
 	g.poll = time.Millisecond
 
@@ -112,9 +113,56 @@ func TestThermalWait(t *testing.T) {
 		t.Error("a cancelled context must end the wait with an error")
 	}
 
+	// A hot box that stays hot ends the wait with errThermalWait.
+	g.maxWait = 30 * time.Millisecond
+	if err := g.wait(context.Background()); !errors.Is(err, errThermalWait) {
+		t.Errorf("95 °C for the whole wait: err = %v, want errThermalWait", err)
+	}
+
+	// So does a log that cannot be read: a dead logger is not a cool box.
+	os.Remove(path)
+	if err := g.wait(context.Background()); !errors.Is(err, errThermalWait) {
+		t.Errorf("missing log: err = %v, want errThermalWait", err)
+	}
+
+	// A reading that comes back cool lets the run on.
+	g.maxWait = 2 * time.Second
+	go func() { time.Sleep(20 * time.Millisecond); write(80) }()
+	if err := g.wait(context.Background()); err != nil {
+		t.Errorf("log came back at 80 °C: %v", err)
+	}
+
 	// No guard, no wait.
 	var none *thermalGuard
 	if err := none.wait(context.Background()); err != nil {
 		t.Errorf("nil guard: %v", err)
+	}
+	off := newThermalGuard("", defaultHotC, defaultCoolC, time.Minute, &log)
+	if err := off.wait(context.Background()); err != nil {
+		t.Errorf("empty path: %v", err)
+	}
+}
+
+func TestThermalEvent(t *testing.T) {
+	dir := t.TempDir()
+	g := newThermalGuard(filepath.Join(dir, "thermal.csv"), defaultHotC, defaultCoolC, time.Minute, &bytes.Buffer{})
+	g.now = func() time.Time { return time.Date(2026, 10, 11, 11, 30, 3, 0, time.Local) }
+	events := filepath.Join(dir, "thermal-events.csv")
+
+	// No events file on this machine: nothing is created.
+	g.event("start (18 tributů)")
+	if _, err := os.Stat(events); err == nil {
+		t.Fatal("the events file must not be created")
+	}
+
+	os.WriteFile(events, []byte("ts,note\n"), 0o644)
+	g.event("start (18 tributů)")
+	g.event("konec (18 hotovo, 0 chyb)")
+	got, _ := os.ReadFile(events)
+	want := "ts,note\n" +
+		"2026/10/11 11:30:03.000,\"promo-tribute: start (18 tributů)\"\n" +
+		"2026/10/11 11:30:03.000,\"promo-tribute: konec (18 hotovo, 0 chyb)\"\n"
+	if string(got) != want {
+		t.Errorf("events =\n%s\nwant\n%s", got, want)
 	}
 }

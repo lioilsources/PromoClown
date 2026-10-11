@@ -2,9 +2,11 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -17,51 +19,83 @@ import (
 // 92–96 °C for forty minutes, because the Lab paused for the heat and the
 // tributes did not know to.
 const (
-	defaultHotC  = 93.0 // pause at or above
-	defaultCoolC = 87.0 // and stay paused until below
+	defaultHotC    = 93.0 // pause at or above
+	defaultCoolC   = 87.0 // and stay paused until below
+	defaultMaxWait = 10 * time.Minute
 	// thermalStale is how old the last row may be before it is not believed.
 	thermalStale = time.Minute
 )
 
+// errThermalWait ends a run: the box did not cool down, or could not be read,
+// within the longest wait. What is still queued stays for the next run.
+var errThermalWait = errors.New("thermal wait ran out")
+
 type thermalGuard struct {
 	path      string
 	hot, cool float64
+	maxWait   time.Duration
 	poll      time.Duration
 	now       func() time.Time
 	log       io.Writer
 }
 
-func newThermalGuard(path string, hot, cool float64, log io.Writer) *thermalGuard {
-	return &thermalGuard{path: path, hot: hot, cool: cool, poll: 15 * time.Second, now: time.Now, log: log}
+func newThermalGuard(path string, hot, cool float64, maxWait time.Duration, log io.Writer) *thermalGuard {
+	return &thermalGuard{path: path, hot: hot, cool: cool, maxWait: maxWait, poll: 15 * time.Second, now: time.Now, log: log}
 }
 
+// on reports whether there is a thermal log to watch.
+func (g *thermalGuard) on() bool { return g != nil && g.path != "" }
+
 // wait blocks while the box is hot: from the hot mark until the zone is back
-// under the cool one. A missing or stale log is not a reason to stop (the
-// logger is an ad-hoc script, and a dev machine has none), so it lets the
-// caller through.
+// under the cool one. A missing or stale log blocks too, as it does for the
+// other batches — a dead logger is no proof the box is cool — so a machine
+// without one has to turn the guard off (--thermal-csv ""). After maxWait it
+// gives up with errThermalWait.
 func (g *thermalGuard) wait(ctx context.Context) error {
-	if g == nil || g.path == "" {
+	if !g.on() {
 		return nil
 	}
 	zone, ok := g.zone()
-	if !ok || zone < g.hot {
+	if ok && zone < g.hot {
 		return nil
 	}
-	fmt.Fprintf(g.log, "thermal pause: zone %.1f °C, waiting for under %.0f °C\n", zone, g.cool)
-	for ok && zone >= g.cool {
+	if ok {
+		fmt.Fprintf(g.log, "thermal pause: zone %.1f °C, waiting for under %.0f °C\n", zone, g.cool)
+	} else {
+		fmt.Fprintf(g.log, "thermal pause: no fresh reading in %s\n", g.path)
+	}
+	giveUp := time.After(g.maxWait)
+	for {
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
+		case <-giveUp:
+			if ok {
+				return fmt.Errorf("%w: zone still %.1f °C after %s", errThermalWait, zone, g.maxWait)
+			}
+			return fmt.Errorf("%w: no fresh reading in %s after %s", errThermalWait, g.path, g.maxWait)
 		case <-time.After(g.poll):
 		}
-		zone, ok = g.zone()
+		if zone, ok = g.zone(); ok && zone < g.cool {
+			fmt.Fprintf(g.log, "thermal resume: zone %.1f °C\n", zone)
+			return nil
+		}
 	}
-	if !ok {
-		fmt.Fprintln(g.log, "thermal resume: the thermal log went stale")
-		return nil
+}
+
+// event appends a line to thermal-events.csv next to the thermal log, where
+// every batch on the Spark leaves its start and end, so that a later look at
+// the temperatures can tell who was heating. Only an existing file is written.
+func (g *thermalGuard) event(note string) {
+	if !g.on() {
+		return
 	}
-	fmt.Fprintf(g.log, "thermal resume: zone %.1f °C\n", zone)
-	return nil
+	f, err := os.OpenFile(filepath.Join(filepath.Dir(g.path), "thermal-events.csv"), os.O_APPEND|os.O_WRONLY, 0)
+	if err != nil {
+		return
+	}
+	defer f.Close()
+	fmt.Fprintf(f, "%s.000,\"promo-tribute: %s\"\n", g.now().Format("2006/01/02 15:04:05"), note)
 }
 
 // zone is the hottest zone in the last row of the log, if that row is fresh.

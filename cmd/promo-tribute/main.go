@@ -9,6 +9,7 @@ package main
 import (
 	"cmp"
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -27,7 +28,7 @@ import (
 )
 
 const usage = `usage: promo-tribute run [--variants 4] [--max 0] [--template "..."] [--dry-run]
-                         [--hot 93] [--cool 87] [--thermal-csv PATH]
+                         [--hot 93] [--cool 87] [--max-wait 10m] [--thermal-csv PATH]
 
 Renders every queued tribute and drafts the post. Nothing is published.
 
@@ -45,9 +46,12 @@ Renders every queued tribute and drafts the post. Nothing is published.
   --hot C        before each tribute and each image, pause when the Spark's
                  hottest thermal zone is at or above C (default 93)
   --cool C       and stay paused until it is below C (default 87)
+  --max-wait D   longest single pause (default 10m); after it the run ends
+                 and what is still queued waits for the next one
   --thermal-csv  the thermal log whose last row is read (default
-                 ~/ops/thermal.csv; empty turns the pause off). A missing or
-                 stale log never blocks.
+                 ~/ops/thermal.csv). A missing or stale log pauses too; an
+                 empty path turns the guard off. A run with tributes to
+                 render notes its start and end in thermal-events.csv beside it.
 
 Env: PROMO_API_URL, PROMO_TOKEN, COMFY_URL (default http://127.0.0.1:8188),
      PROMO_THERMAL_CSV
@@ -89,6 +93,7 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 	dryRun := fs.Bool("dry-run", false, "")
 	hot := fs.Float64("hot", defaultHotC, "")
 	cool := fs.Float64("cool", defaultCoolC, "")
+	maxWait := fs.Duration("max-wait", defaultMaxWait, "")
 	thermalCSV := fs.String("thermal-csv", defaultThermalCSV(), "")
 	if err := fs.Parse(args[1:]); err != nil {
 		return 2
@@ -115,7 +120,7 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 		variants: *variants,
 		template: *template,
 		by:       *by,
-		thermal:  newThermalGuard(*thermalCSV, *hot, *cool, stderr),
+		thermal:  newThermalGuard(*thermalCSV, *hot, *cool, *maxWait, stderr),
 		out:      stdout,
 		errOut:   stderr,
 	}
@@ -142,9 +147,28 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 		return 0
 	}
 
+	// The count is only for the events log, so the queue is listed only when
+	// there is one to write to; the claim loop is what drains.
+	var queued []model.Tribute
+	if w.thermal.on() {
+		var err error
+		if queued, err = api.Tributes(ctx, "queued", previewListLimit); err != nil {
+			fmt.Fprintf(stderr, "promo-tribute: list queued tributes: %v\n", err)
+		}
+	}
+	if len(queued) > 0 {
+		w.thermal.event(fmt.Sprintf("start (%d tributů)", len(queued)))
+	}
 	done, failed := w.drain(ctx, *max)
 	fmt.Fprintf(stderr, "tributes drafted: %d, failed: %d\n", done, failed)
-	if failed > 0 {
+	if len(queued) > 0 {
+		note := fmt.Sprintf("konec (%d hotovo, %d chyb)", done, failed)
+		if w.overheated {
+			note = fmt.Sprintf("konec (%d hotovo, %d chyb, zastaveno teplotou)", done, failed)
+		}
+		w.thermal.event(note)
+	}
+	if failed > 0 || w.overheated {
 		return 1
 	}
 	return 0
@@ -157,9 +181,11 @@ type worker struct {
 	template string
 	by       string
 	thermal  *thermalGuard
-	rand     *rand.Rand
-	out      io.Writer
-	errOut   io.Writer
+	// overheated is set when a thermal wait ran out and ended the run early.
+	overheated bool
+	rand       *rand.Rand
+	out        io.Writer
+	errOut     io.Writer
 }
 
 // previewListLimit is the most tributes a dry run looks at; promo-api caps a
@@ -196,7 +222,14 @@ func (w *worker) drain(ctx context.Context, max int) (done, failed int) {
 	for max == 0 || done+failed < max {
 		// Cool down before claiming: a tribute claimed and then abandoned to a
 		// wait that outlasts the run would be recorded as failed.
-		if ctx.Err() != nil || w.thermal.wait(ctx) != nil {
+		if ctx.Err() != nil {
+			return done, failed
+		}
+		if err := w.thermal.wait(ctx); err != nil {
+			if errors.Is(err, errThermalWait) {
+				w.overheated = true
+				fmt.Fprintf(w.errOut, "stopping: %v; the queue keeps the rest\n", err)
+			}
 			return done, failed
 		}
 		t, err := w.api.ClaimTribute(ctx)
@@ -216,6 +249,11 @@ func (w *worker) drain(ctx context.Context, max int) (done, failed int) {
 			if _, ferr := w.api.FinishTribute(context.WithoutCancel(ctx), t.ID,
 				model.TributeDoneRequest{Error: err.Error()}); ferr != nil {
 				fmt.Fprintf(w.errOut, "tribute #%d: could not record the failure: %v\n", t.ID, ferr)
+			}
+			if errors.Is(err, errThermalWait) {
+				w.overheated = true
+				fmt.Fprintln(w.errOut, "stopping: the box did not cool down; the queue keeps the rest")
+				return done, failed
 			}
 			continue
 		}
