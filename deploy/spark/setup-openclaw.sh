@@ -50,8 +50,10 @@ add_job() { # add_job <name> <openclaw cron add flags...>
     echo "    added '$name'"
 }
 
+# Monday 13:30: the agent model (qwen36) only runs in the llm window 13:00–07:00
+# (AiStack schedule 7:comfy 13:llm since 2026-10-11); at 08:00 every run timed out.
 add_job "promo weekly-plan" \
-    --cron "0 8 * * 1" --tz Europe/Prague --exact \
+    --cron "30 13 * * 1" --tz Europe/Prague --exact \
     --session isolated --agent main \
     --message "$(cat "$cfg/cron/weekly-plan.md")" \
     --announce --channel telegram --to "$TELEGRAM_OWNER_ID"
