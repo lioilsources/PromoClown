@@ -33,7 +33,10 @@ RETURNING *;
 
 -- name: TributeFailed :one
 UPDATE tributes
-SET status = 'failed', error = sqlc.arg('error'), attempts = attempts + 1, updated_at = sqlc.arg('now')
+-- A final failure (the picture itself is unusable) uses up every attempt at once.
+SET status = 'failed', error = sqlc.arg('error'),
+    attempts = CASE WHEN CAST(sqlc.arg('final') AS INTEGER) THEN 1000 ELSE attempts + 1 END,
+    updated_at = sqlc.arg('now')
 WHERE id = sqlc.arg('id') AND status IN ('queued', 'running')
 RETURNING *;
 

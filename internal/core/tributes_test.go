@@ -174,3 +174,27 @@ func TestRequeueFailedTributesStopsAtMaxAttempts(t *testing.T) {
 		t.Error("max_attempts 0 accepted")
 	}
 }
+
+func TestFinalFailureIsNotRequeued(t *testing.T) {
+	ctx := context.Background()
+	svc, _ := newTestService(t)
+	if _, err := svc.EnqueueTribute(ctx, model.TributeRequest{
+		Project: "kiran", Credit: "@artist", SourcePath: "kiran/shot.png",
+	}); err != nil {
+		t.Fatal(err)
+	}
+	claimed, err := svc.ClaimTribute(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := svc.FinishTribute(ctx, claimed.ID, model.TributeDoneRequest{Error: "No face detected.", Final: true}); err != nil {
+		t.Fatal(err)
+	}
+	back, err := svc.RequeueFailedTributes(ctx, 3)
+	if err != nil || len(back) != 0 {
+		t.Fatalf("requeued %v, err %v", back, err)
+	}
+	if again, err := svc.RetryTribute(ctx, claimed.ID); err != nil || again.Status != "queued" {
+		t.Fatalf("admin retry after a final failure: %+v %v", again, err)
+	}
+}

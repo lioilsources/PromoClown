@@ -129,7 +129,11 @@ func (s *Service) FinishTribute(ctx context.Context, id int64, req model.Tribute
 		var row db.Tribute
 		var err error
 		if msg := strings.TrimSpace(req.Error); msg != "" {
-			row, err = q.TributeFailed(ctx, db.TributeFailedParams{ID: id, Error: msg, Now: now})
+			final := int64(0)
+			if req.Final {
+				final = 1
+			}
+			row, err = q.TributeFailed(ctx, db.TributeFailedParams{ID: id, Error: msg, Final: final, Now: now})
 		} else if req.PostID == 0 {
 			return invalid("post_id is required unless the tribute failed")
 		} else {
