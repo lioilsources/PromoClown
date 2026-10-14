@@ -170,6 +170,11 @@ type Tribute struct {
 	Error       string   `json:"error,omitempty"`
 	SubmittedBy string   `json:"submitted_by,omitempty"`
 	CreatedAt   string   `json:"created_at"`
+	Attempts    int      `json:"attempts,omitempty"` // failed runs so far
+}
+
+type TributeRequeueRequest struct {
+	MaxAttempts int `json:"max_attempts"`
 }
 
 type TributeRequest struct {

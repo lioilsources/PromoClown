@@ -164,6 +164,31 @@ func (s *Service) RetryTribute(ctx context.Context, id int64) (model.Tribute, er
 	}, "queued or failed")
 }
 
+// RequeueFailedTributes puts failed tributes with fewer than maxAttempts
+// failures back in the queue. The worker calls it at the start of a run, so a
+// tribute cut off by the run's time limit is picked up again by the next one.
+func (s *Service) RequeueFailedTributes(ctx context.Context, maxAttempts int) ([]model.Tribute, error) {
+	if maxAttempts < 1 {
+		return nil, invalid("max_attempts must be at least 1")
+	}
+	out := []model.Tribute{}
+	err := s.inTx(ctx, func(q *db.Queries) error {
+		rows, err := q.RequeueFailedTributes(ctx, db.RequeueFailedTributesParams{Now: db.FormatTime(s.now()), MaxAttempts: int64(maxAttempts)})
+		if err != nil {
+			return err
+		}
+		for _, row := range rows {
+			proj, err := q.GetProjectByID(ctx, row.ProjectID)
+			if err != nil {
+				return err
+			}
+			out = append(out, tributeModel(row, proj.Slug))
+		}
+		return nil
+	})
+	return out, err
+}
+
 func (s *Service) CancelTribute(ctx context.Context, id int64) (model.Tribute, error) {
 	return s.moveTribute(ctx, id, func(ctx context.Context, q *db.Queries, now string) (db.Tribute, error) {
 		return q.CancelTribute(ctx, db.CancelTributeParams{ID: id, Now: now})
@@ -215,6 +240,6 @@ func tributeModel(r db.Tribute, slug string) model.Tribute {
 	return model.Tribute{
 		ID: r.ID, Project: slug, Credit: r.Credit, SourcePath: r.SourcePath, Note: r.Note,
 		Status: r.Status, PostID: r.PostID.Int64, Styles: splitLines(r.Styles), Error: r.Error,
-		SubmittedBy: r.SubmittedBy, CreatedAt: r.CreatedAt,
+		SubmittedBy: r.SubmittedBy, CreatedAt: r.CreatedAt, Attempts: int(r.Attempts),
 	}
 }

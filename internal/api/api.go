@@ -96,6 +96,9 @@ func New(svc *core.Service, cfg Config, webhook WebhookFunc, log *slog.Logger) h
 	agent("GET /tributes/{id}", s.getTribute)
 	agent("POST /tributes/claim", s.claimTribute)
 	agent("POST /tributes/{id}/done", s.finishTribute)
+	// The worker may requeue its own failures (bounded by max_attempts): it only
+	// renders again, and the result is still a draft that needs approval.
+	agent("POST /tributes/requeue-failed", s.requeueFailedTributes)
 	admin("POST /tributes", s.enqueueTribute)
 	admin("POST /tributes/{id}/retry", s.retryTribute)
 	admin("POST /tributes/{id}/cancel", s.cancelTribute)
@@ -400,6 +403,16 @@ func (s *server) finishTribute(w http.ResponseWriter, r *http.Request, _ string)
 		return
 	}
 	out, err := s.svc.FinishTribute(r.Context(), id, req)
+	s.respond(w, http.StatusOK, out, err)
+}
+
+func (s *server) requeueFailedTributes(w http.ResponseWriter, r *http.Request, _ string) {
+	var req model.TributeRequeueRequest
+	if err := decode(w, r, &req); err != nil {
+		s.fail(w, err)
+		return
+	}
+	out, err := s.svc.RequeueFailedTributes(r.Context(), req.MaxAttempts)
 	s.respond(w, http.StatusOK, out, err)
 }
 

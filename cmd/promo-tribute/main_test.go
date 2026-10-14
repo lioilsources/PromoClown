@@ -71,6 +71,8 @@ func (f *fakeAPI) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case r.Method == http.MethodGet && r.URL.Path == "/tributes":
 		_ = json.NewEncoder(w).Encode(f.queued)
+	case r.Method == http.MethodPost && r.URL.Path == "/tributes/requeue-failed":
+		_, _ = w.Write([]byte(`[]`))
 	case r.Method == http.MethodPost && r.URL.Path == "/tributes/claim":
 		if len(f.claims) == 0 {
 			w.WriteHeader(http.StatusNotFound)
@@ -192,7 +194,7 @@ func TestRunClaimsAndRecordsFailure(t *testing.T) {
 	if code != 1 {
 		t.Fatalf("exit %d, want 1 (the asset download fails), stderr:\n%s", code, stderr.String())
 	}
-	want := []string{"POST /tributes/claim", "POST /tributes/40/done", "POST /tributes/claim"}
+	want := []string{"POST /tributes/requeue-failed", "POST /tributes/claim", "POST /tributes/40/done", "POST /tributes/claim"}
 	if got := f.mutating(); strings.Join(got, "|") != strings.Join(want, "|") {
 		t.Errorf("mutating requests = %v, want %v", got, want)
 	}

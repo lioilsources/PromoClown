@@ -117,4 +117,5 @@ type Tribute struct {
 	SubmittedBy string
 	CreatedAt   string
 	UpdatedAt   string
+	Attempts    int64
 }
