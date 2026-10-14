@@ -29,6 +29,7 @@ import (
 
 const usage = `usage: promo-tribute run [--variants 4] [--max 0] [--template "..."] [--dry-run]
                          [--hot 93] [--cool 87] [--max-wait 10m] [--thermal-csv PATH]
+                         [--retry-failed 3]
 
 Renders every queued tribute and drafts the post. Nothing is published.
 
@@ -48,6 +49,9 @@ Renders every queued tribute and drafts the post. Nothing is published.
   --cool C       and stay paused until it is below C (default 87)
   --max-wait D   longest single pause (default 10m); after it the run ends
                  and what is still queued waits for the next one
+  --retry-failed N  at the start of a run, put failed tributes back in the
+                 queue until each has failed N times (default 3; 0 = never).
+                 A tribute cut off by the run's time limit is lost otherwise.
   --thermal-csv  the thermal log whose last row is read (default
                  ~/ops/thermal.csv). A missing or stale log pauses too; an
                  empty path turns the guard off. A run with tributes to
@@ -95,6 +99,7 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 	cool := fs.Float64("cool", defaultCoolC, "")
 	maxWait := fs.Duration("max-wait", defaultMaxWait, "")
 	thermalCSV := fs.String("thermal-csv", defaultThermalCSV(), "")
+	retryFailed := fs.Int("retry-failed", 3, "")
 	if err := fs.Parse(args[1:]); err != nil {
 		return 2
 	}
@@ -145,6 +150,16 @@ func run(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 		}
 		fmt.Fprintf(stderr, "tributes previewed: %d (dry run, queue untouched)\n", n)
 		return 0
+	}
+
+	if *retryFailed > 0 {
+		back, err := api.RequeueFailedTributes(ctx, *retryFailed)
+		if err != nil {
+			fmt.Fprintf(stderr, "promo-tribute: requeue failed tributes: %v\n", err)
+		}
+		for _, t := range back {
+			fmt.Fprintf(stderr, "tribute #%d back in the queue (failed %d× so far)\n", t.ID, t.Attempts)
+		}
 	}
 
 	// The count is only for the events log, so the queue is listed only when

@@ -33,7 +33,7 @@ RETURNING *;
 
 -- name: TributeFailed :one
 UPDATE tributes
-SET status = 'failed', error = sqlc.arg('error'), updated_at = sqlc.arg('now')
+SET status = 'failed', error = sqlc.arg('error'), attempts = attempts + 1, updated_at = sqlc.arg('now')
 WHERE id = sqlc.arg('id') AND status IN ('queued', 'running')
 RETURNING *;
 
@@ -42,6 +42,13 @@ RETURNING *;
 UPDATE tributes
 SET status = 'queued', error = '', updated_at = sqlc.arg('now')
 WHERE id = sqlc.arg('id') AND status IN ('failed', 'cancelled')
+RETURNING *;
+
+-- Failed tributes that have not used up their attempts go back in the queue.
+-- name: RequeueFailedTributes :many
+UPDATE tributes
+SET status = 'queued', error = '', updated_at = sqlc.arg('now')
+WHERE status = 'failed' AND attempts < sqlc.arg('max_attempts')
 RETURNING *;
 
 -- name: CancelTribute :one

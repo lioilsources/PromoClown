@@ -14,7 +14,7 @@ const cancelTribute = `-- name: CancelTribute :one
 UPDATE tributes
 SET status = 'cancelled', updated_at = ?1
 WHERE id = ?2 AND status IN ('queued', 'failed')
-RETURNING id, project_id, credit, source_path, note, status, post_id, styles, error, submitted_by, created_at, updated_at
+RETURNING id, project_id, credit, source_path, note, status, post_id, styles, error, submitted_by, created_at, updated_at, attempts
 `
 
 type CancelTributeParams struct {
@@ -38,6 +38,7 @@ func (q *Queries) CancelTribute(ctx context.Context, arg CancelTributeParams) (T
 		&i.SubmittedBy,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Attempts,
 	)
 	return i, err
 }
@@ -46,7 +47,7 @@ const claimTribute = `-- name: ClaimTribute :one
 UPDATE tributes
 SET status = 'running', updated_at = ?1
 WHERE id = (SELECT id FROM tributes WHERE status = 'queued' ORDER BY id LIMIT 1)
-RETURNING id, project_id, credit, source_path, note, status, post_id, styles, error, submitted_by, created_at, updated_at
+RETURNING id, project_id, credit, source_path, note, status, post_id, styles, error, submitted_by, created_at, updated_at, attempts
 `
 
 // Claim the oldest queued tribute for this run. The status change is the lock:
@@ -67,6 +68,7 @@ func (q *Queries) ClaimTribute(ctx context.Context, now string) (Tribute, error)
 		&i.SubmittedBy,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Attempts,
 	)
 	return i, err
 }
@@ -86,7 +88,7 @@ const enqueueTribute = `-- name: EnqueueTribute :one
 INSERT INTO tributes (project_id, credit, source_path, note, submitted_by, created_at, updated_at)
 VALUES (?1, ?2, ?3, ?4,
         ?5, ?6, ?6)
-RETURNING id, project_id, credit, source_path, note, status, post_id, styles, error, submitted_by, created_at, updated_at
+RETURNING id, project_id, credit, source_path, note, status, post_id, styles, error, submitted_by, created_at, updated_at, attempts
 `
 
 type EnqueueTributeParams struct {
@@ -121,12 +123,13 @@ func (q *Queries) EnqueueTribute(ctx context.Context, arg EnqueueTributeParams) 
 		&i.SubmittedBy,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Attempts,
 	)
 	return i, err
 }
 
 const getTribute = `-- name: GetTribute :one
-SELECT id, project_id, credit, source_path, note, status, post_id, styles, error, submitted_by, created_at, updated_at FROM tributes WHERE id = ?
+SELECT id, project_id, credit, source_path, note, status, post_id, styles, error, submitted_by, created_at, updated_at, attempts FROM tributes WHERE id = ?
 `
 
 func (q *Queries) GetTribute(ctx context.Context, id int64) (Tribute, error) {
@@ -145,12 +148,13 @@ func (q *Queries) GetTribute(ctx context.Context, id int64) (Tribute, error) {
 		&i.SubmittedBy,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Attempts,
 	)
 	return i, err
 }
 
 const listTributes = `-- name: ListTributes :many
-SELECT id, project_id, credit, source_path, note, status, post_id, styles, error, submitted_by, created_at, updated_at FROM tributes
+SELECT id, project_id, credit, source_path, note, status, post_id, styles, error, submitted_by, created_at, updated_at, attempts FROM tributes
 WHERE CAST(?1 AS TEXT) IS NULL OR status = CAST(?1 AS TEXT)
 ORDER BY id DESC
 LIMIT ?2
@@ -183,6 +187,57 @@ func (q *Queries) ListTributes(ctx context.Context, arg ListTributesParams) ([]T
 			&i.SubmittedBy,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.Attempts,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const requeueFailedTributes = `-- name: RequeueFailedTributes :many
+UPDATE tributes
+SET status = 'queued', error = '', updated_at = ?1
+WHERE status = 'failed' AND attempts < ?2
+RETURNING id, project_id, credit, source_path, note, status, post_id, styles, error, submitted_by, created_at, updated_at, attempts
+`
+
+type RequeueFailedTributesParams struct {
+	Now         string
+	MaxAttempts int64
+}
+
+// Failed tributes that have not used up their attempts go back in the queue.
+func (q *Queries) RequeueFailedTributes(ctx context.Context, arg RequeueFailedTributesParams) ([]Tribute, error) {
+	rows, err := q.db.QueryContext(ctx, requeueFailedTributes, arg.Now, arg.MaxAttempts)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Tribute{}
+	for rows.Next() {
+		var i Tribute
+		if err := rows.Scan(
+			&i.ID,
+			&i.ProjectID,
+			&i.Credit,
+			&i.SourcePath,
+			&i.Note,
+			&i.Status,
+			&i.PostID,
+			&i.Styles,
+			&i.Error,
+			&i.SubmittedBy,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Attempts,
 		); err != nil {
 			return nil, err
 		}
@@ -201,7 +256,7 @@ const requeueTribute = `-- name: RequeueTribute :one
 UPDATE tributes
 SET status = 'queued', error = '', updated_at = ?1
 WHERE id = ?2 AND status IN ('failed', 'cancelled')
-RETURNING id, project_id, credit, source_path, note, status, post_id, styles, error, submitted_by, created_at, updated_at
+RETURNING id, project_id, credit, source_path, note, status, post_id, styles, error, submitted_by, created_at, updated_at, attempts
 `
 
 type RequeueTributeParams struct {
@@ -226,6 +281,7 @@ func (q *Queries) RequeueTribute(ctx context.Context, arg RequeueTributeParams) 
 		&i.SubmittedBy,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Attempts,
 	)
 	return i, err
 }
@@ -238,7 +294,7 @@ SET status = 'drafted',
     error = '',
     updated_at = ?3
 WHERE id = ?4 AND status = 'running'
-RETURNING id, project_id, credit, source_path, note, status, post_id, styles, error, submitted_by, created_at, updated_at
+RETURNING id, project_id, credit, source_path, note, status, post_id, styles, error, submitted_by, created_at, updated_at, attempts
 `
 
 type TributeDraftedParams struct {
@@ -269,15 +325,16 @@ func (q *Queries) TributeDrafted(ctx context.Context, arg TributeDraftedParams) 
 		&i.SubmittedBy,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Attempts,
 	)
 	return i, err
 }
 
 const tributeFailed = `-- name: TributeFailed :one
 UPDATE tributes
-SET status = 'failed', error = ?1, updated_at = ?2
+SET status = 'failed', error = ?1, attempts = attempts + 1, updated_at = ?2
 WHERE id = ?3 AND status IN ('queued', 'running')
-RETURNING id, project_id, credit, source_path, note, status, post_id, styles, error, submitted_by, created_at, updated_at
+RETURNING id, project_id, credit, source_path, note, status, post_id, styles, error, submitted_by, created_at, updated_at, attempts
 `
 
 type TributeFailedParams struct {
@@ -302,6 +359,7 @@ func (q *Queries) TributeFailed(ctx context.Context, arg TributeFailedParams) (T
 		&i.SubmittedBy,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Attempts,
 	)
 	return i, err
 }

@@ -133,3 +133,44 @@ func TestEnqueueTributeRejectsBadInput(t *testing.T) {
 		t.Fatalf("unknown project: %v, want ErrNotFound", err)
 	}
 }
+
+// A run cut off by its time limit fails the tribute it was on; the next run
+// puts it back, but only until it has failed max_attempts times.
+func TestRequeueFailedTributesStopsAtMaxAttempts(t *testing.T) {
+	ctx := context.Background()
+	svc, _ := newTestService(t)
+
+	if _, err := svc.EnqueueTribute(ctx, model.TributeRequest{
+		Project: "kiran", Credit: "@artist", SourcePath: "kiran/shot.png",
+	}); err != nil {
+		t.Fatal(err)
+	}
+	for attempt := 1; attempt <= 3; attempt++ {
+		claimed, err := svc.ClaimTribute(ctx)
+		if err != nil {
+			t.Fatalf("attempt %d: %v", attempt, err)
+		}
+		failed, err := svc.FinishTribute(ctx, claimed.ID, model.TributeDoneRequest{Error: "context canceled"})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if failed.Attempts != attempt {
+			t.Fatalf("attempt %d: attempts = %d", attempt, failed.Attempts)
+		}
+		back, err := svc.RequeueFailedTributes(ctx, 3)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if want := 1; attempt == 3 {
+			want = 0
+			if len(back) != want {
+				t.Fatalf("after %d failures requeued %d, want %d", attempt, len(back), want)
+			}
+		} else if len(back) != want || back[0].Status != "queued" || back[0].Error != "" {
+			t.Fatalf("after %d failures requeued %+v", attempt, back)
+		}
+	}
+	if _, err := svc.RequeueFailedTributes(ctx, 0); err == nil {
+		t.Error("max_attempts 0 accepted")
+	}
+}

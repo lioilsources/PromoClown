@@ -311,6 +311,13 @@ func (c *Client) FinishTribute(ctx context.Context, id int64, req model.TributeD
 	return out, c.do(ctx, http.MethodPost, fmt.Sprintf("/tributes/%d/done", id), nil, req, &out)
 }
 
+// RequeueFailedTributes puts failed tributes with fewer than maxAttempts
+// failures back in the queue and returns them.
+func (c *Client) RequeueFailedTributes(ctx context.Context, maxAttempts int) ([]model.Tribute, error) {
+	var out []model.Tribute
+	return out, c.do(ctx, http.MethodPost, "/tributes/requeue-failed", nil, model.TributeRequeueRequest{MaxAttempts: maxAttempts}, &out)
+}
+
 func (c *Client) RetryTribute(ctx context.Context, id int64) (model.Tribute, error) {
 	var out model.Tribute
 	return out, c.do(ctx, http.MethodPost, fmt.Sprintf("/tributes/%d/retry", id), nil, nil, &out)
