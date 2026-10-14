@@ -190,6 +190,9 @@ type TributeDoneRequest struct {
 	PostID int64    `json:"post_id"`
 	Styles []string `json:"styles,omitempty"`
 	Error  string   `json:"error,omitempty"`
+	// Final marks a failure no retry can fix (no face in the picture), so the
+	// tribute is never requeued automatically.
+	Final bool `json:"final,omitempty"`
 }
 
 type Mention struct {

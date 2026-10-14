@@ -262,7 +262,7 @@ func (w *worker) drain(ctx context.Context, max int) (done, failed int) {
 			// The queue must not keep a row "running" after the process that
 			// claimed it has given up on it.
 			if _, ferr := w.api.FinishTribute(context.WithoutCancel(ctx), t.ID,
-				model.TributeDoneRequest{Error: err.Error()}); ferr != nil {
+				model.TributeDoneRequest{Error: err.Error(), Final: finalFailure(err)}); ferr != nil {
 				fmt.Fprintf(w.errOut, "tribute #%d: could not record the failure: %v\n", t.ID, ferr)
 			}
 			if errors.Is(err, errThermalWait) {
@@ -365,6 +365,12 @@ func collapseBlankLines(s string) string {
 		s = strings.ReplaceAll(s, "\n\n\n", "\n\n")
 	}
 	return s
+}
+
+// finalFailure reports errors that rendering the same picture again cannot
+// fix: the face models found no face in it (tributes #39, #48, #58, #89, #90).
+func finalFailure(err error) bool {
+	return strings.Contains(err.Error(), "No face detected")
 }
 
 func envOr(key, fallback string) string {

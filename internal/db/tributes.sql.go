@@ -332,19 +332,28 @@ func (q *Queries) TributeDrafted(ctx context.Context, arg TributeDraftedParams) 
 
 const tributeFailed = `-- name: TributeFailed :one
 UPDATE tributes
-SET status = 'failed', error = ?1, attempts = attempts + 1, updated_at = ?2
-WHERE id = ?3 AND status IN ('queued', 'running')
+SET status = 'failed', error = ?1,
+    attempts = CASE WHEN CAST(?2 AS INTEGER) THEN 1000 ELSE attempts + 1 END,
+    updated_at = ?3
+WHERE id = ?4 AND status IN ('queued', 'running')
 RETURNING id, project_id, credit, source_path, note, status, post_id, styles, error, submitted_by, created_at, updated_at, attempts
 `
 
 type TributeFailedParams struct {
 	Error string
+	Final int64
 	Now   string
 	ID    int64
 }
 
+// A final failure (the picture itself is unusable) uses up every attempt at once.
 func (q *Queries) TributeFailed(ctx context.Context, arg TributeFailedParams) (Tribute, error) {
-	row := q.db.QueryRowContext(ctx, tributeFailed, arg.Error, arg.Now, arg.ID)
+	row := q.db.QueryRowContext(ctx, tributeFailed,
+		arg.Error,
+		arg.Final,
+		arg.Now,
+		arg.ID,
+	)
 	var i Tribute
 	err := row.Scan(
 		&i.ID,
