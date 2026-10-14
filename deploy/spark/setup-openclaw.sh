@@ -20,7 +20,7 @@ set +a
 export PATH="$HOME/.local/bin:$HOME/.openclaw/bin:$PATH"
 
 echo "==> exec allowlist: only the PromoClown CLIs"
-for bin in promo promo-ingest store-reviews youtube-comments reddit-monitor bluesky-mentions; do
+for bin in promo promo-ingest store-reviews store-metrics youtube-comments reddit-monitor bluesky-mentions; do
     openclaw approvals allowlist add --agent main "$HOME/.local/bin/$bin"
 done
 

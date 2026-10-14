@@ -4,7 +4,7 @@ LDFLAGS  = -s -w -X main.version=$(VERSION)
 # CLIs that run as OpenClaw skills on the DGX Spark (linux/arm64).
 # promo-tribute and promo-restyle run on the Spark because ComfyUI does; the
 # rest are the agent's skill CLIs.
-SKILL_CMDS = promo store-reviews youtube-comments reddit-monitor bluesky-mentions \
+SKILL_CMDS = promo store-reviews store-metrics youtube-comments reddit-monitor bluesky-mentions \
              promo-tribute promo-restyle
 
 JODA        ?= joda

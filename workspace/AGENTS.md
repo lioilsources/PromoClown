@@ -49,6 +49,7 @@ giving up — so get it right the first time: `promo-ingest`, not
 - `promo` — projects, assets, drafts, post log, mentions, reviews, digest.
 - `promo-ingest` — runs every monitor below and imports the results into promo. Safe to run any time.
 - `store-reviews` — App Store and Google Play reviews (read-only).
+- `store-metrics` — App Store numbers per app and day: downloads, proceeds, impressions, page views, conversion, sessions, crashes (read-only).
 - `youtube-comments` — comments on Ol1n's YouTube channel (read-only).
 - `bluesky-mentions` — Bluesky mentions, replies and quotes (read-only).
 
