@@ -26,7 +26,9 @@ done
 
 echo "==> heartbeat checklist"
 # HEARTBEAT.md is no longer read at runtime; doctor --fix moves it into the
-# heartbeat job's scratch. Doctor stops the managed gateway while it repairs
+# heartbeat job's scratch. Everything in it reaches the model, so keep notes like
+# this one here, not in the file: on 13. 10. the model sent the checklist to Telegram.
+# Later edits: openclaw cron scratch <heartbeat id> --file workspace/HEARTBEAT.md Doctor stops the managed gateway while it repairs
 # and does not always start it again, and `cron add` needs the gateway up.
 openclaw doctor --fix || echo "    doctor reported problems; check its output above"
 systemctl --user restart openclaw-gateway.service
