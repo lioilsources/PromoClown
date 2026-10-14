@@ -58,6 +58,7 @@ nasazení krok za krokem je v [`docs/RUNBOOK.md`](docs/RUNBOOK.md).
 | `promo-api` | JODA (docker) | SQLite + HTTP API, approval bot, publisher, sync, retence Reddit dat |
 | `promo` | Spark (skill), Mac (admin) | projekty, assety, drafty, log, inbox, digest |
 | `store-reviews` | Spark | recenze App Store Connect a Google Play |
+| `store-metrics` | Spark | čísla App Store po dnech: stažení, výnosy (Sales and Trends), zobrazení, konverze, sessions, pády (Analytics Reports) |
 | `youtube-comments` | Spark | komentáře na kanálu (API key) |
 | `bluesky-mentions` | Spark | zmínky, odpovědi a citace (app password) |
 | `reddit-monitor` | Spark | hledání v subredditech + inbox (read-only) |
