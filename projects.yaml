@@ -119,3 +119,35 @@ projects:
     tags: [strategy, board game, multiplayer]
     android_package: com.ol1n.orbitronTactics
     assets_dir: orbitron-tactics
+
+  # Not an app but a purchase: one lifetime IAP, bought inside any Ol1n app,
+  # that unlocks every one-time unlock in every Ol1n app (repo lioilsources/Pass,
+  # docs/PROMO_WIRING.md). It has no store page of its own — the link is the
+  # landing page, which also lists the apps that carry it. Flip to active once it
+  # can actually be bought, and add "Part of Ol1n Pass" to the hooks of each app
+  # that ships with it.
+  - slug: pass
+    name: Ol1n Pass
+    status: paused # not purchasable yet
+    tagline: One purchase, once, that unlocks every one-time unlock in every Ol1n app — including the ones not shipped yet.
+    audience: People who already use one Ol1n app and families sharing an App Store account.
+    tags: [lifetime, bundle, indie apps, flutter, revenuecat]
+    website_url: https://olin.now/pass
+    assets_dir: pass
+    hooks:
+      - One price, 49 USD, once. It unlocks every one-time unlock in every one of my apps.
+      - Every new app I ship is in the Pass from its first version — the Pass grows, the price does not.
+      - Works across iPhone, iPad and Android; buy it once in any app.
+      - Family Sharing on the App Store.
+      - No account needed on iPhone — the apps share it through the keychain.
+    forbidden_claims:
+      - free
+      - trial
+      - subscription
+      - unlimited
+      - everything
+      - on Steam
+      - on Windows
+      - coming soon
+      - next app
+      - lifetime deal
