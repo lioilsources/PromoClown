@@ -41,6 +41,7 @@ type Bot struct {
 	cfg        Config
 	log        *slog.Logger
 	onApproved func()
+	albums     albumBuffer
 }
 
 // New builds the bot. onApproved runs after every approval or retry, so the
@@ -97,9 +98,15 @@ func (b *Bot) saveOffset(offset int64) {
 
 func (b *Bot) pollLoop(ctx context.Context) {
 	offset := b.loadOffset()
+	unsaved := false
 	for ctx.Err() == nil {
-		updates, err := b.tg.GetUpdates(ctx, offset, int(b.cfg.PollTimeout.Seconds()))
+		timeout := int(b.cfg.PollTimeout.Seconds())
+		if b.albums.pending() {
+			timeout = 1 // come back soon to queue an album once it is complete
+		}
+		updates, err := b.tg.GetUpdates(ctx, offset, timeout)
 		if err != nil {
+			b.flushAlbums(ctx)
 			if ctx.Err() != nil {
 				return
 			}
@@ -123,8 +130,21 @@ func (b *Bot) pollLoop(ctx context.Context) {
 			b.handle(ctx, u)
 		}
 		if len(updates) > 0 {
-			b.saveOffset(offset)
+			unsaved = true
 		}
+		b.flushAlbums(ctx)
+		// An album still being collected is not queued yet: keep its updates
+		// redeliverable until it is, so a restart does not drop it.
+		if unsaved && !b.albums.pending() {
+			b.saveOffset(offset)
+			unsaved = false
+		}
+	}
+}
+
+func (b *Bot) flushAlbums(ctx context.Context) {
+	for _, album := range b.albums.due(time.Now()) {
+		b.handleAlbum(ctx, album)
 	}
 }
 
@@ -164,6 +184,10 @@ func (b *Bot) handle(ctx context.Context, u telegram.Update) {
 			return
 		}
 		if len(m.Photo) > 0 || m.Document != nil {
+			if m.MediaGroupID != "" {
+				b.albums.add(m, time.Now())
+				return
+			}
 			b.handlePhoto(ctx, m)
 			return
 		}

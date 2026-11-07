@@ -291,6 +291,12 @@ vybereš `#slug` (default je `TRIBUTE_PROJECT`, tedy `tsumiki`). Bot obrázek ul
 mezi assety a zařadí do fronty — žádný model u toho není, funguje to celý den,
 i když agent neběží.
 
+**Album** (víc obrázků najednou, až 10): popisek stačí napsat k jednomu z nich a platí
+pro všechny. Každý obrázek je samostatný tribute se stejným autorem, projektem i
+poznámkou. Bot počká, než album dorazí celé (1,5 s bez dalšího obrázku), a odpoví
+jednou zprávou se všemi čísly. Album bez autora nezařadí vůbec. Počítej s okny:
+každý tribute zabere 5–8 minut ComfyUI, takže plné album je až hodina a půl fronty.
+
 Ve **23:00** timer `promo-tribute.timer` na Sparku frontu vyprázdní: pro každý
 záznam vybere 4 styly, nechá ComfyUI vyrobit 4 varianty a založí draft na X.
 Ráno ho schvaluješ v Telegramu jako cokoli jiného; publikuje ho publisher na JODĚ.
