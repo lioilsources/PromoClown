@@ -45,6 +45,8 @@ type Message struct {
 	// Photo carries the same picture in several sizes, smallest first.
 	Photo    []PhotoSize `json:"photo"`
 	Document *Document   `json:"document"`
+	// MediaGroupID ties the pictures of one album together.
+	MediaGroupID string `json:"media_group_id"`
 }
 
 type PhotoSize struct {
