@@ -117,9 +117,9 @@ func TestPickIsReproducible(t *testing.T) {
 	}
 }
 
-// Over many single draws a tier-1 style must come up far more often than a
-// tier-2 one: weight 4 against 1, against a catalog that is 42 to 48.
-func TestPickFavoursTier1(t *testing.T) {
+// Over many single draws every style comes up about equally often, so the
+// tier-1 share is its share of the catalog.
+func TestPickWeighsStylesEqually(t *testing.T) {
 	const draws = 20000
 	rnd := NewRand(3)
 	tier1 := 0
@@ -128,15 +128,16 @@ func TestPickFavoursTier1(t *testing.T) {
 			tier1++
 		}
 	}
-	var w1, w2 int
+	n1 := 0
 	for _, s := range catalog {
 		if s.Tier == 1 {
-			w1 += tierWeight(1)
-		} else {
-			w2 += tierWeight(2)
+			n1++
 		}
 	}
-	want := float64(w1) / float64(w1+w2)
+	if tierWeight(1) != tierWeight(2) {
+		t.Errorf("tier weights differ: %d vs %d", tierWeight(1), tierWeight(2))
+	}
+	want := float64(n1) / float64(len(catalog))
 	got := float64(tier1) / draws
 	if got < want-0.02 || got > want+0.02 {
 		t.Errorf("tier-1 share = %.3f, want about %.3f", got, want)

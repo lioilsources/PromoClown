@@ -114,12 +114,11 @@ func StyleByID(id string) (Style, bool) {
 	return Style{}, false
 }
 
-// tierWeight ranks how likely a style is to be drawn: a tier-1 style comes up
-// four times as often as any other.
+// tierWeight ranks how likely a style is to be drawn. Every style weighs the
+// same: with tier 1 at 4, the 42 well-known painters crowded out the 228 lab
+// wave-7 styles (Olin, 2026-11-11). The tier stays in the catalog as a record
+// of the measurement.
 func tierWeight(tier int) int {
-	if tier == 1 {
-		return 4
-	}
 	return 1
 }
 
