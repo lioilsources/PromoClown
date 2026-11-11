@@ -628,5 +628,1601 @@
     "group": "Africa & Near East",
     "block": "ancient near eastern hebrew inspired style, simple strong outlines, modest earth palette, solemn dignified figures, subtle patterned textiles, formal composition",
     "tier": 2
+  },
+  {
+    "id": "durer-engraving",
+    "label": "Durer (engraving)",
+    "group": "More artists",
+    "block": "copper engraving by Albrecht Dürer, black ink on cream paper, dense cross-hatching, swelling burin lines, sharp contour, fine parallel modelling, northern renaissance precision, crisp printed plate surface",
+    "tier": 2
+  },
+  {
+    "id": "bosch",
+    "label": "Bosch",
+    "group": "More artists",
+    "block": "oil panel painting by Hieronymus Bosch, high panoramic viewpoint, swarming tiny figures across the surface, pale pink and sea-green palette, thin translucent paint, fantastical hybrid forms, crackled oak panel",
+    "tier": 2
+  },
+  {
+    "id": "bruegel",
+    "label": "Bruegel",
+    "group": "More artists",
+    "block": "oil panel painting by Pieter Bruegel the Elder, elevated distant viewpoint, small stocky figures, muted earthy browns with cold grey-green, flat clear daylight, deep receding landscape, thin dry paint on oak panel",
+    "tier": 2
+  },
+  {
+    "id": "van-eyck",
+    "label": "Van Eyck",
+    "group": "More artists",
+    "block": "early netherlandish oil painting by Jan van Eyck, luminous transparent glazes, microscopic detail, jewel-like crimson and deep green, crisp textile folds, cool even light, enamel-smooth panel surface",
+    "tier": 2
+  },
+  {
+    "id": "titian",
+    "label": "Titian",
+    "group": "More artists",
+    "block": "venetian oil painting by Titian, warm glowing colour, deep reds and golden flesh tones, loose broken late brushwork, soft dissolving contours, layered glazes, rough visible canvas weave",
+    "tier": 2
+  },
+  {
+    "id": "caravaggio",
+    "label": "Caravaggio",
+    "group": "More artists",
+    "block": "tenebrist oil painting by Caravaggio, single hard raking light from upper left, figures emerging from pure black, ordinary unidealised models, sharp shadow edge, earthy red and ochre, dark smooth canvas",
+    "tier": 2
+  },
+  {
+    "id": "velazquez",
+    "label": "Velazquez",
+    "group": "More artists",
+    "block": "court portrait painting by Diego Velázquez, silvery grey palette, restrained blacks and rose, loose shorthand brushstrokes that resolve at a distance, airy neutral background, thin fluid oil paint on canvas",
+    "tier": 2
+  },
+  {
+    "id": "rubens",
+    "label": "Rubens",
+    "group": "More artists",
+    "block": "flemish baroque oil painting by Peter Paul Rubens, rosy luminous flesh with pearly blue half-tones, swirling diagonal composition, full fleshy forms, warm reds, fluid sweeping brushwork, thin glowing paint",
+    "tier": 2
+  },
+  {
+    "id": "fragonard",
+    "label": "Fragonard",
+    "group": "More artists",
+    "block": "rococo oil painting by Jean-Honoré Fragonard, feathery playful brushwork, pastel pink, peach and sea-green, frothy foliage light, soft powdery atmosphere, swift flickering touches on canvas",
+    "tier": 2
+  },
+  {
+    "id": "david-neoclassical",
+    "label": "Jacques-Louis David",
+    "group": "More artists",
+    "block": "neoclassical oil painting by Jacques-Louis David, invisible smooth brushwork, sculptural marble-like bodies, frieze-like shallow stage, hard clear outlines, stern red and white accents, plain dark background, polished canvas",
+    "tier": 2
+  },
+  {
+    "id": "ingres",
+    "label": "Ingres",
+    "group": "More artists",
+    "block": "neoclassical oil portrait by Jean-Auguste-Dominique Ingres, porcelain smooth skin, elongated sinuous contours, pure unbroken line, cool pale tones, crisp silk surfaces, enamel-like invisible brushwork",
+    "tier": 2
+  },
+  {
+    "id": "friedrich",
+    "label": "Caspar David Friedrich",
+    "group": "More artists",
+    "block": "german romantic oil painting by Caspar David Friedrich, vast hazy depth, cold grey-blue and violet dusk tones, silhouetted forms against pale sky, still symmetrical composition, thin smooth paint",
+    "tier": 2
+  },
+  {
+    "id": "turner",
+    "label": "Turner",
+    "group": "More artists",
+    "block": "late oil painting by J. M. W. Turner, forms dissolved into blazing light, swirling vortex of yellow and white, scumbled translucent veils, barely any contour, rough scraped impasto surface",
+    "tier": 2
+  },
+  {
+    "id": "blake",
+    "label": "William Blake",
+    "group": "More artists",
+    "block": "colour-printed relief etching by William Blake, elongated muscular figures, flamelike rhythmic outlines, mottled pigment, hand-tinted watercolour washes in ochre and blue, reticulated printed paper surface",
+    "tier": 2
+  },
+  {
+    "id": "hokusai",
+    "label": "Hokusai (manga sketches)",
+    "group": "More artists",
+    "block": "woodblock sketchbook page by Katsushika Hokusai, nimble calligraphic brush line, black outline with pale grey and soft pink tone, comic candid gesture, sparse empty ground, warm washi paper",
+    "tier": 2
+  },
+  {
+    "id": "hiroshige",
+    "label": "Hiroshige",
+    "group": "More artists",
+    "block": "ukiyo-e woodblock landscape print by Utagawa Hiroshige, bokashi gradient from deep indigo into pale sky, flat colour shapes, thin dark outline, slanting fine line rhythm, soft washi paper grain",
+    "tier": 2
+  },
+  {
+    "id": "yoshitoshi",
+    "label": "Yoshitoshi",
+    "group": "More artists",
+    "block": "meiji woodblock print by Tsukioka Yoshitoshi, dramatic twisting pose, nervous elegant line, restrained muted palette with sudden red accent, sparse gradient ground, fine woodgrain printed on paper",
+    "tier": 2
+  },
+  {
+    "id": "kuniyoshi",
+    "label": "Kuniyoshi",
+    "group": "More artists",
+    "block": "ukiyo-e warrior print by Utagawa Kuniyoshi, explosive packed composition filling the sheet, bold swirling black line, dense interlocking patterns, saturated red and indigo, heavy muscular action, woodblock ink texture",
+    "tier": 2
+  },
+  {
+    "id": "manet",
+    "label": "Manet",
+    "group": "More artists",
+    "block": "oil painting by Édouard Manet, flat frontal light, black used as a full colour, abrupt shift between light and dark, pale simplified flesh, broad summary brushwork, creamy paint on canvas",
+    "tier": 2
+  },
+  {
+    "id": "renoir",
+    "label": "Renoir",
+    "group": "More artists",
+    "block": "impressionist oil painting by Pierre-Auguste Renoir, dappled sunlight patches, soft feathery brushstrokes, warm rosy flesh, shimmering blue shadows, blurred contours, creamy vibrating paint surface",
+    "tier": 2
+  },
+  {
+    "id": "cassatt",
+    "label": "Mary Cassatt",
+    "group": "More artists",
+    "block": "pastel by Mary Cassatt, asymmetric japanese-print cropping, high tilted viewpoint, soft hatched chalk strokes, tender pink and pale green, flat patterned areas, velvety toned paper surface",
+    "tier": 2
+  },
+  {
+    "id": "whistler",
+    "label": "Whistler (nocturne)",
+    "group": "More artists",
+    "block": "nocturne by James McNeill Whistler, tonal harmony of blue and silver, thin liquid paint washed across canvas, vague dissolved shapes in fog, near monochrome, sparse flecks of gold, smooth veiled surface",
+    "tier": 2
+  },
+  {
+    "id": "sargent",
+    "label": "Sargent",
+    "group": "More artists",
+    "block": "portrait painting by John Singer Sargent, long bravura wet brushstrokes, glinting white satin highlights, dark tonal background, elegant loose edges, confident impasto accents on smooth canvas",
+    "tier": 2
+  },
+  {
+    "id": "sorolla",
+    "label": "Sorolla",
+    "group": "More artists",
+    "block": "oil painting by Joaquín Sorolla, blazing mediterranean sunlight, luminous whites with violet shadows, broad fluid wet strokes, sparkling reflections, intense warm-cool contrast, thick loose paint",
+    "tier": 2
+  },
+  {
+    "id": "zorn",
+    "label": "Zorn",
+    "group": "More artists",
+    "block": "oil painting by Anders Zorn, limited palette of ochre, vermilion, ivory black and white, ruddy warm flesh, broad decisive slashing strokes, shimmering rippling light, creamy impasto on canvas",
+    "tier": 2
+  },
+  {
+    "id": "repin",
+    "label": "Repin",
+    "group": "More artists",
+    "block": "russian realist oil painting by Ilya Repin, psychological character study, weathered faces, sombre browns and grey daylight, solid vigorous brushwork, open-air naturalism, thick earthy canvas surface",
+    "tier": 2
+  },
+  {
+    "id": "bilibin",
+    "label": "Bilibin (Russian fairy tales)",
+    "group": "More artists",
+    "block": "russian fairytale illustration by Ivan Bilibin, thick black contour lines, flat watercolour fills, decorative ornamental border, folk embroidery patterns, muted ochre and teal, printed book page surface",
+    "tier": 2
+  },
+  {
+    "id": "vrubel",
+    "label": "Vrubel",
+    "group": "More artists",
+    "block": "symbolist oil painting by Mikhail Vrubel, crystalline faceted brush planes, mosaic of shattered strokes, deep violet and dusky blue with gleaming pearl, heavy palette-knife impasto",
+    "tier": 2
+  },
+  {
+    "id": "kirchner",
+    "label": "Kirchner",
+    "group": "More artists",
+    "block": "german expressionist oil painting by Ernst Ludwig Kirchner, sharp jagged angles, acid pink and poison green, elongated masklike faces, slashing hatched brushstrokes, raw unblended paint",
+    "tier": 2
+  },
+  {
+    "id": "marc",
+    "label": "Franz Marc",
+    "group": "More artists",
+    "block": "expressionist painting by Franz Marc, prismatic intersecting colour planes, saturated cobalt blue, crimson and yellow, curved rhythmic contours, crystalline fractured space, flat bright oil paint",
+    "tier": 2
+  },
+  {
+    "id": "klee",
+    "label": "Paul Klee",
+    "group": "More artists",
+    "block": "painting by Paul Klee, grid of soft glowing colour squares, childlike thin wandering line, hieroglyphic signs, muted warm watercolour washes, dry chalky textured ground",
+    "tier": 2
+  },
+  {
+    "id": "leger",
+    "label": "Leger",
+    "group": "More artists",
+    "block": "painting by Fernand Léger, tubular machine-like figures, thick black outline, flat red, yellow and blue, stark white ground, offset colour bands, smooth poster-flat paint",
+    "tier": 2
+  },
+  {
+    "id": "de-chirico",
+    "label": "De Chirico",
+    "group": "More artists",
+    "block": "metaphysical painting by Giorgio de Chirico, deep empty perspective, long raking shadows, arcades, featureless mannequin forms, dark green-blue sky, hot ochre ground, flat dry paint",
+    "tier": 2
+  },
+  {
+    "id": "miro",
+    "label": "Miro",
+    "group": "More artists",
+    "block": "painting by Joan Miró, floating biomorphic shapes, thin black wire lines, spots of pure red, blue and yellow, scattered star signs, open washed ground, childlike flatness",
+    "tier": 2
+  },
+  {
+    "id": "rousseau",
+    "label": "Henri Rousseau (jungle)",
+    "group": "More artists",
+    "block": "naive oil painting by Henri Rousseau, oversized flat layered leaves, dozens of graded greens, stiff frontal figures, crisp hard-edged shapes, dense airless space, smooth enamel paint",
+    "tier": 2
+  },
+  {
+    "id": "ensor",
+    "label": "Ensor (masks)",
+    "group": "More artists",
+    "block": "expressionist painting by James Ensor, grotesque masklike faces, acid reds, greens and whites, crowded shallow space, scratchy nervous line, crusted raw impasto",
+    "tier": 2
+  },
+  {
+    "id": "hammershoi",
+    "label": "Hammershoi",
+    "group": "More artists",
+    "block": "oil painting by Vilhelm Hammershøi, near monochrome pearl greys, soft cool window light, empty stillness, reduced geometric composition, blurred quiet edges, muted thin dry brushwork",
+    "tier": 2
+  },
+  {
+    "id": "larsson",
+    "label": "Carl Larsson",
+    "group": "More artists",
+    "block": "watercolour illustration by Carl Larsson, firm flowing ink outline, clear light washes, swedish red and pale green, airy white ground, flat decorative patterning, fresh sunlit paper",
+    "tier": 2
+  },
+  {
+    "id": "wyspianski",
+    "label": "Wyspianski",
+    "group": "More artists",
+    "block": "polish art nouveau pastel by Stanisław Wyspiański, sensitive sweeping contour, bare toned paper left unworked, soft blue and ochre chalk strokes, decorative outline, delicate dry powdery texture",
+    "tier": 2
+  },
+  {
+    "id": "malczewski",
+    "label": "Malczewski",
+    "group": "More artists",
+    "block": "polish symbolist oil painting by Jacek Malczewski, hard sharp academic drawing, dry bright daylight, grassy ochre and cold blue, flat theatrical staging, enigmatic stillness, thin precise paint",
+    "tier": 2
+  },
+  {
+    "id": "beksinski",
+    "label": "Beksinski",
+    "group": "More artists",
+    "block": "dystopian oil painting by Zdzisław Beksiński, rust brown and bone ochre haze, crumbling eroded forms, skeletal decay, dry luminous dust, meticulous fine brushwork on hardboard",
+    "tier": 2
+  },
+  {
+    "id": "wyeth",
+    "label": "Andrew Wyeth",
+    "group": "More artists",
+    "block": "egg tempera painting by Andrew Wyeth, thousands of fine dry hatched strokes, faded straw and umber, cold pale light, sparse austere composition, chalky matte panel surface",
+    "tier": 2
+  },
+  {
+    "id": "grant-wood",
+    "label": "Grant Wood",
+    "group": "More artists",
+    "block": "american regionalist oil painting by Grant Wood, smooth rounded sculpted forms, hard precise detail, flemish-style polish, soft green and ochre, decorative patterned stippling, enamel-smooth panel surface",
+    "tier": 2
+  },
+  {
+    "id": "jacob-lawrence",
+    "label": "Jacob Lawrence",
+    "group": "More artists",
+    "block": "painting by Jacob Lawrence, casein tempera on hardboard, flat matte colour shapes, angular faceted figures, saturated red, yellow and blue with black, rhythmic repeated forms",
+    "tier": 2
+  },
+  {
+    "id": "bearden",
+    "label": "Romare Bearden (collage)",
+    "group": "More artists",
+    "block": "photomontage collage by Romare Bearden, cut magazine photographs and coloured paper, fragmented mismatched faces, abrupt scale shifts, flat torn shapes, visible glue seams",
+    "tier": 2
+  },
+  {
+    "id": "kehinde-wiley",
+    "label": "Kehinde Wiley",
+    "group": "More artists",
+    "block": "portrait painting by Kehinde Wiley, photorealistic frontal figure, saturated ornamental baroque floral wallpaper behind, tendrils growing over the body, glossy oil, crisp high-contrast skin",
+    "tier": 2
+  },
+  {
+    "id": "kusama",
+    "label": "Yayoi Kusama",
+    "group": "More artists",
+    "block": "painting by Yayoi Kusama, obsessive polka dots covering every surface, repeating infinity net loops, stark yellow and black, hypnotic all-over pattern, flat glossy acrylic",
+    "tier": 2
+  },
+  {
+    "id": "murakami",
+    "label": "Takashi Murakami (superflat)",
+    "group": "More artists",
+    "block": "superflat painting by Takashi Murakami, seamless flat colour, repeating grinning flower pattern, candy rainbow palette, thick clean outline, glossy lacquered surface",
+    "tier": 2
+  },
+  {
+    "id": "moebius",
+    "label": "Moebius",
+    "group": "More artists",
+    "block": "french comic art by Moebius, fine even pen line, delicate stippling and hatching, soft pastel flat colour, spacious clean composition, airy luminous light, smooth printed paper",
+    "tier": 2
+  },
+  {
+    "id": "frazetta",
+    "label": "Frazetta",
+    "group": "More artists",
+    "block": "fantasy oil painting by Frank Frazetta, explosive muscular anatomy, dynamic twisting action, warm umber darkness, glowing flesh against black, loose rapid brushwork, rough canvas",
+    "tier": 2
+  },
+  {
+    "id": "giger",
+    "label": "Giger (biomechanical)",
+    "group": "More artists",
+    "block": "biomechanical airbrush painting by H. R. Giger, monochrome grey ink, fused organic and machine forms, ribbed tubular surfaces, smooth sprayed gradients, stencilled edges",
+    "tier": 2
+  },
+  {
+    "id": "rackham",
+    "label": "Arthur Rackham",
+    "group": "More artists",
+    "block": "edwardian book illustration by Arthur Rackham, sinuous sepia pen line, muted transparent watercolour washes, gnarled knotty contours, dusty brown and grey-green, aged paper",
+    "tier": 2
+  },
+  {
+    "id": "dore",
+    "label": "Gustave Dore",
+    "group": "More artists",
+    "block": "wood engraving after Gustave Doré, dense parallel hatching, dramatic theatrical light against deep black, sweeping vast depth, black ink on white book paper",
+    "tier": 2
+  },
+  {
+    "id": "sorayama",
+    "label": "Sorayama (chrome)",
+    "group": "More artists",
+    "block": "airbrush illustration by Hajime Sorayama, liquid mirror chrome surfaces, razor sharp specular reflections, smooth sprayed gradients, soft studio glow, flawless polished finish",
+    "tier": 2
+  },
+  {
+    "id": "burian",
+    "label": "Zdenek Burian",
+    "group": "More artists",
+    "block": "illustration by Zdeněk Burian, warm naturalistic realism, broad confident brushwork, rich amber and earth tones, soft atmospheric depth, matte painted book plate surface",
+    "tier": 2
+  },
+  {
+    "id": "born",
+    "label": "Adolf Born",
+    "group": "More artists",
+    "block": "czech caricature illustration by Adolf Born, tall elongated figures, long noses, scratchy nervous pen line, soft pastel watercolour washes, witty flat staging, grainy paper",
+    "tier": 2
+  },
+  {
+    "id": "trnka",
+    "label": "Jiri Trnka",
+    "group": "More artists",
+    "block": "czech fairytale illustration by Jiří Trnka, soft rounded puppet-like figures, tender simple faces, muted warm tempera, gentle folk colour, dreamy blurred background, matte textured paper",
+    "tier": 2
+  },
+  {
+    "id": "ales",
+    "label": "Mikolas Ales",
+    "group": "More artists",
+    "block": "czech pen drawing by Mikoláš Aleš, hard firm contour, lunette-like decorative composition, simple sparse hatching, flat folk ornament, restrained ochre tint, sgraffito-like cream surface",
+    "tier": 2
+  },
+  {
+    "id": "toyen",
+    "label": "Toyen",
+    "group": "More artists",
+    "block": "czech surrealist painting by Toyen, smoky diffused grey and sand tones, sprayed veiled forms, ghostly dissolving outlines, empty open space, smooth matte canvas surface",
+    "tier": 2
+  },
+  {
+    "id": "kupka-early",
+    "label": "Kupka (early)",
+    "group": "More artists",
+    "block": "symbolist painting by František Kupka, figure modelled in vertical planes of colour, spectral rainbow shifts, thin rhythmic drawn contour, glowing violet and orange, smooth dreamlike paint",
+    "tier": 2
+  },
+  {
+    "id": "preisler",
+    "label": "Jan Preisler",
+    "group": "More artists",
+    "block": "czech art nouveau symbolist oil painting by Jan Preisler, muted blue-green and dusky turquoise, soft decorative contours, flattened dreamy space, melancholy stillness, thin matte brushwork",
+    "tier": 2
+  },
+  {
+    "id": "prerafael",
+    "label": "Pre-Raphaelite",
+    "group": "Europe",
+    "block": "pre-raphaelite oil painting, bright jewel glazes over wet white ground, crisp botanical detail in every flower of the meadow, medieval gowns, copper red flowing hair, viridian and madder",
+    "tier": 2
+  },
+  {
+    "id": "inuit-printmaking",
+    "label": "Inuit stonecut (Kinngait)",
+    "group": "Americas & Oceania",
+    "block": "inuit stonecut and stencil print on white washi paper, flat silhouette figures with no shading, feathered shapes radiating outward, two or three inks of black, red and blue, wide empty ground",
+    "tier": 2
+  },
+  {
+    "id": "cave-painting",
+    "label": "Cave painting (Lascaux)",
+    "group": "Europe",
+    "block": "paleolithic cave painting on rough limestone wall, charcoal contour and blown red and yellow ochre, profile animal silhouettes, twisted perspective horns, cracked rock surface",
+    "tier": 2
+  },
+  {
+    "id": "cycladic",
+    "label": "Cycladic figurine",
+    "group": "Europe",
+    "block": "cycladic marble idol, polished white stone body, folded arms across the abdomen, lyre-shaped head with only a ridge nose, flat geometric planes, plain grey background",
+    "tier": 2
+  },
+  {
+    "id": "greek-vase-black",
+    "label": "Greek vase (black-figure)",
+    "group": "Europe",
+    "block": "attic black-figure pottery, glossy black silhouette figures on orange terracotta, fine incised lines, added white and purple details, meander border band",
+    "tier": 2
+  },
+  {
+    "id": "greek-vase-red",
+    "label": "Greek vase (red-figure)",
+    "group": "Europe",
+    "block": "attic red-figure pottery, orange terracotta figures reserved on lustrous black glaze, thin relief lines for anatomy and drapery folds, palmette and meander border",
+    "tier": 2
+  },
+  {
+    "id": "etruscan-tomb",
+    "label": "Etruscan tomb fresco",
+    "group": "Europe",
+    "block": "etruscan tomb wall fresco on pale plaster, profile dancers with almond eyes and long pointed hands, red-brown male and cream female skin, black contours, striped wave and laurel bands",
+    "tier": 2
+  },
+  {
+    "id": "roman-mosaic",
+    "label": "Roman mosaic",
+    "group": "Europe",
+    "block": "roman floor mosaic of small stone tesserae, visible grout lines, figure built from cut cubes, terracotta, ochre, black and white stones, guilloche braid border",
+    "tier": 2
+  },
+  {
+    "id": "scythian-gold",
+    "label": "Scythian gold",
+    "group": "Europe",
+    "block": "scythian gold plaque, hammered repousse relief, animal style with coiled panther and stag folded legs, curling antlers into scrolls, solid gold on black, granulated edges",
+    "tier": 2
+  },
+  {
+    "id": "moche",
+    "label": "Moche pottery",
+    "group": "Americas & Oceania",
+    "block": "moche fineline pottery, cream slip with red-brown painted figures, thin calligraphic line, profile warriors and runners, stirrup spout vessel curve, dotted background fillers",
+    "tier": 2
+  },
+  {
+    "id": "nazca",
+    "label": "Nazca polychrome",
+    "group": "Americas & Oceania",
+    "block": "nazca polychrome slip pottery, flat burnished colors in black outline, stylized hummingbirds and spotted cats, cream, terracotta, grey and violet-black, rounded bowl band",
+    "tier": 2
+  },
+  {
+    "id": "kells",
+    "label": "Book of Kells",
+    "group": "Europe",
+    "block": "insular gospel manuscript on vellum, interlace knotwork and triskele spirals, staring figure with stacked ribbon hair, orpiment yellow, verdigris, red lead and lichen purple, red dots",
+    "tier": 2
+  },
+  {
+    "id": "bayeux",
+    "label": "Bayeux Tapestry",
+    "group": "Europe",
+    "block": "bayeux embroidery, wool stem stitch on bare linen strip, flat profile figures, terracotta, mustard and blue-green thread, horizontal frieze with narrow animal borders, stitched latin captions",
+    "tier": 2
+  },
+  {
+    "id": "romanesque-fresco",
+    "label": "Romanesque fresco",
+    "group": "Europe",
+    "block": "romanesque catalan apse fresco, hard black contours, staring frontal figure in almond mandorla, parallel fold lines, ultramarine, ochre and vermilion horizontal bands",
+    "tier": 2
+  },
+  {
+    "id": "gothic-altarpiece",
+    "label": "Gothic altarpiece",
+    "group": "Europe",
+    "block": "gothic altarpiece panel, egg tempera on wood, tooled and punched gilt ground with halo patterns, soft rounded figures, carved tracery pinnacles, vermilion and azurite drapery",
+    "tier": 2
+  },
+  {
+    "id": "danse-macabre",
+    "label": "Danse macabre",
+    "group": "Europe",
+    "block": "late gothic woodcut, heavy black cut lines, parallel hatching, dancing skeletons leading the living by the hand, plain hand-colored ochre and red washes, gothic banner",
+    "tier": 2
+  },
+  {
+    "id": "urnes-viking",
+    "label": "Urnes (Viking)",
+    "group": "Europe",
+    "block": "urnes style viking wood carving, weathered dark oak relief, slender ribbon beast in looping figure-eight interlace, thin and thick lines contrast, tar-black ground",
+    "tier": 2
+  },
+  {
+    "id": "pskov-icon",
+    "label": "Pskov icon",
+    "group": "Europe",
+    "block": "russian pskov icon, egg tempera on linden panel, cinnabar red ground, dark olive shadows with sharp white highlight strokes, faceted angular drapery, square-shouldered figure",
+    "tier": 2
+  },
+  {
+    "id": "armenian-manuscript",
+    "label": "Armenian manuscript",
+    "group": "Africa & Near East",
+    "block": "cilician armenian gospel manuscript on vellum, lapis blue fields, tall canon tables, slender figures, vine and peacock marginalia, bird-shaped initial letters, carmine and gold",
+    "tier": 2
+  },
+  {
+    "id": "flemish-still-life",
+    "label": "Flemish still life (vanitas)",
+    "group": "Europe",
+    "block": "dutch and flemish vanitas oil painting, near-black ground, tight glazes, reflections on a glass roemer, peeled lemon, tarnished silver, snuffed candle, single raking window light",
+    "tier": 2
+  },
+  {
+    "id": "rococo",
+    "label": "Rococo",
+    "group": "Europe",
+    "block": "rococo oil painting, feathery brushwork, powder pink, pale blue and pistachio, gilded rocaille shell scrolls framing the scene, floating putti, silk ruffles, swing garden",
+    "tier": 2
+  },
+  {
+    "id": "neoclassicism",
+    "label": "Neoclassicism",
+    "group": "Europe",
+    "block": "neoclassical oil painting, invisible polished brushwork, marble-smooth sculpted figure, white chiton, doric columns, shallow frieze-like stage, cool grey wall, clear even light",
+    "tier": 2
+  },
+  {
+    "id": "romanticism-storm",
+    "label": "Romantic storm",
+    "group": "Europe",
+    "block": "romantic oil painting, thick impasto sky, wrecked ship and towering waves, sulphur yellow and bruised indigo clouds, tiny figure against the sea, sweeping diagonal spray",
+    "tier": 2
+  },
+  {
+    "id": "hudson-river",
+    "label": "Hudson River School",
+    "group": "Americas & Oceania",
+    "block": "hudson river school oil landscape, wide valley vista, tiny figure at the foreground crag, gnarled oak frame, golden hazy sunset light, glassy river, crisp distant ridges",
+    "tier": 2
+  },
+  {
+    "id": "orientalism",
+    "label": "Orientalism (19th century)",
+    "group": "Europe",
+    "block": "nineteenth century academic oil painting, cool blue iznik tile walls, carved mashrabiya screen light, brass lamp, silk carpet, polished detailed brushwork, warm amber interior",
+    "tier": 2
+  },
+  {
+    "id": "arts-and-crafts",
+    "label": "Arts and Crafts (Morris)",
+    "group": "Europe",
+    "block": "arts and crafts woodblock wallpaper, flat dense interlaced acanthus and willow leaves, no empty ground, indigo, madder and weld yellow, stylized thrush among strawberries, thick even outline",
+    "tier": 2
+  },
+  {
+    "id": "victorian-fairy",
+    "label": "Victorian fairy painting",
+    "group": "Europe",
+    "block": "victorian fairy painting, minute oil detail, tiny winged folk among oversized foxgloves and mushrooms, moonlit dark green undergrowth, iridescent wings, sharp grass blades",
+    "tier": 2
+  },
+  {
+    "id": "symbolism",
+    "label": "Symbolism",
+    "group": "Europe",
+    "block": "symbolist oil painting, jewel-dark ground incised with thin gold arabesque lines, pale androgynous figure, half-closed eyes, sphinx throne, lapis and garnet glazes",
+    "tier": 2
+  },
+  {
+    "id": "nabis",
+    "label": "Nabis",
+    "group": "Europe",
+    "block": "nabi interior painting on cardboard, flat matte patches of oil, patterned wallpaper merging with patterned dress, mustard, plum and dull rose, dark contours, tilted floor",
+    "tier": 2
+  },
+  {
+    "id": "expressionism-painting",
+    "label": "Expressionism",
+    "group": "Europe",
+    "block": "german expressionist oil painting, slashing visible strokes, thick black contours, unnatural cobalt and vermilion skin, acid yellow background, angular mask-like face",
+    "tier": 2
+  },
+  {
+    "id": "dada-collage",
+    "label": "Dada collage",
+    "group": "Europe",
+    "block": "dada photomontage, cut black and white newspaper photographs, mismatched scale, torn paper edges, gluey magazine lettering, gears and fragments of faces, red accent shapes",
+    "tier": 2
+  },
+  {
+    "id": "de-stijl",
+    "label": "De Stijl",
+    "group": "Europe",
+    "block": "de stijl neoplastic composition, thick black orthogonal grid, flat red, blue and yellow rectangles on white, no curves, no shading, figure reduced to rectangular planes",
+    "tier": 2
+  },
+  {
+    "id": "bauhaus-poster",
+    "label": "Bauhaus poster",
+    "group": "Europe",
+    "block": "bauhaus lithograph poster, circle, square and triangle construction, red, black and cream, diagonal sans-serif bars, figure built from ruled geometry, flat ink",
+    "tier": 2
+  },
+  {
+    "id": "precisionism",
+    "label": "Precisionism",
+    "group": "Americas & Oceania",
+    "block": "american precisionist oil painting, razor-clean factory edges, smokestacks and steel ducts, flattened planes, smooth unbrushed surface, pale steel blue, rust red and cream",
+    "tier": 2
+  },
+  {
+    "id": "socialist-realism",
+    "label": "Socialist realism",
+    "group": "Europe",
+    "block": "socialist realist oil painting, broad academic brushwork, low heroic viewpoint, worker in overalls, wheat field and red banners, sunlit vermilion and cobalt, upward gaze",
+    "tier": 2
+  },
+  {
+    "id": "polish-poster",
+    "label": "Polish poster school",
+    "group": "Europe",
+    "block": "polish poster school gouache, rough dry-brush shapes, single surreal visual metaphor, hand-scrawled lettering, ragged paper grain, muted background with one acid accent",
+    "tier": 2
+  },
+  {
+    "id": "psychedelic-poster",
+    "label": "Psychedelic poster",
+    "group": "Americas & Oceania",
+    "block": "1960s psychedelic concert poster, swelling melting letterforms, flowing hair turning into lines, vibrating complementary orange and electric blue, magenta and lime, screenprinted flat ink",
+    "tier": 2
+  },
+  {
+    "id": "memphis-80s",
+    "label": "Memphis (80s)",
+    "group": "Europe",
+    "block": "1980s memphis design, flat pastel mint and pink fields, black squiggle bacterio laminate, black dots, zigzag bands, terrazzo chips, primitive geometric blocks, hard shadows",
+    "tier": 2
+  },
+  {
+    "id": "pin-up-50s",
+    "label": "Pin-up (50s)",
+    "group": "Americas & Oceania",
+    "block": "1950s american pin-up calendar illustration, smooth glossy gouache and oil skin modeling, soft airbrush gradient background, candy red and cream, playful surprised pose, fine rim light",
+    "tier": 2
+  },
+  {
+    "id": "nihonga",
+    "label": "Nihonga",
+    "group": "Asia",
+    "block": "nihonga painting on silk, granular crushed mineral pigments, soft outlineless modeling, pale flattened face, oyster white gofun, malachite and azurite, thin silver leaf mist",
+    "tier": 2
+  },
+  {
+    "id": "yamato-e",
+    "label": "Yamato-e scroll",
+    "group": "Asia",
+    "block": "yamato-e picture scroll, blown-off roof view from above, diagonal tatami and beams, band mist clouds of gold, tiny line-eye hook-nose court faces, heaped layered robes",
+    "tier": 2
+  },
+  {
+    "id": "enso-zen",
+    "label": "Enso (Zen)",
+    "group": "Asia",
+    "block": "zen ink painting on raw white paper, a single black enso circle of one dry brushstroke, vast empty space, splintering bristle marks, one small red seal",
+    "tier": 2
+  },
+  {
+    "id": "kano-screen",
+    "label": "Kano folding screen",
+    "group": "Asia",
+    "block": "kano school folding screen, blazing gold cloud ground, massive gnarled pine trunk in angular black ink strokes, muscular brush outline, malachite needles, panel seams",
+    "tier": 2
+  },
+  {
+    "id": "nianhua",
+    "label": "Nianhua (New Year print)",
+    "group": "Asia",
+    "block": "chinese new year woodblock print, black key lines, hand-stenciled magenta, emerald and yellow, plump peony and carp, gold lucky symbols, symmetrical door panel layout",
+    "tier": 2
+  },
+  {
+    "id": "peking-opera-mask",
+    "label": "Peking opera mask",
+    "group": "Asia",
+    "block": "peking opera lianpu painted face, symmetrical bold makeup in red, black and white, sweeping brow and cheek shapes, pheasant feather headdress, embroidered silk collar",
+    "tier": 2
+  },
+  {
+    "id": "tang-sancai",
+    "label": "Tang sancai",
+    "group": "Asia",
+    "block": "tang dynasty sancai glazed earthenware figurine, amber, cream and copper green lead glazes dripping over each other, molded robe folds, unglazed pale face, crackle sheen",
+    "tier": 2
+  },
+  {
+    "id": "madhubani",
+    "label": "Madhubani",
+    "group": "Asia",
+    "block": "madhubani painting on handmade paper, double black outlines hatched inside, every gap filled with fish and leaf patterns, flat turmeric yellow, indigo, vermilion and leaf green",
+    "tier": 2
+  },
+  {
+    "id": "warli",
+    "label": "Warli",
+    "group": "Asia",
+    "block": "warli painting, white rice paste on dark red-brown mud wall, stick figures made of two joined triangles, circular dance rows, simple dotted border",
+    "tier": 2
+  },
+  {
+    "id": "pattachitra",
+    "label": "Pattachitra",
+    "group": "Asia",
+    "block": "pattachitra painted on chalk-primed cloth, hard black outline, large elongated eyes, flat vermilion background, conch white, indigo and lamp black, lotus and floral border",
+    "tier": 2
+  },
+  {
+    "id": "benin-bronze",
+    "label": "Benin bronze plaque",
+    "group": "Africa & Near East",
+    "block": "benin court brass plaque, lost-wax cast high relief, frontal figure with stacked coral bead collar, punched quatrefoil ground, dark green-brown patina, rosette corner studs",
+    "tier": 2
+  },
+  {
+    "id": "ndebele",
+    "label": "Ndebele mural",
+    "group": "Africa & Near East",
+    "block": "ndebele house mural, thick black outlines on white limewash, stepped geometric architectural panels, saturated yellow, turquoise, magenta and green, razor-straight painted edges",
+    "tier": 2
+  },
+  {
+    "id": "kuba-cloth",
+    "label": "Kuba cloth",
+    "group": "Africa & Near East",
+    "block": "kuba raffia cut-pile velvet cloth, tufted soft surface, interrupted diamond and zigzag grids, dark brown on natural straw, deliberate irregular pattern breaks",
+    "tier": 2
+  },
+  {
+    "id": "tingatinga",
+    "label": "Tingatinga",
+    "group": "Africa & Near East",
+    "block": "tingatinga bicycle enamel paint on square board, glossy flat color, plain bright sky background, naive giraffes and birds with dotted skin, thick outline, turquoise and tangerine",
+    "tier": 2
+  },
+  {
+    "id": "san-rock-art",
+    "label": "San rock art",
+    "group": "Africa & Near East",
+    "block": "san rock art on sandstone overhang, red ochre and white shaded eland, thin elongated running figures with bows, fine brush line, flaking stone surface",
+    "tier": 2
+  },
+  {
+    "id": "haida-formline",
+    "label": "Haida formline",
+    "group": "Americas & Oceania",
+    "block": "haida formline painting, swelling black primary lines, ovoid eyes and u-forms, red secondary lines, unpainted cream cedar ground, split symmetrical crest figure",
+    "tier": 2
+  },
+  {
+    "id": "navajo-sand",
+    "label": "Navajo sandpainting",
+    "group": "Americas & Oceania",
+    "block": "navajo sandpainting, fine colored sand on tan ground, tall rectangular yei figures in symmetrical rows, white, black, blue, yellow and red, encircling rainbow guardian",
+    "tier": 2
+  },
+  {
+    "id": "kamasan-bali",
+    "label": "Kamasan (Bali)",
+    "group": "Asia",
+    "block": "kamasan balinese painting on primed cotton cloth, wayang profile figures with curling hands, fine black line, ochre, indigo and brick red, cloud swirl and flame fillers",
+    "tier": 2
+  },
+  {
+    "id": "oil-impasto",
+    "label": "Oil (impasto)",
+    "group": "Paint & drawing",
+    "block": "impasto oil painting on canvas, thick ridges of paint, palette knife marks, heavy raised strokes, glossy wet oil sheen",
+    "tier": 2
+  },
+  {
+    "id": "oil-glazing",
+    "label": "Oil (old-master glazes)",
+    "group": "Paint & drawing",
+    "block": "oil glazing on dark imprimatura panel, smooth invisible brushwork, translucent layered glazes, sfumato soft edges, fine craquelure varnish surface",
+    "tier": 2
+  },
+  {
+    "id": "oil-alla-prima",
+    "label": "Oil (alla prima)",
+    "group": "Paint & drawing",
+    "block": "alla prima oil painting on canvas, broad wet-on-wet strokes, colors blending on the surface, unfinished loose edges, bare canvas showing through",
+    "tier": 2
+  },
+  {
+    "id": "palette-knife",
+    "label": "Palette knife",
+    "group": "Paint & drawing",
+    "block": "palette knife painting on canvas, flat scraped slabs of oil paint, no brush marks, broken planes with sharp ridged edges, thick buttery surface",
+    "tier": 2
+  },
+  {
+    "id": "acrylic-flat",
+    "label": "Acrylic (flat)",
+    "group": "Paint & drawing",
+    "block": "flat acrylic painting on board, even opaque brushwork, saturated colors with crisp hard edges, matte smooth surface without texture",
+    "tier": 2
+  },
+  {
+    "id": "acrylic-pour",
+    "label": "Acrylic pour",
+    "group": "Paint & drawing",
+    "block": "acrylic pour on canvas, poured fluid paint without brush, marbled swirls and cell patterns, metallic pigment veins, glossy resin-like surface",
+    "tier": 2
+  },
+  {
+    "id": "watercolor-wet",
+    "label": "Watercolor (wet-on-wet)",
+    "group": "Paint & drawing",
+    "block": "wet-on-wet watercolor on cold-press paper, soft loaded brush washes, bleeding edges and pigment blooms, white of the paper preserved, granulating pigment",
+    "tier": 2
+  },
+  {
+    "id": "watercolor-dry",
+    "label": "Watercolor (dry brush)",
+    "group": "Paint & drawing",
+    "block": "dry-brush watercolor on rough paper, scratchy broken strokes, grainy skipped pigment with layered washed shadows, tooth of the paper visible",
+    "tier": 2
+  },
+  {
+    "id": "watercolor-ink-line",
+    "label": "Watercolor and ink line",
+    "group": "Paint & drawing",
+    "block": "watercolor and ink line on sketchbook paper, thin loose pen line, light transparent wash overrunning the outlines, white paper left open",
+    "tier": 2
+  },
+  {
+    "id": "gouache",
+    "label": "Gouache",
+    "group": "Paint & drawing",
+    "block": "gouache painting on illustration board, flat opaque brushwork, matte even color with clean poster-like shapes, slightly chalky surface",
+    "tier": 2
+  },
+  {
+    "id": "egg-tempera",
+    "label": "Egg tempera",
+    "group": "Paint & drawing",
+    "block": "egg tempera on gessoed wooden panel, fine hatched strokes from a small brush, thin opaque layers, matte dry luminous surface",
+    "tier": 2
+  },
+  {
+    "id": "casein",
+    "label": "Casein",
+    "group": "Paint & drawing",
+    "block": "casein painting on board, quick direct brush strokes, soft pastel-toned opaque color, velvety matte surface",
+    "tier": 2
+  },
+  {
+    "id": "encaustic",
+    "label": "Encaustic wax",
+    "group": "Paint & drawing",
+    "block": "encaustic painting on wooden panel, molten pigmented wax, scratched incised lines, depth of fused translucent layers, milky waxy sheen",
+    "tier": 2
+  },
+  {
+    "id": "fresco-buon",
+    "label": "Fresco",
+    "group": "Paint & drawing",
+    "block": "buon fresco on wet lime plaster, broad brushwork, matte chalky mineral pigments, visible giornata seams, cracked and flaking plaster surface",
+    "tier": 2
+  },
+  {
+    "id": "airbrush",
+    "label": "Airbrush",
+    "group": "Paint & drawing",
+    "block": "airbrush illustration on smooth board, no visible strokes, seamless gradients and fine spray falloff, polished chrome-like highlights, 1980s finish",
+    "tier": 2
+  },
+  {
+    "id": "spray-stencil",
+    "label": "Spray stencil",
+    "group": "Paint & drawing",
+    "block": "spray paint through stencil on concrete wall, hard cut edges, fine overspray halo, paint drips, rough surface showing through",
+    "tier": 2
+  },
+  {
+    "id": "finger-paint",
+    "label": "Finger paint",
+    "group": "Paint & drawing",
+    "block": "finger painting on paper, visible fingerprints and smeared daubs, no brush marks, saturated childlike poster paint, thick uneven smudges",
+    "tier": 2
+  },
+  {
+    "id": "miniature-gouache",
+    "label": "Ivory miniature",
+    "group": "Paint & drawing",
+    "block": "portrait miniature in watercolor on ivory, tiny stippled brush dots, smooth delicate color, glossy ivory support, oval format",
+    "tier": 2
+  },
+  {
+    "id": "graphite",
+    "label": "Pencil",
+    "group": "Paint & drawing",
+    "block": "graphite pencil drawing on white paper, tonal hatching, smudged soft shadows, silver-grey sheen, fine paper grain",
+    "tier": 2
+  },
+  {
+    "id": "graphite-hard",
+    "label": "Technical pencil",
+    "group": "Paint & drawing",
+    "block": "hard pencil technical drawing on white paper, thin even line, visible construction lines, no shading, clean precise edges",
+    "tier": 2
+  },
+  {
+    "id": "charcoal",
+    "label": "Charcoal",
+    "group": "Paint & drawing",
+    "block": "charcoal drawing on textured paper, velvety black strokes, smudged tonal masses, kneaded eraser highlights, loose charcoal dust",
+    "tier": 2
+  },
+  {
+    "id": "conte",
+    "label": "Conte on toned paper",
+    "group": "Paint & drawing",
+    "block": "conte crayon drawing on grey toned paper, black and white chalk strokes, red-brown accents, hatched modelling, paper tone as midtone",
+    "tier": 2
+  },
+  {
+    "id": "silverpoint",
+    "label": "Silverpoint",
+    "group": "Paint & drawing",
+    "block": "silverpoint drawing on warm prepared ground, fine pale silver-grey line, delicate parallel hatching, no erasure or corrections, tarnished subtle surface",
+    "tier": 2
+  },
+  {
+    "id": "ballpoint",
+    "label": "Ballpoint pen",
+    "group": "Paint & drawing",
+    "block": "ballpoint pen drawing on paper, blue ink, dense cross-hatching, built-up tone from fine strokes, glossy ink sheen in darks",
+    "tier": 2
+  },
+  {
+    "id": "fineliner",
+    "label": "Fineliner",
+    "group": "Paint & drawing",
+    "block": "fineliner pen drawing on white paper, thin uniform black lines, stippled dots for tone, no washes, crisp clean edges",
+    "tier": 2
+  },
+  {
+    "id": "nib-ink",
+    "label": "Dip pen and ink",
+    "group": "Paint & drawing",
+    "block": "dip nib pen and india ink on paper, swelling variable line width, dense hatching, ink splatters, hard wet black edges",
+    "tier": 2
+  },
+  {
+    "id": "brush-ink",
+    "label": "Brush and ink",
+    "group": "Paint & drawing",
+    "block": "brush and black ink on paper, expressive tapered strokes, dry-brush streaks, solid spotted blacks, comic inking edges",
+    "tier": 2
+  },
+  {
+    "id": "marker",
+    "label": "Alcohol markers",
+    "group": "Paint & drawing",
+    "block": "alcohol marker drawing on smooth paper, flat layered tones, visible overlapping stroke bands, streaky saturated color, white gel pen highlights",
+    "tier": 2
+  },
+  {
+    "id": "crayon",
+    "label": "Wax crayon",
+    "group": "Paint & drawing",
+    "block": "wax crayon drawing on paper, rough grainy strokes, uneven childlike scribbled fill, paper showing through, waxy sheen",
+    "tier": 2
+  },
+  {
+    "id": "soft-pastel",
+    "label": "Soft pastel",
+    "group": "Paint & drawing",
+    "block": "soft pastel drawing on toned sanded paper, powdery strokes, finger-blended transitions, velvety chalky color, loose pigment dust",
+    "tier": 2
+  },
+  {
+    "id": "oil-pastel",
+    "label": "Oil pastel",
+    "group": "Paint & drawing",
+    "block": "oil pastel drawing on paper, thick greasy strokes, sgraffito scratched lines, saturated smeared color, waxy glossy surface",
+    "tier": 2
+  },
+  {
+    "id": "chalkboard",
+    "label": "Chalkboard",
+    "group": "Paint & drawing",
+    "block": "chalk drawing on blackboard, white and pastel chalk strokes, dusty soft edges, smudged eraser haze, matte black surface",
+    "tier": 2
+  },
+  {
+    "id": "scratchboard",
+    "label": "Scratchboard",
+    "group": "Paint & drawing",
+    "block": "scratchboard engraving on black clay board, fine white scratched lines, dense directional hatching, stark black ground, engraved sharp surface",
+    "tier": 2
+  },
+  {
+    "id": "calligraphy-chinese",
+    "label": "Chinese calligraphy (kaishu)",
+    "group": "Print & lettering",
+    "block": "chinese regular script calligraphy on xuan paper, angular brush strokes in black ink, vertical columns, red seal stamp, absorbent paper grain",
+    "tier": 2
+  },
+  {
+    "id": "calligraphy-cursive",
+    "label": "Chinese wild cursive",
+    "group": "Print & lettering",
+    "block": "chinese wild cursive calligraphy on paper, continuous sweeping brush strokes, flying dry-brush streaks, ink spatter, rhythmic linked marks",
+    "tier": 2
+  },
+  {
+    "id": "calligraphy-arabic",
+    "label": "Arabic calligraphy (thuluth)",
+    "group": "Print & lettering",
+    "block": "arabic thuluth calligraphy on burnished paper, elongated strokes from an angled reed pen, gold illuminated ornament, deep blue ink",
+    "tier": 2
+  },
+  {
+    "id": "blackletter",
+    "label": "Blackletter",
+    "group": "Print & lettering",
+    "block": "blackletter textura calligraphy on parchment, broken angular broad-nib strokes, dense black rhythm, red initial capital, slightly rough vellum surface",
+    "tier": 2
+  },
+  {
+    "id": "copperplate",
+    "label": "Copperplate script",
+    "group": "Print & lettering",
+    "block": "copperplate script on cream paper, pointed nib, hairline upstrokes and swelling downstrokes, looping flourishes, crisp iron-gall ink",
+    "tier": 2
+  },
+  {
+    "id": "brush-lettering",
+    "label": "Brush lettering",
+    "group": "Print & lettering",
+    "block": "brush lettering on paper, flexible brush pen, thick downstrokes and thin upstrokes, watercolor gradient inside strokes, dry streaked ends",
+    "tier": 2
+  },
+  {
+    "id": "hangul-calligraphy",
+    "label": "Korean calligraphy",
+    "group": "Print & lettering",
+    "block": "korean hangul calligraphy on hanji paper, round circular brush strokes, black ink, soft feathered edges, fibrous mulberry paper surface",
+    "tier": 2
+  },
+  {
+    "id": "graffiti-wildstyle",
+    "label": "Graffiti wildstyle",
+    "group": "Print & lettering",
+    "block": "graffiti wildstyle on concrete wall, spray can lines, interlocking lettering with arrows, 3d block shadow, bold outline and fade fills",
+    "tier": 2
+  },
+  {
+    "id": "linocut",
+    "label": "Linocut",
+    "group": "Print & lettering",
+    "block": "linocut print on paper, thick white gouged grooves, solid black ink areas, chattered carving marks, slightly uneven pressed ink",
+    "tier": 2
+  },
+  {
+    "id": "etching",
+    "label": "Etching",
+    "group": "Print & lettering",
+    "block": "etching print on cotton paper, fine parallel bitten lines, tone from line density, plate mark border, warm black ink",
+    "tier": 2
+  },
+  {
+    "id": "drypoint",
+    "label": "Drypoint",
+    "group": "Print & lettering",
+    "block": "drypoint print on paper, needle-scratched lines, velvety soft burr, rich fuzzy blacks, plate tone haze",
+    "tier": 2
+  },
+  {
+    "id": "lithograph",
+    "label": "Lithograph",
+    "group": "Print & lettering",
+    "block": "lithograph print on paper, greasy crayon strokes, grain of limestone, soft tonal areas, slightly mottled ink surface",
+    "tier": 2
+  },
+  {
+    "id": "letterpress",
+    "label": "Letterpress",
+    "group": "Print & lettering",
+    "block": "letterpress print on thick cotton paper, debossed impression, single ink color, slightly uneven ink density, soft fibrous surface",
+    "tier": 2
+  },
+  {
+    "id": "monotype",
+    "label": "Monotype",
+    "group": "Print & lettering",
+    "block": "monotype print on paper, single pressing from inked plate, wiped smeared areas, faint ghost image, soft mottled ink texture",
+    "tier": 2
+  },
+  {
+    "id": "cyanotype",
+    "label": "Cyanotype",
+    "group": "Print & lettering",
+    "block": "cyanotype print on watercolor paper, prussian blue tone, white silhouetted shapes, brushed uneven emulsion edges, soft paper grain",
+    "tier": 2
+  },
+  {
+    "id": "gyotaku",
+    "label": "Gyotaku (fish print)",
+    "group": "Print & lettering",
+    "block": "gyotaku ink rubbing on rice paper, pressed direct impression, scale-like imprinted texture, unprinted blank eye, soft black ink and fibrous paper",
+    "tier": 2
+  },
+  {
+    "id": "block-print-textile",
+    "label": "Block-printed textile",
+    "group": "Print & lettering",
+    "block": "hand block print on cotton cloth, repeated carved stamp pattern, uneven pressure and ink density, indigo dye, visible woven fabric",
+    "tier": 2
+  },
+  {
+    "id": "halftone-newsprint",
+    "label": "Newsprint halftone",
+    "group": "Print & lettering",
+    "block": "halftone newspaper print on yellowed newsprint, coarse CMYK dots, slight misregistration, ink show-through, cheap fibrous paper",
+    "tier": 2
+  },
+  {
+    "id": "engraving-banknote",
+    "label": "Banknote engraving",
+    "group": "Print & lettering",
+    "block": "banknote intaglio engraving on security paper, guilloche rosette lines, fine cross-hatching, single-color ink, raised crisp linework",
+    "tier": 2
+  },
+  {
+    "id": "embroidery",
+    "label": "Embroidery",
+    "group": "Textile & paper",
+    "block": "hand embroidery on linen, dense satin stitches, visible thread sheen, directional stitching following forms, woven cloth showing",
+    "tier": 2
+  },
+  {
+    "id": "cross-stitch",
+    "label": "Cross-stitch",
+    "group": "Textile & paper",
+    "block": "cross-stitch on aida cloth, tiny x-shaped stitches on a square grid, stepped pixel-like edges, cotton floss, visible cloth holes",
+    "tier": 2
+  },
+  {
+    "id": "tapestry-weave",
+    "label": "Woven tapestry",
+    "group": "Textile & paper",
+    "block": "woven tapestry on loom, visible weft ribs, matte wool colors, stepped jagged shape edges, coarse textile surface",
+    "tier": 2
+  },
+  {
+    "id": "quilt",
+    "label": "Patchwork quilt",
+    "group": "Textile & paper",
+    "block": "patchwork quilt, stitched pieces of printed fabric, visible quilting lines, seams between cloth patches, soft padded surface",
+    "tier": 2
+  },
+  {
+    "id": "batik",
+    "label": "Batik",
+    "group": "Textile & paper",
+    "block": "batik on cotton cloth, hot wax resist lines, crackled dye veins, indigo and brown dye, softly bleeding edges",
+    "tier": 2
+  },
+  {
+    "id": "tie-dye",
+    "label": "Tie-dye",
+    "group": "Textile & paper",
+    "block": "tie-dye on cotton fabric, bound and dyed folds, spiral radiating rings, bleeding rainbow dye edges, soft cloth surface",
+    "tier": 2
+  },
+  {
+    "id": "felt",
+    "label": "Needle felt",
+    "group": "Textile & paper",
+    "block": "needle felted wool, soft fuzzy fibers, rounded puffy shapes, matte heathered wool color, tiny needle dimples",
+    "tier": 2
+  },
+  {
+    "id": "knitted",
+    "label": "Knitted",
+    "group": "Textile & paper",
+    "block": "hand knitted wool, rows of stitch loops, cable knit pattern, chunky yarn, soft fuzzy textile surface",
+    "tier": 2
+  },
+  {
+    "id": "lace",
+    "label": "Lace",
+    "group": "Textile & paper",
+    "block": "bobbin lace, fine white openwork threads, delicate looped mesh, pierced negative shapes, on dark background",
+    "tier": 2
+  },
+  {
+    "id": "beadwork-loom",
+    "label": "Loom beadwork",
+    "group": "Textile & paper",
+    "block": "loom beadwork, shiny glass seed beads in a tight grid, stepped pixel-like edges, reflective rounded surface, visible thread rows",
+    "tier": 2
+  },
+  {
+    "id": "cardboard",
+    "label": "Cardboard",
+    "group": "Textile & paper",
+    "block": "corrugated cardboard craft, cut ragged edges exposing flutes, brown kraft surface, layered sheets, packing tape joints",
+    "tier": 2
+  },
+  {
+    "id": "origami",
+    "label": "Origami",
+    "group": "Textile & paper",
+    "block": "origami folded paper, crisp creases, sharp geometric facets, single sheet of matte washi",
+    "tier": 2
+  },
+  {
+    "id": "quilling",
+    "label": "Quilling",
+    "group": "Textile & paper",
+    "block": "paper quilling, rolled coils of thin paper strips, standing on edge, spiral filled shapes, crisp shadowed relief",
+    "tier": 2
+  },
+  {
+    "id": "pop-up-book",
+    "label": "Pop-up book",
+    "group": "Textile & paper",
+    "block": "pop-up book, cut paper flats standing in layered depth, visible fold tabs and creases, printed illustrated card surface",
+    "tier": 2
+  },
+  {
+    "id": "paper-sculpture-layered",
+    "label": "Layered paper cut",
+    "group": "Textile & paper",
+    "block": "layered cut paper light box, stacked silhouette sheets in depth, glowing backlight between layers, soft shadow gradients",
+    "tier": 2
+  },
+  {
+    "id": "kirigami",
+    "label": "Kirigami",
+    "group": "Textile & paper",
+    "block": "kirigami, cut and folded white paper, crisp slit edges, raised geometric planes, soft cast shadows",
+    "tier": 2
+  },
+  {
+    "id": "sticker-collage",
+    "label": "Sticker collage",
+    "group": "Textile & paper",
+    "block": "sticker collage, glossy die-cut stickers, thick white border around each shape, overlapping layers, slight peeling edges",
+    "tier": 2
+  },
+  {
+    "id": "marble",
+    "label": "Marble statue",
+    "group": "Sculpture & craft",
+    "block": "carved white marble sculpture, faint chisel marks in rough areas, smooth polished transitions, soft stone translucency",
+    "tier": 2
+  },
+  {
+    "id": "bronze",
+    "label": "Bronze",
+    "group": "Sculpture & craft",
+    "block": "cast bronze sculpture, modelled tool marks, green-brown patina in recesses, polished highlights on raised edges, dark metal surface",
+    "tier": 2
+  },
+  {
+    "id": "terracotta",
+    "label": "Terracotta",
+    "group": "Sculpture & craft",
+    "block": "fired terracotta sculpture, hand-modelled clay marks, brick-red matte body, fine surface cracks",
+    "tier": 2
+  },
+  {
+    "id": "wood-carving",
+    "label": "Wood carving",
+    "group": "Sculpture & craft",
+    "block": "hand wood carving, visible gouge marks, faceted cuts, wood grain rings, warm oiled timber surface",
+    "tier": 2
+  },
+  {
+    "id": "soapstone",
+    "label": "Soapstone",
+    "group": "Sculpture & craft",
+    "block": "carved soapstone sculpture, rounded smooth simplified forms, faint file marks, grey-green waxy stone surface",
+    "tier": 2
+  },
+  {
+    "id": "ice-sculpture",
+    "label": "Ice sculpture",
+    "group": "Sculpture & craft",
+    "block": "carved ice sculpture, chainsaw and chisel cuts, clear refracting ice, trapped bubbles, cool blue wet surface",
+    "tier": 2
+  },
+  {
+    "id": "sand-sculpture",
+    "label": "Sand relief",
+    "group": "Sculpture & craft",
+    "block": "sand sculpture relief, packed ochre grains, sharp carved edges, crumbling granular surface",
+    "tier": 2
+  },
+  {
+    "id": "claymation",
+    "label": "Claymation",
+    "group": "Sculpture & craft",
+    "block": "plasticine claymation, stop-motion puppet look, thumbprints in clay, matte saturated color, slightly lumpy hand-shaped surface",
+    "tier": 2
+  },
+  {
+    "id": "porcelain-figurine",
+    "label": "Porcelain figurine",
+    "group": "Sculpture & craft",
+    "block": "glazed porcelain figurine, hand-painted pastel enamel colors, gilded trim, smooth glassy glaze highlights",
+    "tier": 2
+  },
+  {
+    "id": "blue-white-porcelain",
+    "label": "Blue and white porcelain",
+    "group": "Sculpture & craft",
+    "block": "blue and white porcelain, hand-painted cobalt underglaze, white body, soft pooled brushwork, fine crackle glaze",
+    "tier": 2
+  },
+  {
+    "id": "ceramic-raku",
+    "label": "Raku ceramic",
+    "group": "Sculpture & craft",
+    "block": "raku ceramic, crackled white glaze, smoke-blackened carbon lines, iridescent metallic copper flashes, rough fired surface",
+    "tier": 2
+  },
+  {
+    "id": "mosaic-tesserae",
+    "label": "Mosaic",
+    "group": "Sculpture & craft",
+    "block": "mosaic of stone and glass tesserae, small hand-cut cubes, dark grout lines, gold tesserae glints, uneven reflective surface",
+    "tier": 2
+  },
+  {
+    "id": "cloisonne",
+    "label": "Cloisonne enamel",
+    "group": "Sculpture & craft",
+    "block": "cloisonne enamel, thin gold wire partitions, saturated vitreous color fields, polished glassy surface",
+    "tier": 2
+  },
+  {
+    "id": "glass-blown",
+    "label": "Blown glass",
+    "group": "Sculpture & craft",
+    "block": "blown glass, molten-formed transparent body, colored swirling veins, trapped bubbles, sharp specular reflections",
+    "tier": 2
+  },
+  {
+    "id": "wax-figure",
+    "label": "Wax figure",
+    "group": "Sculpture & craft",
+    "block": "wax museum figure, translucent waxy skin surface, soft subsurface glow, inserted glass eyes, hand-painted tint",
+    "tier": 2
+  },
+  {
+    "id": "wire-sculpture",
+    "label": "Wire sculpture",
+    "group": "Sculpture & craft",
+    "block": "bent wire sculpture, single thin metal line drawing in space, twisted joints, open contour, crisp cast shadow",
+    "tier": 2
+  },
+  {
+    "id": "repousse-metal",
+    "label": "Repousse metal",
+    "group": "Sculpture & craft",
+    "block": "repousse metalwork, forms hammered up from thin sheet, small chasing punch marks, burnished gold and copper sheen",
+    "tier": 2
+  },
+  {
+    "id": "daguerreotype",
+    "label": "Daguerreotype",
+    "group": "Photo & digital",
+    "block": "daguerreotype on mirrored silver plate, long exposure softness, silvery tonal sheen, tarnished edges, oval mat",
+    "tier": 2
+  },
+  {
+    "id": "tintype",
+    "label": "Tintype",
+    "group": "Photo & digital",
+    "block": "tintype wet collodion on dark metal plate, shallow plate focus, chemical streaks and blotches, dull grey-brown tones",
+    "tier": 2
+  },
+  {
+    "id": "polaroid",
+    "label": "Polaroid",
+    "group": "Photo & digital",
+    "block": "instant film photograph, white print border, faded washed-out color, soft on-camera flash, slight emulsion blur",
+    "tier": 2
+  },
+  {
+    "id": "lomography",
+    "label": "Lomography",
+    "group": "Photo & digital",
+    "block": "lomography cross-processed film photograph, heavy vignette, shifted saturated color, blown highlights, light leaks",
+    "tier": 2
+  },
+  {
+    "id": "pinhole",
+    "label": "Pinhole camera",
+    "group": "Photo & digital",
+    "block": "pinhole camera photograph, soft edgeless focus, long exposure blur, strong corner vignette, muted film grain",
+    "tier": 2
+  },
+  {
+    "id": "infrared-film",
+    "label": "Infrared film",
+    "group": "Photo & digital",
+    "block": "infrared film photograph, near-white glowing greens, blackened blues, soft halation around highlights, coarse grain",
+    "tier": 2
+  },
+  {
+    "id": "double-exposure",
+    "label": "Double exposure",
+    "group": "Photo & digital",
+    "block": "double exposure photograph, two translucent overlapping images, second image filling a dark silhouette, soft film blending",
+    "tier": 2
+  },
+  {
+    "id": "photogram",
+    "label": "Photogram",
+    "group": "Photo & digital",
+    "block": "photogram on silver gelatin paper, cameraless contact print, white shadow silhouettes on black, soft graded edges",
+    "tier": 2
+  },
+  {
+    "id": "xray",
+    "label": "X-ray",
+    "group": "Photo & digital",
+    "block": "x-ray radiograph on film, blue-black negative, translucent layered densities, glowing internal structure, soft edges",
+    "tier": 2
+  },
+  {
+    "id": "thermal",
+    "label": "Thermal camera",
+    "group": "Photo & digital",
+    "block": "thermal camera image, false color rainbow heat scale, blurred low-resolution blobs, glowing hot areas on cold blue-purple",
+    "tier": 2
+  },
+  {
+    "id": "low-poly",
+    "label": "Low poly",
+    "group": "Photo & digital",
+    "block": "low poly 3d render, flat triangular facets, hard faceted shading, visible polygon edges",
+    "tier": 2
+  },
+  {
+    "id": "vector-flat",
+    "label": "Flat vector",
+    "group": "Photo & digital",
+    "block": "flat vector illustration, clean geometric shapes, solid color fills, no gradients, no outlines",
+    "tier": 2
+  },
+  {
+    "id": "cel-shaded",
+    "label": "Cel shading",
+    "group": "Photo & digital",
+    "block": "cel shaded render, two-step hard shadows, flat paint fills, thick clean black outline",
+    "tier": 2
+  },
+  {
+    "id": "ascii-art",
+    "label": "ASCII art",
+    "group": "Photo & digital",
+    "block": "ascii art, monospaced text characters as tone, rows of glyphs, green phosphor on black terminal screen",
+    "tier": 2
+  },
+  {
+    "id": "blueprint",
+    "label": "Blueprint",
+    "group": "Photo & digital",
+    "block": "blueprint on cyanotype paper, thin white technical lines, dimension marks, fine grid, deep blue ground",
+    "tier": 2
+  },
+  {
+    "id": "neon-sign",
+    "label": "Neon sign",
+    "group": "Photo & digital",
+    "block": "neon sign, bent glowing glass tubes, single continuous line, colored halo reflecting on wet dark wall",
+    "tier": 2
+  },
+  {
+    "id": "pyrography",
+    "label": "Pyrography",
+    "group": "Sculpture & craft",
+    "block": "pyrography on wood, burnt brown lines, hot-tip shaded gradients, scorched darks, visible wood grain",
+    "tier": 2
+  },
+  {
+    "id": "marquetry",
+    "label": "Marquetry",
+    "group": "Sculpture & craft",
+    "block": "wood marquetry, inlaid veneer pieces of different timbers, knife-cut seams, smooth polished lacquer-like surface",
+    "tier": 2
+  },
+  {
+    "id": "stained-concrete",
+    "label": "Concrete",
+    "group": "Sculpture & craft",
+    "block": "cast concrete, rough grey surface, board-formed imprint lines, air holes and stained seepage",
+    "tier": 2
+  },
+  {
+    "id": "rust-patina",
+    "label": "Rust and patina",
+    "group": "Sculpture & craft",
+    "block": "rusted metal, flaking orange rust, blue-green verdigris patina, pitted corroded surface",
+    "tier": 2
+  },
+  {
+    "id": "gingerbread",
+    "label": "Gingerbread",
+    "group": "Sculpture & craft",
+    "block": "baked gingerbread, brown spiced cookie surface, piped white royal icing lines, sugar decoration, crumbly edges",
+    "tier": 2
+  },
+  {
+    "id": "pressed-flowers",
+    "label": "Pressed flowers",
+    "group": "Textile & paper",
+    "block": "pressed flower art on paper, dried translucent petals, flattened glued shapes, faded natural colors, herbarium sheet",
+    "tier": 2
+  },
+  {
+    "id": "sand-painting",
+    "label": "Sand painting",
+    "group": "Sculpture & craft",
+    "block": "colored sand painting, poured granular lines, visible mineral grains, flat geometric color fields, matte dry surface",
+    "tier": 2
+  },
+  {
+    "id": "tattoo-flash",
+    "label": "Tattoo flash",
+    "group": "Print & lettering",
+    "block": "old school tattoo flash on yellowed paper, thick black outline, limited red green yellow palette, whip shading dots, aged sheet",
+    "tier": 2
   }
 ]
