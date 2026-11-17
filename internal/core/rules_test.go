@@ -216,8 +216,9 @@ func TestPerAccountLimits(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if want := at("2026-09-14 09:10"); !got.Equal(want) {
-		t.Errorf("third post of the day = %s, want %s", got, want)
+	// 11 h window / 3 posts: 3 h 40 min apart, so after 10:00 and 14:00.
+	if want := at("2026-09-14 17:40"); !got.Equal(want) {
+		t.Errorf("third post of the day = %s, want %s", got.In(loc), want)
 	}
 
 	day = append(day, Slot{PostID: 3, ProjectID: 7, At: at("2026-09-14 17:00")})
@@ -235,6 +236,53 @@ func TestPerAccountLimits(t *testing.T) {
 	}
 	if v := s.Violations(at("2026-09-14 18:00"), 7, lim, day); len(v) != 1 {
 		t.Errorf("violations = %v, want the day to be full", v)
+	}
+}
+
+// Five posts a day spread over the window instead of piling up at its start,
+// and a day already carrying a burst at 09:00 still takes the rest later on.
+func TestSlotsSpreadOverTheDay(t *testing.T) {
+	loc := prague(t)
+	s := Schedule{Loc: loc, WindowStart: 9 * time.Hour, WindowEnd: 20 * time.Hour, Lead: 10 * time.Minute}
+	at := func(v string) time.Time {
+		tm, err := time.ParseInLocation("2006-01-02 15:04", v, loc)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return tm
+	}
+	lim := Limits{PerDay: 5, Gap: 0}
+	now := at("2026-09-13 21:00")
+
+	var committed []Slot
+	var got []string
+	for i := 0; i < 6; i++ {
+		slot, err := s.NextSlot(now, 7, lim, committed)
+		if err != nil {
+			t.Fatal(err)
+		}
+		committed = append(committed, Slot{PostID: int64(i + 1), ProjectID: 7, At: slot})
+		got = append(got, slot.In(loc).Format("01-02 15:04"))
+	}
+	want := []string{"09-14 09:00", "09-14 11:15", "09-14 13:30", "09-14 15:45", "09-14 18:00", "09-15 09:00"}
+	if strings.Join(got, " ") != strings.Join(want, " ") {
+		t.Errorf("slots = %v, want %v", got, want)
+	}
+
+	burst := []Slot{
+		{PostID: 1, ProjectID: 7, At: at("2026-09-14 09:00")},
+		{PostID: 2, ProjectID: 7, At: at("2026-09-14 09:00")},
+		{PostID: 3, ProjectID: 7, At: at("2026-09-14 09:00")},
+	}
+	slot, err := s.NextSlot(now, 7, lim, burst)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if want := at("2026-09-14 11:15"); !slot.Equal(want) {
+		t.Errorf("after a burst = %s, want %s", slot.In(loc), want)
+	}
+	if v := s.Violations(at("2026-09-14 09:30"), 7, lim, burst); len(v) != 0 {
+		t.Errorf("spacing is a default, not a rule a human breaks: %v", v)
 	}
 }
 
