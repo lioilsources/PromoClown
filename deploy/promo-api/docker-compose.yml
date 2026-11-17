@@ -26,7 +26,7 @@ services:
       - ${PROMO_DATA_DIR:-./data}:/data
     ports:
       # LAN only. Snap Docker publishes around ufw, so the bind address is the
-      # actual restriction. The Spark agent calls http://192.168.88.88:8094.
+      # actual restriction. The Spark agent calls http://<joda-host>:8094.
       - "${PROMO_BIND:-192.168.88.88}:8094:8094"
     mem_limit: 256m
     logging:

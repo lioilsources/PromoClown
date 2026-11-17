@@ -8,7 +8,7 @@ Pořadí odpovídá plánu (§9) s úpravami z README („Odchylky od plánu").
 
 | Otázka | Zjištěno 2026-09-11 | Doporučení |
 |---|---|---|
-| Kde poběží Postiz | JODA: 3,8 GB RAM, swap 3,7/3,8 GB plný, 2 CPU | Spark (`POSTIZ_BIND=192.168.88.66`) |
+| Kde poběží Postiz | JODA: 3,8 GB RAM, swap 3,7/3,8 GB plný, 2 CPU | Spark (`POSTIZ_BIND=<spark-host>`) |
 | Paměť pro agent model (~36 GB unified) | Spark: dostupných 17–37 GB podle zátěže | Před startem uvolnit paměť (viz A1) |
 | Reddit API | Nové přístupy vyžadují schválení | Požádat hned; bez něj `reddit-monitor` jen přeskočí |
 
@@ -74,7 +74,7 @@ spark$ cat >> .env <<'EOF'
 
 # ── Agent LLM (docker-compose.agent.yaml) — OpenClaw / PromoClown
 HF_MODEL_AGENT=nvidia/Qwen3.6-35B-A3B-NVFP4
-CACHE_AGENT=/home/ol1n/deploy/AiStack/cache/agent
+CACHE_AGENT=/home/<user>/deploy/AiStack/cache/agent
 AGENT_VLLM_VERSION=v0.20.0
 AGENT_GPU_MEMORY_UTILIZATION=0.30
 EOF
@@ -105,7 +105,7 @@ spark$ $ENV docker compose --env-file .env -f deploy/docker-compose.agent.yaml u
 spark$ docker logs -f qwen36-agent          # čekej na "Application startup complete" (až ~15 min)
 spark$ curl -s localhost:8040/v1/models
 spark$ python3 - <<'PY'   # openclaw-default zpět na qwen36-agent
-import re,p; p="/home/ol1n/deploy/AiStack/deploy/litellm_config.yaml"; s=open(p).read()
+import re,p; p="deploy/litellm_config.yaml"; s=open(p).read()
 s=s.replace("model: openai/swarm-nano","model: openai/qwen36-agent").replace("http://swarm-nano:8000/v1","http://qwen36-agent:8000/v1"); open(p,"w").write(s)
 PY
 spark$ docker restart litellm               # načte route openclaw-default (pár vteřin výpadek LLM API)
@@ -174,7 +174,7 @@ spark$ openclaw cron add --name hello-test --cron "$m $h * * *" --tz Europe/Prag
 spark$ openclaw cron list --all            # po doručení: openclaw cron remove <id>
 ```
 
-**Hotovo A:** agent odpovídá v Telegramu, používá lokální model, `mac$ nmap -p 18789 192.168.88.66` hlásí closed.
+**Hotovo A:** agent odpovídá v Telegramu, používá lokální model, `mac$ nmap -p 18789 $SPARK_HOST` hlásí closed.
 
 ## Fáze B — JODA: promo-api; Postiz
 
@@ -192,15 +192,15 @@ mac$  make deploy-promo-api            # rsync, docker compose up --build, promo
 Projekty a assety:
 
 ```bash
-mac$ export PROMO_API_URL=http://192.168.88.88:8094 PROMO_TOKEN=<PROMO_ADMIN_TOKEN>
+mac$ export PROMO_API_URL=http://$JODA_HOST:8094 PROMO_TOKEN=<PROMO_ADMIN_TOKEN>
 mac$ go run ./cmd/promo projects import projects.yaml
 mac$ go run ./cmd/promo projects list
 
 mac$ A=deploy/PromoClown/deploy/promo-api/data/assets
 mac$ ssh joda "mkdir -p $A/kirian/screenshots $A/kirian/shorts $A/doggiowars/screenshots"
-mac$ scp /Volumes/YOTTA/Dev/Kiran/tyrian_mobile/assets/icon/icon.png joda:$A/kirian/
-mac$ scp /Volumes/YOTTA/Dev/Kiran/tyrian_mobile/marketing/play-assets/phone/* joda:$A/kirian/screenshots/
-mac$ scp /Volumes/YOTTA/Dev/DoggioFight/screenshot.png /Volumes/YOTTA/Dev/DoggioFight/menu/icon.png joda:$A/doggiowars/
+mac$ scp $DEV_ROOT/Kiran/tyrian_mobile/assets/icon/icon.png joda:$A/kirian/
+mac$ scp $DEV_ROOT/Kiran/tyrian_mobile/marketing/play-assets/phone/* joda:$A/kirian/screenshots/
+mac$ scp $DEV_ROOT/DoggioFight/screenshot.png $DEV_ROOT/DoggioFight/menu/icon.png joda:$A/doggiowars/
 mac$ go run ./cmd/promo projects assets kirian
 ```
 
@@ -229,7 +229,7 @@ spark$ docker compose -f ~/deploy/PromoClown/deploy/postiz/docker-compose.yml ps
 spark$ docker logs postiz-cloudflared 2>&1 | grep -c "Registered tunnel connection"   # 4
 ```
 
-Hotovo 2026-09-14 (všechny kontejnery healthy, LAN `http://192.168.88.66:4007`).
+Hotovo 2026-09-14 (všechny kontejnery healthy, LAN `http://<spark-host>:4007`).
 `credentials.json` musí být 0644 — cloudflared image běží jako uid 65532 a s 0600
 souborem se konektor točí v restartu (`permission denied`); `deploy.sh` to už nastavuje.
 Veřejná URL závisí na opravě DNS záznamu (fáze E bod 10).
@@ -241,7 +241,7 @@ Pak:
 3. Settings → Developers → Public API → klíč.
 4. Na JODA do `deploy/promo-api/.env`:
    ```
-   POSTIZ_API_URL=http://192.168.88.66:4007/api/public/v1
+   POSTIZ_API_URL=http://<spark-host>:4007/api/public/v1
    POSTIZ_API_KEY=<klíč>
    ```
    `mac$ make deploy-promo-api` — `promo-api check` musí vypsat připojené kanály.
@@ -334,7 +334,7 @@ Kirianovi na jeho vlastním X účtu nic neblokují.
 | 2 | V approval botovi `ok <id>` | Do pár vteřin 📅 a post v kalendáři Postizu; po publikaci 🚀 do 5 min (`PROMO_SYNC_INTERVAL`), `promo posts show <id>` → `published` |
 | 3 | Komentář pod vlastním YouTube videem a zmínka tvého účtu na Bluesky | Do 15 min zpráva agent bota s odkazem (heartbeat běží 07:30–22:30) |
 | 4 | Nová recenze v App Store / Play | V daily digestu v 19:00 nebo v heartbeatu (Play vrací jen recenze z posledních 7 dní) |
-| 5 | `mac$ nmap -p 18789 192.168.88.66`, `spark$ ss -ltnp \| grep 18789` | closed; naslouchá jen 127.0.0.1 |
+| 5 | `mac$ nmap -p 18789 $SPARK_HOST`, `spark$ ss -ltnp \| grep 18789` | closed; naslouchá jen 127.0.0.1 |
 | 6 | Agentovi: „publikuj to hned" | Odmítne a odkáže na approval bota; i pokus `promo posts approve` vrátí „not allowed" |
 
 ## Údržba
