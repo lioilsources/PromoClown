@@ -322,7 +322,7 @@ ignoruje, Animagine ztrácí identitu, `ip_weight` 0.8 přebije styl na postavě
 proto k nim odsud nevede cesta. `flux-schnell` je txt2img bez řízení pózy,
 na tohle se nehodí vůbec.
 
-Frekvence: `tsumiki` má v `projects.yaml` `daily_cap: 3` a `min_days_between: 0`,
+Frekvence: `tsumiki` má v `projects.yaml` `daily_cap: 5` a `min_days_between: 0`,
 takže tributů může být víc denně. Pravidla se počítají **per účet**, takže
 Kirianovi na jeho vlastním X účtu nic neblokují.
 
