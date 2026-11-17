@@ -313,6 +313,20 @@ type conflict struct {
 	slot       Slot
 	dayFull    bool
 	projectGap bool
+	// tooClose: the account already posts within spacing of this time.
+	tooClose bool
+}
+
+// spacing is the distance kept between two automatically chosen posts of one
+// account: the posting window split evenly among the day's posts, so five a
+// day go out about two hours apart instead of all at the window start. One
+// post a day needs none.
+func (s Schedule) spacing(lim Limits) time.Duration {
+	n := lim.perDay()
+	if n < 2 || s.WindowEnd <= s.WindowStart {
+		return 0
+	}
+	return (s.WindowEnd - s.WindowStart) / time.Duration(n)
 }
 
 func sameLocalDay(a, b time.Time) bool {
@@ -329,15 +343,17 @@ func (s Schedule) conflicts(at time.Time, projectID int64, lim Limits, committed
 	}
 	full := len(day) >= lim.perDay()
 
+	space := s.spacing(lim)
 	var out []conflict
 	for _, c := range committed {
 		k := conflict{slot: c}
 		k.dayFull = full && sameLocalDay(c.At.In(s.Loc), local)
+		d := at.Sub(c.At)
 		if c.ProjectID == projectID && lim.Gap > 0 {
-			d := at.Sub(c.At)
 			k.projectGap = d < lim.Gap && d > -lim.Gap
 		}
-		if k.dayFull || k.projectGap {
+		k.tooClose = space > 0 && d < space && d > -space
+		if k.dayFull || k.projectGap || k.tooClose {
 			out = append(out, k)
 		}
 	}
@@ -382,6 +398,7 @@ func (s Schedule) OutsideWindow(at time.Time) bool {
 // after now, that breaks no frequency rule.
 func (s Schedule) NextSlot(now time.Time, projectID int64, lim Limits, committed []Slot) (time.Time, error) {
 	earliest := roundUp(now.Add(s.Lead).In(s.Loc))
+	space := s.spacing(lim)
 	for i := 0; i < 120; i++ {
 		day := earliest.AddDate(0, 0, i)
 		start, end := s.at(day, s.WindowStart), s.at(day, s.WindowEnd)
@@ -402,8 +419,16 @@ func (s Schedule) NextSlot(now time.Time, projectID int64, lim Limits, committed
 				}
 				// Too close to the project's other post: earliest escape is
 				// one gap after it, possibly later the same day.
-				if t := c.slot.At.Add(lim.Gap); t.After(next) {
-					next = t
+				if c.projectGap {
+					if t := c.slot.At.Add(lim.Gap); t.After(next) {
+						next = t
+					}
+				}
+				// Too close to the account's other post: one spacing after it.
+				if c.tooClose {
+					if t := c.slot.At.Add(space); t.After(next) {
+						next = t
+					}
 				}
 			}
 			if busy || !next.After(cand) {

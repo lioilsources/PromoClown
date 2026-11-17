@@ -323,7 +323,9 @@ proto k nim odsud nevede cesta. `flux-schnell` je txt2img bez řízení pózy,
 na tohle se nehodí vůbec.
 
 Frekvence: `tsumiki` má v `projects.yaml` `daily_cap: 5` a `min_days_between: 0`,
-takže tributů může být víc denně. Pravidla se počítají **per účet**, takže
+takže tributů může být víc denně. Automaticky zvolené sloty jednoho účtu se rozkládají
+rovnoměrně přes posílací okno (okno / `daily_cap`, při 9–20 h a 5 postech po 2 h 15 min);
+čas zadaný ručně přes `--at` rozestup nehlídá. Pravidla se počítají **per účet**, takže
 Kirianovi na jeho vlastním X účtu nic neblokují.
 
 ## Ověření (Definition of done, plán §7)
