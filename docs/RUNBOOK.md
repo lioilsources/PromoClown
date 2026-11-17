@@ -211,7 +211,7 @@ Test approval bota: napiš mu `list` → „Žádné drafty ke schválení."
 Záloha SQLite (běží za provozu, drží 14 kopií) — přidej do crontabu uživatele `oli` (`crontab -e`):
 
 ```
-30 3 * * * docker exec promo-api promo-api backup && rsync -a --delete /home/oli/deploy/PromoClown/deploy/promo-api/data/backups/ /media/backups/promoclown/
+30 3 * * * docker exec promo-api promo-api backup && rsync -a --delete ~/deploy/PromoClown/deploy/promo-api/data/backups/ /media/backups/promoclown/
 ```
 
 ### B1. Postiz na Sparku
