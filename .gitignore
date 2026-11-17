@@ -9,3 +9,16 @@ deploy/promo-api/data/
 deploy/postiz/cloudflared/config.yml
 deploy/postiz/cloudflared/*.json
 .DS_Store
+# devconv:start
+.env.*
+!.env.example
+*.p8
+*.p12
+*.jks
+key.properties
+.claude/settings.local.json
+CLAUDE.local.md
+# devconv:end
+bin/
+*.test
+*.out
