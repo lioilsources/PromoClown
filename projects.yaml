@@ -120,6 +120,32 @@ projects:
     android_package: com.ol1n.orbitronTactics
     assets_dir: orbitron-tactics
 
+  - slug: mirrorbooth
+    name: "Mirror Booth: Face Symmetry"
+    status: active
+    tagline: Mirror one half of your face onto the other — left + left or right + right — live in the camera, with filters on top.
+    audience: People who like funny selfies and face filters, and pet owners who want to mirror their cat or dog too.
+    tags: [selfie, face filters, face symmetry, camera, flutter]
+    store_ios_url: https://apps.apple.com/app/id6767824892
+    ios_app_id: "6767824892"
+    android_package: com.ab.mirrorbooth
+    store_android_url: https://play.google.com/store/apps/details?id=com.ab.mirrorbooth
+    website_url: https://olin.now/mirror
+    assets_dir: mirrorbooth
+    hooks:
+      - Left + left or right + right, which side of your face wins?
+      - Works live in the camera, on photos and on videos.
+      - Mirror your cat, your teddy or a comic hero too.
+      - Turn the mirror axis and rotate the image with one finger.
+      - No ads, no tracking, no account.
+    forbidden_claims:
+      - AI
+      - face recognition
+      - free forever
+      - unlimited
+      - subscription
+      - beauty filter that changes your real face
+
   # Not an app but a purchase: one lifetime IAP, bought inside any Ol1n app,
   # that unlocks every one-time unlock in every Ol1n app (repo lioilsources/Pass,
   # docs/PROMO_WIRING.md). It has no store page of its own — the link is the
