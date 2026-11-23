@@ -311,3 +311,25 @@ func hasWarning(warns []string, needle string) bool {
 	}
 	return false
 }
+
+func TestContainsClaim(t *testing.T) {
+	cases := []struct {
+		text, claim string
+		want        bool
+	}{
+		{"An AI filter", "AI", true},
+		{"AI-powered selfies", "AI", true},
+		{"(ai)", "AI", true},
+		{"https://play.google.com/store/apps/details?id=x", "AI", false},
+		{"Kirian is out again", "AI", false},
+		{"Kiran is Free Forever!", "free forever", true},
+		{"free  forever", "free forever", false},
+		{"Unlimited fun", "unlimited", true},
+		{"anything", " ", false},
+	}
+	for _, c := range cases {
+		if got := containsClaim(c.text, c.claim); got != c.want {
+			t.Errorf("containsClaim(%q, %q) = %v, want %v", c.text, c.claim, got, c.want)
+		}
+	}
+}
