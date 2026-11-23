@@ -153,9 +153,8 @@ func ValidateDraft(p model.Project, req model.DraftRequest) (errs, warns []strin
 		errs = append(errs, "replies are only supported for reddit")
 	}
 
-	lower := strings.ToLower(text + "\n" + req.Title)
 	for _, claim := range p.ForbiddenClaims {
-		if c := strings.ToLower(strings.TrimSpace(claim)); c != "" && strings.Contains(lower, c) {
+		if containsClaim(text+"\n"+req.Title, claim) {
 			errs = append(errs, fmt.Sprintf("text makes a forbidden claim for %s: %q", p.Slug, claim))
 		}
 	}
@@ -470,4 +469,15 @@ func containsAny(s string, subs []string) bool {
 		}
 	}
 	return false
+}
+
+// containsClaim reports whether claim occurs in text as whole words, ignoring
+// case, so "AI" catches "AI-powered" but not "details" or "Kirian".
+func containsClaim(text, claim string) bool {
+	c := strings.TrimSpace(claim)
+	if c == "" {
+		return false
+	}
+	re := regexp.MustCompile(`(?i)(^|[^\p{L}\p{N}])` + regexp.QuoteMeta(c) + `($|[^\p{L}\p{N}])`)
+	return re.MatchString(text)
 }
