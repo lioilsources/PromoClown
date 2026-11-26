@@ -8,7 +8,7 @@ Pořadí odpovídá plánu (§9) s úpravami z README („Odchylky od plánu").
 
 | Otázka | Zjištěno 2026-09-11 | Doporučení |
 |---|---|---|
-| Kde poběží Postiz | JODA: 3,8 GB RAM, swap 3,7/3,8 GB plný, 2 CPU | Spark (`POSTIZ_BIND=192.168.88.66`) |
+| Kde poběží Postiz | JODA: 3,8 GB RAM, swap 3,7/3,8 GB plný, 2 CPU | Spark (`POSTIZ_BIND=0.0.0.0`) |
 | Paměť pro agent model (~36 GB unified) | Spark: dostupných 17–37 GB podle zátěže | Před startem uvolnit paměť (viz A1) |
 | Reddit API | Nové přístupy vyžadují schválení | Požádat hned; bez něj `reddit-monitor` jen přeskočí |
 
