@@ -323,6 +323,21 @@ func (w *worker) process(ctx context.Context, t model.Tribute) error {
 	if err != nil {
 		return err
 	}
+	// A project with its own Bluesky channel gets a second draft with the same
+	// pictures. It is approved on its own; failing it does not undo the X draft.
+	if project.Account(model.PlatformBluesky) != "" {
+		bs, err := w.api.Draft(ctx, model.DraftRequest{
+			Project:    t.Project,
+			Platform:   model.PlatformBluesky,
+			Text:       blueskyPostText(w.template, t, project, labels, w.by),
+			MediaPaths: media,
+		})
+		if err != nil {
+			fmt.Fprintf(w.errOut, "  bluesky draft for tribute #%d failed: %v\n", t.ID, err)
+		} else {
+			fmt.Fprintf(w.out, "#%d → bluesky draft #%d\n", t.ID, bs.Post.ID)
+		}
+	}
 	if _, err := w.api.FinishTribute(ctx, t.ID, model.TributeDoneRequest{
 		PostID: draft.Post.ID, Styles: ids,
 	}); err != nil {
@@ -338,6 +353,27 @@ func (w *worker) process(ctx context.Context, t model.Tribute) error {
 // postText fills the template and, if the result does not fit X, drops the
 // style list — the credit and the link are the parts that have to survive.
 func postText(template string, t model.Tribute, p model.Project, labels []string, by string) string {
+	return buildText(template, t, p, labels, by, func(s string) bool { return core.XLength(s) <= 280 })
+}
+
+// blueskyPostText is the Bluesky variant: the credit is an X handle, which
+// means nothing on Bluesky, so it names the author and links their X profile.
+func blueskyPostText(template string, t model.Tribute, p model.Project, labels []string, by string) string {
+	t.Credit = blueskyCredit(t.Credit)
+	return buildText(template, t, p, labels, by, func(s string) bool { return core.GraphemeLength(s) <= 300 })
+}
+
+// blueskyCredit turns "@handle" into "handle (x.com/handle)"; anything that is
+// not a bare X handle is kept as it is.
+func blueskyCredit(credit string) string {
+	h := strings.TrimPrefix(strings.TrimSpace(credit), "@")
+	if h == "" || h == strings.TrimSpace(credit) || strings.ContainsAny(h, " /.@") {
+		return credit
+	}
+	return h + " (x.com/" + h + ")"
+}
+
+func buildText(template string, t model.Tribute, p model.Project, labels []string, by string, fits func(string) bool) string {
 	link := p.WebsiteURL
 	if link == "" && len(p.Links()) > 0 {
 		link = p.Links()[0]
@@ -353,7 +389,7 @@ func postText(template string, t model.Tribute, p model.Project, labels []string
 		return strings.TrimSpace(collapseBlankLines(out))
 	}
 	text := fill(strings.Join(labels, " · "))
-	if core.XLength(text) > 280 {
+	if !fits(text) {
 		text = fill("")
 	}
 	return text

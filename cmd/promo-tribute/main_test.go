@@ -50,6 +50,37 @@ func TestPostText(t *testing.T) {
 	}
 }
 
+func TestBlueskyPostText(t *testing.T) {
+	project := model.Project{Slug: "tsumiki"}
+	got := blueskyPostText(defaultTemplate, model.Tribute{Credit: "@BrisAgif"}, project, []string{"Chagall"}, "TsumikiBot")
+	if !strings.Contains(got, "Tribute to BrisAgif (x.com/BrisAgif)") || strings.Contains(got, "@BrisAgif") {
+		t.Errorf("blueskyPostText = %q, want the X handle as a name plus a profile link", got)
+	}
+
+	// Bluesky counts 300 graphemes; the style list goes first, as on X.
+	long := make([]string, 12)
+	for i := range long {
+		long[i] = "A Very Long Painter Style Name"
+	}
+	got = blueskyPostText(defaultTemplate, model.Tribute{Credit: "@a"}, project, long, "TsumikiBot")
+	if strings.Contains(got, "A Very Long Painter") || !strings.Contains(got, "by TsumikiBot") {
+		t.Errorf("blueskyPostText (long) = %q, styles should be dropped, signature kept", got)
+	}
+}
+
+func TestBlueskyCredit(t *testing.T) {
+	for in, want := range map[string]string{
+		"@artist":        "artist (x.com/artist)",
+		"artist":         "artist",
+		"@a.bsky.social": "@a.bsky.social",
+		"":               "",
+	} {
+		if got := blueskyCredit(in); got != want {
+			t.Errorf("blueskyCredit(%q) = %q, want %q", in, got, want)
+		}
+	}
+}
+
 // fakeAPI is a promo-api stand-in that records every request it gets.
 type fakeAPI struct {
 	mu       sync.Mutex

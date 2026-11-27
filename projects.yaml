@@ -43,6 +43,7 @@ projects:
     assets_dir: tsumiki
     postiz_accounts:
       x: wakeupm_sfw
+      bluesky: ol1n.bsky.social
     daily_cap: 5
     min_days_between: 0
     # The bot link lives in the X profile, not in every post: X charges $0.20
