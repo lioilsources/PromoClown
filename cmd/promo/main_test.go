@@ -121,7 +121,7 @@ func TestSeedProjectsImport(t *testing.T) {
 	t.Setenv("PROMO_API_URL", startAPI(t))
 	t.Setenv("PROMO_TOKEN", adminToken)
 	r := promo(t, "", "projects", "import", "../../projects.yaml")
-	if r.code != 0 || !strings.Contains(r.out, "saved kirian (active)") || !strings.Contains(r.out, "saved lexify (paused)") {
+	if r.code != 0 || !strings.Contains(r.out, "saved kirian (active)") || !strings.Contains(r.out, "saved orbitron-tactics (paused)") {
 		t.Fatalf("import projects.yaml: %+v", r)
 	}
 	r = promo(t, "", "projects", "list", "--status", "active", "--json")
@@ -133,8 +133,8 @@ func TestSeedProjectsImport(t *testing.T) {
 	for _, p := range active {
 		slugs = append(slugs, p.Slug)
 	}
-	// "kiran" comes from startAPI; the seed adds exactly four active projects.
-	if got := strings.Join(slugs, ","); got != "doggiowars,kiran,kirian,mirrorbooth,tsumiki" {
+	// "kiran" comes from startAPI; the rest are the seed's active projects.
+	if got := strings.Join(slugs, ","); got != "doggiowars,kiran,kirian,lexify,mirrorbooth,poetrystream,storyteller,puff,swypekids,webtoon,tsumiki" {
 		t.Fatalf("active projects = %s", got)
 	}
 }
