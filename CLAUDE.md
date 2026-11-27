@@ -21,10 +21,10 @@ Spark (arm64)                          JODA (amd64, 3.8 GB RAM)
 ## Commands
 
 ```bash
-make test          # go test ./...
+make test vet      # gate before push: go test ./... + go vet ./...
 make build         # all binaries → bin/
 make generate      # sqlc generate (output is committed)
-make spark-bins    # skill CLIs for linux/arm64
+make spark-bins    # skill CLIs + promo-tribute/promo-restyle for linux/arm64
 make deploy-promo-api | deploy-postiz | deploy-spark
 ```
 
@@ -33,12 +33,15 @@ make deploy-promo-api | deploy-postiz | deploy-spark
 ```
 cmd/promo-api          server: API + approval bot + publisher + retention (subcommands: serve, check, publish-once, sync-once)
 cmd/promo              agent/admin CLI over the API
-cmd/{store-reviews,youtube-comments,reddit-monitor,bluesky-mentions}   read-only monitors, JSON arrays to stdout
+cmd/{store-reviews,store-metrics,youtube-comments,reddit-monitor,bluesky-mentions}   read-only monitors, JSON arrays to stdout
+cmd/promo-tribute      drains the tribute queue on the Spark (ComfyUI), leaves drafts
+cmd/promo-restyle      one photo → styled variants on ComfyUI (files + JSON only)
 internal/db            migrations (golang-migrate, embedded), sqlc queries + generated code
 internal/core          domain: rules.go (limits, duplicates, slots), service.go (lifecycle, inbox)
 internal/api           HTTP handlers, token roles
 internal/approvals     Telegram approval bot (commands.go is pure and tested)
 internal/publisher     approved → Postiz, Postiz state → published/failed
+internal/restyle       ComfyUI restyle workflow and style blocks
 internal/postiz, telegram, client   thin HTTP clients
 internal/monitor/*     API clients behind the monitor CLIs
 skills/*/SKILL.md      OpenClaw skills        workspace/   agent workspace files
@@ -63,31 +66,15 @@ projects.yaml          project seed (promo projects import)
 
 ## Conventions
 
-- Pure-Go SQLite (`modernc.org/sqlite`), `CGO_ENABLED=0`, cross-compiles anywhere.
-- Timestamps are TEXT `2006-01-02T15:04:05Z` (UTC, whole seconds) so SQL string
-  comparison is chronological. Use `db.FormatTime`/`db.ParseTime`.
-- Schema changes: new numbered migration pair in `internal/db/migrations`, then
-  `make generate`. Never edit a migration that has been deployed.
+- Timestamps are TEXT `2006-01-02T15:04:05Z` (UTC, whole seconds) so SQL string comparison is chronological; use `db.FormatTime`/`db.ParseTime`.
+- Schema changes: new numbered migration pair in `internal/db/migrations`, then `make generate`.
 - sqlc nullable filters use `CAST(sqlc.narg('x') AS TEXT)` so the parameter gets a real type.
 - `core` returns `*ValidationError` (422), wraps `ErrNotFound` (404) and `ErrConflict` (409).
-- The single DB connection (`SetMaxOpenConns(1)`) means: inside `inTx`, use only
-  the `q` passed in, never `s.q`, or the call deadlocks.
+- Single DB connection (`SetMaxOpenConns(1)`): inside `inTx` use only the `q` passed in, never `s.q`, or it deadlocks.
 - Monitor CLIs print `[]`, never `null`; a source without credentials is skipped
   with exit 0; secrets come from env only (never flags).
-- Bot UI text is Czech; code, comments, skills and workspace files are English.
+- Odchylka od lang.md: bot UI text is Czech; skills and workspace files (read by the agent) are English.
 
-## Gotchas
+## Kam dál
 
-- A Telegram bot token has exactly one poller. The OpenClaw bot and the approval
-  bot must be two different bots.
-- Postiz: `Authorization: <key>` without Bearer; webhooks are unsigned, success-only
-  and need a public HTTPS URL, so state is polled (`PROMO_SYNC_INTERVAL`);
-  `POST /posts` returns no group; YouTube needs exactly one mp4; media is fetched
-  back through `POSTIZ_URL/uploads`, so Cloudflare Access needs a bypass there.
-- JODA: snap Docker only sees `$HOME` and `/media`; published ports bypass ufw;
-  no passwordless sudo; swap is already full — do not put Postiz there.
-- Spark: unified memory; the agent model needs ~36 GB. The AiStack controller
-  stops the previous model on activate, so `qwen36-agent` runs outside it.
-- OpenClaw (2026.9): HEARTBEAT.md is imported into the heartbeat job scratch by
-  `openclaw doctor --fix`; silent reply token is `NO_REPLY`; TOOLS.md is retired
-  (tools live in AGENTS.md); exec is restricted by `openclaw approvals allowlist`.
+Gotchas (Telegram, Postiz, JODA, Spark, OpenClaw): `docs/gotchas.md`. Deploy and operations: `docs/RUNBOOK.md`.

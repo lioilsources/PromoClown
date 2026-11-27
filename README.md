@@ -16,7 +16,7 @@ nasazení krok za krokem je v [`docs/RUNBOOK.md`](docs/RUNBOOK.md).
      digest, hlášení z heartbeatu            ok / edit / no, stav publikace
             │                                          │
  Spark ─────┼────────────────────────     JODA ────────┼───────────────────────
-  OpenClaw gateway 127.0.0.1:18789          promo-api 192.168.88.88:8094
+  OpenClaw gateway 127.0.0.1:18789          promo-api <joda-host>:8094
    model litellm/openclaw-default            ├─ SQLite: projects, posts, mentions, reviews
      → gateway :8080 → LiteLLM               ├─ approval bot (admin role, bez LLM)
      → vLLM Qwen3.6-35B-A3B-NVFP4            ├─ publisher: approved → Postiz
@@ -89,7 +89,7 @@ make generate     # sqlc po změně SQL (výstup je v gitu)
 make spark-bins   # skill CLI pro linux/arm64
 ```
 
-Admin CLI z Macu: `PROMO_API_URL=http://192.168.88.88:8094 PROMO_TOKEN=<admin> promo posts list`.
+Admin CLI z Macu: `PROMO_API_URL=http://$JODA_HOST:8094 PROMO_TOKEN=<admin> promo posts list`.
 
 ## Odchylky od plánu
 

@@ -133,8 +133,8 @@ func TestSeedProjectsImport(t *testing.T) {
 	for _, p := range active {
 		slugs = append(slugs, p.Slug)
 	}
-	// "kiran" comes from startAPI; the seed adds exactly three active projects.
-	if got := strings.Join(slugs, ","); got != "doggiowars,kiran,kirian,tsumiki" {
+	// "kiran" comes from startAPI; the seed adds exactly four active projects.
+	if got := strings.Join(slugs, ","); got != "doggiowars,kiran,kirian,mirrorbooth,tsumiki" {
 		t.Fatalf("active projects = %s", got)
 	}
 }
