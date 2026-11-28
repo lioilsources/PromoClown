@@ -250,19 +250,14 @@ func (b *Bot) execute(ctx context.Context, cmd Command, from telegram.User) resu
 		return result{text: helpText}
 
 	case "list":
-		drafts, err := b.svc.ListPosts(ctx, core.PostFilter{Status: model.StatusDraft, Limit: 30})
+		drafts, err := b.svc.ListPosts(ctx, core.PostFilter{Status: model.StatusDraft, Limit: 500})
 		if err != nil {
 			return b.failure(err)
 		}
 		if len(drafts) == 0 {
 			return result{text: "Žádné drafty ke schválení."}
 		}
-		var sb strings.Builder
-		sb.WriteString("<b>Drafty ke schválení</b>\n")
-		for _, p := range drafts {
-			fmt.Fprintf(&sb, "#%d · %s · %s — %s\n", p.ID, p.Platform, p.Project, html.EscapeString(truncate(firstLine(p.Text), 70)))
-		}
-		return result{text: sb.String()}
+		return result{text: draftList(drafts)}
 
 	case "show":
 		p, err := b.svc.GetPost(ctx, cmd.ID)
@@ -667,6 +662,47 @@ func fitMessage(s string) string {
 		return s
 	}
 	return html.EscapeString(truncate(html.UnescapeString(s), 3900))
+}
+
+// listGroupMax is how many drafts of one project and platform are listed one
+// by one; a bigger batch (tributes) collapses into a single line, so it cannot
+// push everything else out of the message.
+const listGroupMax = 3
+
+// draftList renders drafts oldest first, grouped by project and platform.
+// posts come newest first, as ListPosts returns them.
+func draftList(posts []model.Post) string {
+	type group struct {
+		key   string
+		posts []model.Post
+	}
+	var groups []*group
+	byKey := map[string]*group{}
+	for i := len(posts) - 1; i >= 0; i-- {
+		p := posts[i]
+		key := p.Project + " · " + p.Platform
+		g := byKey[key]
+		if g == nil {
+			g = &group{key: key}
+			byKey[key] = g
+			groups = append(groups, g)
+		}
+		g.posts = append(g.posts, p)
+	}
+	var sb strings.Builder
+	sb.WriteString("<b>Drafty ke schválení</b> (od nejstarších)\n")
+	for _, g := range groups {
+		if len(g.posts) > listGroupMax {
+			first, last := g.posts[0], g.posts[len(g.posts)-1]
+			fmt.Fprintf(&sb, "%s — <b>%d draftů</b> #%d–#%d, např. %s\n", html.EscapeString(g.key), len(g.posts),
+				first.ID, last.ID, html.EscapeString(truncate(firstLine(first.Text), 50)))
+			continue
+		}
+		for _, p := range g.posts {
+			fmt.Fprintf(&sb, "#%d · %s · %s — %s\n", p.ID, p.Platform, p.Project, html.EscapeString(truncate(firstLine(p.Text), 70)))
+		}
+	}
+	return sb.String()
 }
 
 func truncate(s string, n int) string {
