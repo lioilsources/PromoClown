@@ -9,12 +9,12 @@ projects:
     name: "Kirian: Space Shooter"
     status: active
     tagline: Roguelike arcade shmup — a 2D vertical-scrolling space shooter with a roguelike loop.
-    audience: Shoot 'em up and retro arcade fans on iPhone and iPad.
+    audience: Shoot 'em up and retro arcade fans on iPhone, iPad and Android.
     tags: [shmup, roguelike, arcade, indie game, flutter]
     store_ios_url: https://apps.apple.com/us/app/kirian/id6774868017
     ios_app_id: "6774868017"
-    # Android is in closed testing: a public Play link would not open yet.
-    android_package: com.ol1n.kiran
+    android_package: com.ab.kiran
+    store_android_url: https://play.google.com/store/apps/details?id=com.ab.kiran
     website_url: https://lioilsources.github.io/Kiran/
     assets_dir: kirian
     hooks:
@@ -23,8 +23,6 @@ projects:
       - Free with no ads; 14 ship skins, some of them $0.99 each.
       - Game Center leaderboards and game controller support.
     forbidden_claims:
-      - on Google Play
-      - available on Android
       - on Steam
       - online multiplayer
       - pay to win
@@ -77,10 +75,13 @@ projects:
 
   - slug: lexify
     name: Lexify
-    status: paused # submitted to App Review; Play upload staged
+    status: active
     tagline: Picture flashcards in 17 languages. Swipe to learn, works offline.
     tags: [education, language learning, flashcards]
-    android_package: com.ol1n.duolingoCards
+    store_ios_url: https://apps.apple.com/app/id6784602743
+    ios_app_id: "6784602743"
+    android_package: com.ab.duolingoCards
+    store_android_url: https://play.google.com/store/apps/details?id=com.ab.duolingoCards
     website_url: https://lioilsources.github.io/DuolingoCards/
     assets_dir: lexify
     forbidden_claims:
@@ -89,28 +90,37 @@ projects:
 
   - slug: puff
     name: "Puff: Pressure Blast"
-    status: paused # TestFlight
+    status: active
     tagline: "Minimalist neon physics toy: hold to charge a pressure cloud, drag it, release to shatter the geometry."
     tags: [arcade, physics, casual game]
+    store_ios_url: https://apps.apple.com/app/id6808586613
+    ios_app_id: "6808586613"
     android_package: com.ol1n.puff
+    store_android_url: https://play.google.com/store/apps/details?id=com.ol1n.puff
     website_url: https://lioilsources.github.io/puff/
     assets_dir: puff
 
   - slug: poetrystream
     name: Poesie Simona Clinae
-    status: paused # Google Play internal track / TestFlight
+    status: active
     tagline: A meditative app that streams Czech poetry with animated verse display.
     audience: Czech readers of poetry.
     tags: [poetry, czech, reading]
-    android_package: com.ol1n.PoetryStreamSC
+    store_ios_url: https://apps.apple.com/app/id6767237393
+    ios_app_id: "6767237393"
+    android_package: com.ab.PoetryStreamSC
+    store_android_url: https://play.google.com/store/apps/details?id=com.ab.PoetryStreamSC
     assets_dir: poetrystream
 
   - slug: swypekids
     name: Swype Kids
-    status: paused # TestFlight
+    status: active
     tagline: Learning game for children aged 5–9 — letters and syllables by swiping across an emoji keyboard.
     tags: [kids, education, czech]
-    android_package: com.ol1n.SwypeKids
+    store_ios_url: https://apps.apple.com/app/id6785485866
+    ios_app_id: "6785485866"
+    android_package: com.ab.SwypeKids
+    store_android_url: https://play.google.com/store/apps/details?id=com.ab.SwypeKids
     assets_dir: swypekids
 
   - slug: orbitron-tactics
@@ -146,6 +156,50 @@ projects:
       - unlimited
       - subscription
       - beauty filter that changes your real face
+
+  - slug: storyteller
+    name: Pohádkomat
+    status: active
+    tagline: A bedtime story you tell yourself — the app only prompts you, with motifs from 2,795 folk tales from 98 countries.
+    audience: Parents who tell their children bedtime stories.
+    tags: [kids, bedtime stories, fairy tales, parenting, flutter]
+    store_ios_url: https://apps.apple.com/app/id6816062136
+    ios_app_id: "6816062136"
+    android_package: com.ol1n.storyteller
+    store_android_url: https://play.google.com/store/apps/details?id=com.ol1n.storyteller
+    website_url: https://olin.now/storyteller
+    assets_dir: storyteller
+    hooks:
+      - It never tells the story for you — you tell it, in your own words.
+      - Spin the globe, tap a country, and the cast and motifs come from that country's tales.
+      - Characters, a task, a problem and an ending, on one screen while you tell it.
+      - Motifs from public-domain tales — Grimm, Andersen, Perrault, Erben and collections from Africa, Asia and Latin America.
+    forbidden_claims:
+      - AI tells the story
+      - reads the story aloud
+      - unlimited
+      - free forever
+
+  - slug: webtoon
+    name: Toonfork
+    status: active
+    tagline: Vertical comics that work offline — free stories, gamebooks where you choose, and panels that come alive.
+    audience: Readers of vertical comics and webtoons, and fans of choose-your-path stories.
+    tags: [comics, webtoon, gamebook, offline reading, flutter]
+    android_package: com.ol1n.webtoon
+    store_android_url: https://play.google.com/store/apps/details?id=com.ol1n.webtoon
+    website_url: https://olin.now/webtoon
+    assets_dir: webtoon
+    hooks:
+      - 15 free stories after install, no account and no sign-up.
+      - Gamebooks where you pick what happens next; the path map shows only what you have visited.
+      - Selected panels come alive in short loops — rain on a window, wind in the hair.
+      - Reads offline.
+    forbidden_claims:
+      - on the App Store
+      - on iPhone
+      - unlimited
+      - free forever
 
   # Not an app but a purchase: one lifetime IAP, bought inside any Ol1n app,
   # that unlocks every one-time unlock in every Ol1n app (repo lioilsources/Pass,
